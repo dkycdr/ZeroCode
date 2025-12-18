@@ -22,6 +22,27 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     }
 };
 
+// Send password reset email with link
+export const sendPasswordResetEmail = async (email, resetCode) => {
+    try {
+        const resetLink = `${window.location.origin}/reset-password?code=${resetCode}&email=${encodeURIComponent(email)}`;
+        
+        const response = await fetch('/api/send-password-reset-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, resetCode, resetLink })
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Email send error:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 // Send welcome email via backend API
 export const sendWelcomeEmail = async (email, name) => {
     try {

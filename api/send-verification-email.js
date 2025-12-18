@@ -1,12 +1,6 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
-});
+const resend = new Resend(process.env.VITE_RESEND_API_KEY);
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -20,8 +14,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
+        const result = await resend.emails.send({
+            from: 'noreply@zerocode.dev',
             to: email,
             subject: 'ZeroCode - Email Verification',
             html: `
@@ -49,9 +43,13 @@ export default async function handler(req, res) {
                     </div>
                 </div>
             `
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
+        if (result.error) {
+            console.error('Resend error:', result.error);
+            return res.status(500).json({ success: false, error: result.error.message });
+        }
+
         return res.status(200).json({ success: true, message: 'Verification email sent' });
     } catch (error) {
         console.error('Email send error:', error);

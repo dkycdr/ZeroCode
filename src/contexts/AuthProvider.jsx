@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { sql } from '../lib/neon';
 import bcrypt from 'bcryptjs';
-import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail } from '../lib/emailService';
+import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from '../lib/emailService';
 
 const AuthContext = createContext({});
 
@@ -366,6 +366,112 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const requestPasswordReset = async (email) => {
+        try {
+            const result = await sql`
+                SELECT id, name FROM users WHERE email = ${email}
+            `;
+
+            if (result.length === 0) {
+                return { success: true, message: 'If email exists, reset code sent' };
+            }
+
+            const resetCode = generateVerificationCode();
+            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+            await sql`
+                UPDATE users
+                SET password_reset_code = ${resetCode}, password_reset_expires = ${expiresAt}
+                WHERE email = ${email}
+            `;
+
+            await sendPasswordResetEmail(email, resetCode);
+
+            return { success: true, message: 'Reset link sent to email' };
+        } catch (error) {
+            console.error('Password reset error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const resetPassword = async (email, code, newPassword) => {
+        try {
+            const result = await sql`
+                SELECT id, password_reset_code, password_reset_expires
+                FROM users WHERE email = ${email}
+            `;
+
+            if (result.length === 0) {
+                return { success: false, error: 'User not found' };
+            }
+
+            const user = result[0];
+
+            if (user.password_reset_code !== code) {
+                return { success: false, error: 'Invalid reset code' };
+            }
+
+            if (new Date() > new Date(user.password_reset_expires)) {
+                return { success: false, error: 'Reset code expired' };
+            }
+
+            const passwordHash = await bcrypt.hash(newPassword, 10);
+
+            await sql`
+                UPDATE users
+                SET password_hash = ${passwordHash}, password_reset_code = NULL, password_reset_expires = NULL
+                WHERE id = ${user.id}
+            `;
+
+            return { success: true, message: 'Password reset successfully' };
+        } catch (error) {
+            console.error('Password reset error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const getLeaderboard = async () => {
+        try {
+            const result = await sql`
+                SELECT id, name, email, points, courses_completed
+                FROM users
+                WHERE points > 0 OR courses_completed > 0
+                ORDER BY points DESC, courses_completed DESC
+                LIMIT 100
+            `;
+
+            let userRank = null;
+            if (user?.id) {
+                const userResult = await sql`
+                    SELECT points, courses_completed
+                    FROM users
+                    WHERE id = ${user.id}
+                `;
+
+                if (userResult.length > 0) {
+                    const userStats = userResult[0];
+                    const rankResult = await sql`
+                        SELECT COUNT(*) as rank
+                        FROM users
+                        WHERE points > ${userStats.points}
+                        OR (points = ${userStats.points} AND courses_completed > ${userStats.courses_completed})
+                    `;
+
+                    userRank = {
+                        rank: rankResult[0].rank + 1,
+                        points: userStats.points || 0,
+                        coursesCompleted: userStats.courses_completed || 0
+                    };
+                }
+            }
+
+            return { success: true, leaderboard: result, userRank };
+        } catch (error) {
+            console.error('Leaderboard error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
     const value = {
         user,
         loading,
@@ -381,6 +487,9 @@ export const AuthProvider = ({ children }) => {
         loginWithGoogle,
         verifyEmail,
         resendVerificationCode,
+        requestPasswordReset,
+        resetPassword,
+        getLeaderboard,
         canAccessCourse: (courseId) => canAccessCourse(user?.subscription_tier, courseId),
         isAdmin: user?.is_admin || false,
         subscriptionTier: user?.subscription_tier || 'free',

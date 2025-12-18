@@ -7,6 +7,8 @@ import CourseSyllabus from './pages/CourseSyllabus';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import EmailVerification from './pages/EmailVerification';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -14,6 +16,7 @@ import AdminAccess from './pages/AdminAccess';
 import Library from './pages/Library';
 import Forum from './pages/Forum';
 import ForumPost from './pages/ForumPost';
+import Leaderboard from './pages/Leaderboard';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -56,6 +59,8 @@ function App() {
                         </PublicRoute>
                     } />
                     <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
 
                     {/* Admin Routes */}
                     <Route path="/admin/access" element={
@@ -117,6 +122,13 @@ function App() {
                     <Route path="/forum/:postId" element={
                         <ProtectedRoute>
                             <ForumPost />
+                        </ProtectedRoute>
+                    } />
+
+                    {/* Leaderboard */}
+                    <Route path="/leaderboard" element={
+                        <ProtectedRoute>
+                            <Leaderboard />
                         </ProtectedRoute>
                     } />
                     

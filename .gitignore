@@ -28,6 +28,10 @@ dist-ssr
 .env.local
 .env.production
 
-# Documentation (keep only README.md)
-*.md
-!README.md
+# Local dev files only
+email-server.js
+dev-server.js
+setup-password-reset.js
+setup-admin-simple.js
+setup-admin-progress.js
+setup-admin-accounts.js
