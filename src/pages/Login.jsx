@@ -238,9 +238,9 @@ export default function Login() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.35, duration: 0.5 }}
-                        className="mt-6"
+                        className="mt-8"
                     >
-                        <div className="relative">
+                        <div className="relative mb-6">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-white/10"></div>
                             </div>
@@ -251,51 +251,21 @@ export default function Login() {
 
                         {googleClientId && (
                             <GoogleOAuthProvider clientId={googleClientId}>
-                                <div className="mt-4 flex justify-center">
-                                    <div className="w-full">
-                                        <GoogleLogin
-                                            onSuccess={handleGoogleSuccess}
-                                            onError={handleGoogleError}
-                                            theme="dark"
-                                            size="large"
-                                            width="100%"
-                                            text="signin_with"
-                                        />
-                                    </div>
+                                <div className="mt-4">
+                                    <GoogleLogin
+                                        onSuccess={handleGoogleSuccess}
+                                        onError={handleGoogleError}
+                                        theme="dark"
+                                        size="large"
+                                        width="100%"
+                                        text="signin_with"
+                                    />
                                 </div>
                             </GoogleOAuthProvider>
                         )}
                     </motion.div>
 
-                    {/* Admin Login */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="mt-6"
-                    >
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-white/10"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-3 bg-[#0a0a0a] text-gray-500">Quick Access</span>
-                            </div>
-                        </div>
-                        
-                        <button
-                            type="button"
-                            onClick={handleAdminLogin}
-                            disabled={isLoading}
-                            className="mt-4 w-full py-3 bg-white/5 border border-white/10 text-gray-300 rounded-lg font-medium hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            <Zap size={18} />
-                            Admin Access (Testing)
-                        </button>
-                        <p className="mt-2 text-xs text-center text-gray-500">
-                            All courses unlocked
-                        </p>
-                    </motion.div>
+
 
                     {/* Sign Up Link */}
                     <motion.p 
