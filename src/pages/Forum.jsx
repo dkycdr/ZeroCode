@@ -1,162 +1,332 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import { MessageSquare, ThumbsUp, MessageCircle, Clock, TrendingUp, Search } from 'lucide-react';
+import { useAuth } from '../contexts/AuthProvider';
+import { useProgress } from '../contexts/ProgressProvider';
+import { getOverallProgress } from '../data/curriculumStructure';
+import { sql } from '../lib/neon';
+import { 
+    MessageSquare, Plus, Search, ThumbsUp, MessageCircle, 
+    Clock, User, X, Send, ChevronRight, Tag
+} from 'lucide-react';
+import clsx from 'clsx';
 
-const MOCK_THREADS = [
-    {
-        id: 1,
-        title: 'How to center a div in CSS?',
-        author: 'Sarah Chen',
-        category: 'CSS',
-        replies: 12,
-        likes: 24,
-        timeAgo: '2 hours ago',
-        excerpt: 'I\'ve tried using margin: auto but it\'s not working...'
-    },
-    {
-        id: 2,
-        title: 'Best practices for React state management',
-        author: 'Ahmad Rizki',
-        category: 'React',
-        replies: 8,
-        likes: 31,
-        timeAgo: '5 hours ago',
-        excerpt: 'Should I use Context API or Redux for a medium-sized app?'
-    },
-    {
-        id: 3,
-        title: 'MySQL vs MongoDB: When to use which?',
-        author: 'Jessica Tan',
-        category: 'Database',
-        replies: 15,
-        likes: 42,
-        timeAgo: '1 day ago',
-        excerpt: 'I\'m building an e-commerce platform and confused about database choice...'
-    },
-    {
-        id: 4,
-        title: 'Tailwind CSS tips for beginners',
-        author: 'Budi Santoso',
-        category: 'Tailwind',
-        replies: 6,
-        likes: 18,
-        timeAgo: '2 days ago',
-        excerpt: 'Share your favorite Tailwind utilities and patterns!'
-    },
+const CATEGORIES = [
+    { id: 'all', label: 'All Topics', color: 'bg-white/10 text-white' },
+    { id: 'general', label: 'General', color: 'bg-blue-500/20 text-blue-400' },
+    { id: 'html-css', label: 'HTML & CSS', color: 'bg-orange-500/20 text-orange-400' },
+    { id: 'javascript', label: 'JavaScript', color: 'bg-yellow-500/20 text-yellow-400' },
+    { id: 'react', label: 'React', color: 'bg-cyan-500/20 text-cyan-400' },
+    { id: 'backend', label: 'Backend', color: 'bg-green-500/20 text-green-400' },
+    { id: 'help', label: 'Help & Support', color: 'bg-red-500/20 text-red-400' },
 ];
 
 export default function Forum() {
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const { completedCourses } = useProgress();
+    const progress = getOverallProgress(completedCourses);
 
-    const categories = ['all', 'HTML', 'CSS', 'JavaScript', 'React', 'Backend', 'Database'];
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showNewPost, setShowNewPost] = useState(false);
+    const [newPost, setNewPost] = useState({ title: '', content: '', category: 'general' });
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        loadPosts();
+    }, []);
+
+    const loadPosts = async () => {
+        try {
+            const result = await sql`
+                SELECT 
+                    p.*,
+                    u.name as author_name,
+                    u.email as author_email,
+                    (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
+                FROM forum_posts p
+                JOIN users u ON p.user_id = u.id
+                ORDER BY p.created_at DESC
+            `;
+            setPosts(result);
+        } catch (error) {
+            console.error('Error loading posts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreatePost = async (e) => {
+        e.preventDefault();
+        if (!newPost.title.trim() || !newPost.content.trim()) return;
+
+        setSubmitting(true);
+        try {
+            await sql`
+                INSERT INTO forum_posts (user_id, title, content, category)
+                VALUES (${user.id}, ${newPost.title}, ${newPost.content}, ${newPost.category})
+            `;
+            setNewPost({ title: '', content: '', category: 'general' });
+            setShowNewPost(false);
+            loadPosts();
+        } catch (error) {
+            console.error('Error creating post:', error);
+            alert('Failed to create post');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleLike = async (postId) => {
+        try {
+            // Check if already liked
+            const existing = await sql`
+                SELECT id FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}
+            `;
+            
+            if (existing.length > 0) {
+                // Unlike
+                await sql`DELETE FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}`;
+                await sql`UPDATE forum_posts SET likes = likes - 1 WHERE id = ${postId}`;
+            } else {
+                // Like
+                await sql`INSERT INTO forum_likes (post_id, user_id) VALUES (${postId}, ${user.id})`;
+                await sql`UPDATE forum_posts SET likes = likes + 1 WHERE id = ${postId}`;
+            }
+            loadPosts();
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    };
+
+    const filteredPosts = posts.filter(post => {
+        const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+        const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            post.content.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
+
+    const formatDate = (date) => {
+        const d = new Date(date);
+        const now = new Date();
+        const diff = now - d;
+        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return `${mins}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return d.toLocaleDateString();
+    };
+
+    const getCategoryStyle = (categoryId) => {
+        return CATEGORIES.find(c => c.id === categoryId)?.color || 'bg-white/10 text-white';
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading forum...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex flex-col">
-            <Header />
+        <div className="min-h-screen bg-[#0a0a0a]">
+            <Header progress={progress.percentage} />
 
-            <main className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-
+            <main className="min-h-[calc(100vh-56px)] overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-6 py-12">
                     {/* Header */}
-                    <div className="text-center mb-12">
-                        <div className="inline-flex items-center space-x-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-                            <MessageSquare size={14} />
-                            <span>Community</span>
+                    <div className="flex items-start justify-between mb-8">
+                        <div>
+                            <h1 className="text-4xl font-bold text-white mb-3">Forum</h1>
+                            <p className="text-gray-400 text-lg">Ask questions, share knowledge, connect with others</p>
                         </div>
-                        <h1 className="text-5xl font-black text-slate-900 mb-4">
-                            PULSE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Forum</span>
-                        </h1>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-6">
-                            Connect, ask questions, and learn together
-                        </p>
-                        <button className="bg-gradient-to-r from-presuniv-maroon to-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                            + New Discussion
+                        <button
+                            onClick={() => setShowNewPost(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                        >
+                            <Plus size={18} />
+                            New Post
                         </button>
                     </div>
 
                     {/* Search & Filter */}
-                    <div className="mb-8">
-                        <div className="relative mb-6">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                        <div className="relative flex-1">
+                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                             <input
                                 type="text"
-                                placeholder="Search discussions..."
-                                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-presuniv-navy focus:outline-none text-gray-700 font-medium"
+                                placeholder="Search posts..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-11 pr-4 py-3 bg-[#111111] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
                             />
-                        </div>
-
-                        {/* Category Pills */}
-                        <div className="flex flex-wrap gap-3">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300 ${selectedCategory === cat
-                                            ? 'bg-presuniv-navy text-white shadow-lg scale-105'
-                                            : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200'
-                                        }`}
-                                >
-                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                </button>
-                            ))}
                         </div>
                     </div>
 
-                    {/* Thread List */}
-                    <div className="space-y-4">
-                        {MOCK_THREADS.map(thread => (
-                            <div
-                                key={thread.id}
-                                className="group bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-100 hover:border-presuniv-navy hover:shadow-xl transition-all duration-300 cursor-pointer"
+                    {/* Categories */}
+                    <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+                        {CATEGORIES.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.id)}
+                                className={clsx(
+                                    "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                                    selectedCategory === cat.id
+                                        ? "bg-white text-black"
+                                        : "bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10"
+                                )}
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center space-x-3 mb-2">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
-                                                {thread.category}
-                                            </span>
-                                            <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                                                <Clock size={12} />
-                                                <span>{thread.timeAgo}</span>
-                                            </div>
-                                        </div>
-                                        <h3 className="text-xl font-bold text-slate-900 group-hover:text-presuniv-navy transition-colors mb-2">
-                                            {thread.title}
-                                        </h3>
-                                        <p className="text-sm text-gray-600 mb-3">{thread.excerpt}</p>
-                                        <div className="flex items-center space-x-1 text-gray-500 text-sm">
-                                            <span className="font-medium">by</span>
-                                            <span className="font-bold text-gray-700">{thread.author}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Stats */}
-                                <div className="flex items-center space-x-6 pt-4 border-t border-gray-100">
-                                    <div className="flex items-center space-x-2 text-gray-600">
-                                        <MessageCircle size={16} />
-                                        <span className="text-sm font-semibold">{thread.replies} replies</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2 text-gray-600">
-                                        <ThumbsUp size={16} />
-                                        <span className="text-sm font-semibold">{thread.likes} likes</span>
-                                    </div>
-                                </div>
-                            </div>
+                                {cat.label}
+                            </button>
                         ))}
                     </div>
 
-                    {/* Coming Soon Notice */}
-                    <div className="mt-12 text-center bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
-                        <TrendingUp size={48} className="mx-auto text-purple-600 mb-4" />
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Forum Coming Soon!</h3>
-                        <p className="text-gray-600">
-                            We're building an amazing community space. Stay tuned!
-                        </p>
-                    </div>
+                    {/* Posts List */}
+                    <div className="space-y-3">
+                        {filteredPosts.length === 0 ? (
+                            <div className="text-center py-12 bg-[#111111] rounded-xl border border-white/10">
+                                <MessageSquare size={48} className="text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-400 mb-2">No posts yet</p>
+                                <p className="text-gray-500 text-sm">Be the first to start a discussion!</p>
+                            </div>
+                        ) : (
+                            filteredPosts.map(post => (
+                                <div
+                                    key={post.id}
+                                    onClick={() => navigate(`/forum/${post.id}`)}
+                                    className="bg-[#111111] rounded-xl border border-white/10 p-5 hover:bg-[#161616] hover:border-white/20 transition-all cursor-pointer"
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            {/* Category Badge */}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className={clsx(
+                                                    "px-2 py-0.5 rounded text-xs font-medium",
+                                                    getCategoryStyle(post.category)
+                                                )}>
+                                                    {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
+                                                </span>
+                                            </div>
 
+                                            {/* Title */}
+                                            <h3 className="text-lg font-semibold text-white mb-2">{post.title}</h3>
+                                            
+                                            {/* Preview */}
+                                            <p className="text-gray-500 text-sm line-clamp-2 mb-4">{post.content}</p>
+
+                                            {/* Meta */}
+                                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                                                <div className="flex items-center gap-1.5">
+                                                    <User size={14} />
+                                                    <span>{post.author_name || post.author_email?.split('@')[0]}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock size={14} />
+                                                    <span>{formatDate(post.created_at)}</span>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
+                                                    className="flex items-center gap-1.5 hover:text-white transition-colors"
+                                                >
+                                                    <ThumbsUp size={14} />
+                                                    <span>{post.likes || 0}</span>
+                                                </button>
+                                                <div className="flex items-center gap-1.5">
+                                                    <MessageCircle size={14} />
+                                                    <span>{post.reply_count || 0}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={20} className="text-gray-600" />
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </main>
+
+            {/* New Post Modal */}
+            {showNewPost && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#111111] rounded-xl border border-white/10 w-full max-w-lg">
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <h2 className="text-lg font-semibold text-white">Create New Post</h2>
+                            <button onClick={() => setShowNewPost(false)} className="text-gray-500 hover:text-white">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreatePost} className="p-4 space-y-4">
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Category</label>
+                                <select
+                                    value={newPost.category}
+                                    onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
+                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
+                                >
+                                    {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Title</label>
+                                <input
+                                    type="text"
+                                    value={newPost.title}
+                                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                                    placeholder="What's your question or topic?"
+                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-2">Content</label>
+                                <textarea
+                                    value={newPost.content}
+                                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                                    placeholder="Describe your question or share your thoughts..."
+                                    rows={5}
+                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-white/20 resize-none"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPost(false)}
+                                    className="flex-1 px-4 py-2.5 bg-white/5 text-gray-400 rounded-lg hover:bg-white/10 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                >
+                                    {submitting ? 'Posting...' : (
+                                        <>
+                                            <Send size={16} />
+                                            Post
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -109,3 +109,39 @@ END $$;
 
 -- Update existing admin users to have admin tier
 UPDATE users SET subscription_tier = 'admin' WHERE is_admin = TRUE;
+
+-- Forum posts table
+CREATE TABLE IF NOT EXISTS forum_posts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    category VARCHAR(50) DEFAULT 'general',
+    likes INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Forum replies table
+CREATE TABLE IF NOT EXISTS forum_replies (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER REFERENCES forum_posts(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Forum likes table
+CREATE TABLE IF NOT EXISTS forum_likes (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER REFERENCES forum_posts(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(post_id, user_id)
+);
+
+-- Indexes for forum
+CREATE INDEX IF NOT EXISTS idx_forum_posts_user ON forum_posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_forum_posts_category ON forum_posts(category);
+CREATE INDEX IF NOT EXISTS idx_forum_replies_post ON forum_replies(post_id);
+CREATE INDEX IF NOT EXISTS idx_forum_likes_post ON forum_likes(post_id);

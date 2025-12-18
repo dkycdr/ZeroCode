@@ -10,6 +10,9 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAccess from './pages/AdminAccess';
+import Library from './pages/Library';
+import Forum from './pages/Forum';
+import ForumPost from './pages/ForumPost';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -93,6 +96,25 @@ function App() {
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <Dashboard />
+                        </ProtectedRoute>
+                    } />
+
+                    {/* Library */}
+                    <Route path="/resources" element={
+                        <ProtectedRoute>
+                            <Library />
+                        </ProtectedRoute>
+                    } />
+
+                    {/* Forum */}
+                    <Route path="/community" element={
+                        <ProtectedRoute>
+                            <Forum />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/forum/:postId" element={
+                        <ProtectedRoute>
+                            <ForumPost />
                         </ProtectedRoute>
                     } />
                     
