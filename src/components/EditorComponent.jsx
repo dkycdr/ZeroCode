@@ -12,6 +12,19 @@ loader.config({
 export default function EditorComponent({ files, activeFile, onFileChange, onCodeChange }) {
     const monaco = useMonaco();
     const [isEditorReady, setIsEditorReady] = useState(false);
+    const [useFallback, setUseFallback] = useState(false);
+
+    // Fallback to textarea if Monaco takes too long
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (!isEditorReady) {
+                console.warn('Monaco Editor loading timeout, using fallback textarea');
+                setUseFallback(true);
+            }
+        }, 8000); // 8 seconds timeout
+
+        return () => clearTimeout(timeout);
+    }, [isEditorReady]);
 
     // Define Custom 'PULSE' Theme
     useEffect(() => {
@@ -44,6 +57,10 @@ export default function EditorComponent({ files, activeFile, onFileChange, onCod
         onCodeChange(activeFile, value);
     };
 
+    const handleTextareaChange = (e) => {
+        onCodeChange(activeFile, e.target.value);
+    };
+
     return (
         <div className="h-full flex flex-col bg-[#0a192f] border-r border-[#1e293b]">
             {/* File Tabs */}
@@ -66,7 +83,20 @@ export default function EditorComponent({ files, activeFile, onFileChange, onCod
 
             {/* Editor Area */}
             <div className="flex-1 relative">
-                <Editor
+                {useFallback ? (
+                    // Fallback textarea if Monaco fails to load
+                    <textarea
+                        value={files.find(f => f.name === activeFile)?.content || ''}
+                        onChange={handleTextareaChange}
+                        className="w-full h-full p-4 bg-[#0a192f] text-white font-mono text-sm resize-none focus:outline-none"
+                        spellCheck="false"
+                        style={{
+                            tabSize: 2,
+                            lineHeight: '1.5'
+                        }}
+                    />
+                ) : (
+                    <Editor
                     height="100%"
                     theme="pulse-theme"
                     path={activeFile}
@@ -84,17 +114,17 @@ export default function EditorComponent({ files, activeFile, onFileChange, onCod
                             </div>
                         </div>
                     }
-                    options={{
-                        // Disable all hints/suggestions as requested
-                        quickSuggestions: false,
-                        parameterHints: { enabled: false },
-                        suggestOnTriggerCharacters: false,
-                        acceptSuggestionOnEnter: "off",
-                        tabCompletion: "off",
-                        wordBasedSuggestions: false,
-                        hover: { enabled: false }, // No hover docs
+                        options={{
+                            // Disable all hints/suggestions as requested
+                            quickSuggestions: false,
+                            parameterHints: { enabled: false },
+                            suggestOnTriggerCharacters: false,
+                            acceptSuggestionOnEnter: "off",
+                            tabCompletion: "off",
+                            wordBasedSuggestions: false,
+                            hover: { enabled: false }, // No hover docs
 
-                        // Visual Polish
+                            // Visual Polish
                         minimap: { enabled: false },
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 14,
@@ -106,6 +136,7 @@ export default function EditorComponent({ files, activeFile, onFileChange, onCod
                         smoothScrolling: true
                     }}
                 />
+                )}
             </div>
         </div>
     );
