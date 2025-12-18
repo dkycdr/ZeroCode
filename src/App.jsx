@@ -6,6 +6,7 @@ import LearningLayout from './pages/LearningLayout';
 import CourseSyllabus from './pages/CourseSyllabus';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import EmailVerification from './pages/EmailVerification';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -54,6 +55,7 @@ function App() {
                             <Register />
                         </PublicRoute>
                     } />
+                    <Route path="/verify-email" element={<EmailVerification />} />
 
                     {/* Admin Routes */}
                     <Route path="/admin/access" element={

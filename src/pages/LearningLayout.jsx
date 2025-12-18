@@ -167,6 +167,40 @@ export default function LearningLayout() {
         return files.some(f => f.name.endsWith('.py'));
     };
 
+    const isTypeScriptCourse = () => {
+        return files.some(f => f.name.endsWith('.ts'));
+    };
+
+    const compileTypeScript = () => {
+        const html = files.find(f => f.name === 'index.html')?.content || '';
+        const css = files.find(f => f.name === 'style.css')?.content || '';
+        const tsCode = files.find(f => f.name === 'script.ts')?.content || '';
+        const escapedCode = tsCode.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        
+        return `<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@5.3.3/lib/typescript.js"></script>
+    <style>${css}</style>
+</head>
+<body>
+    ${html}
+    <script>
+        try {
+            const code = \`${escapedCode}\`;
+            const result = ts.transpileModule(code, {
+                compilerOptions: { module: ts.ModuleKind.CommonJS }
+            });
+            eval(result.outputText);
+        } catch (e) {
+            console.error(e.message);
+        }
+    </script>
+</body>
+</html>`;
+    };
+
     const handleRun = () => {
         setIsRunning(true);
         setConsoleLogs([]);
@@ -176,6 +210,8 @@ export default function LearningLayout() {
             if (pythonFile) {
                 setCompiledCode(compilePython(pythonFile.content));
             }
+        } else if (isTypeScriptCourse()) {
+            setCompiledCode(compileTypeScript());
         } else {
             setCompiledCode(compile());
         }

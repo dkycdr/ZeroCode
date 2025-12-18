@@ -92,61 +92,166 @@ add("5", 3); // Error! Argument of type 'string' is not assignable
                     content: `
 # Basic Types in TypeScript
 
+## What is Type Annotation?
+
+Type annotation tells TypeScript what type of data a variable can hold. The syntax is: TypeName after the variable name.
+
+Why important:
+- Catch errors during development, not at runtime
+- Better autocomplete in your editor
+- Self-documenting code
+- Safer refactoring
+
 ## Primitive Types
 
+### String - Text
 \`\`\`typescript
-// String
 let name: string = "John";
+let message: string = 'Hello World';
 
-// Number (integers and floats)
-let age: number = 25;
-let price: number = 99.99;
+// Error - cannot assign number to string
+name = 42;  // Type 'number' is not assignable to type 'string'
+\`\`\`
 
-// Boolean
+### Number - Integers and Floats
+\`\`\`typescript
+let age: number = 25;           // Integer
+let price: number = 99.99;      // Float
+let negative: number = -10;     // Negative
+let hex: number = 0xFF;         // Hexadecimal
+\`\`\`
+
+### Boolean - True or False
+\`\`\`typescript
 let isActive: boolean = true;
+let isCompleted: boolean = false;
 
-// Null and Undefined
-let nothing: null = null;
-let notDefined: undefined = undefined;
+// Comparison results are also boolean
+let isGreater: boolean = 10 > 5;  // true
+\`\`\`
+
+### Null and Undefined
+\`\`\`typescript
+let nothing: null = null;           // Intentional absence
+let notDefined: undefined = undefined;  // Not yet assigned
 \`\`\`
 
 ## Type Inference
 
-TypeScript can infer types automatically:
+TypeScript can automatically detect the type based on the value:
 
 \`\`\`typescript
-let name = "John";     // TypeScript infers: string
-let age = 25;          // TypeScript infers: number
-let isActive = true;   // TypeScript infers: boolean
+let name = "John";           // TypeScript infers: string
+let age = 25;                // TypeScript infers: number
+let isActive = true;         // TypeScript infers: boolean
 
-name = 42; // Error! Type 'number' is not assignable to type 'string'
+// After inference, TypeScript enforces the type
+name = 42;  // Error! Type 'number' is not assignable to type 'string'
 \`\`\`
 
-> 💡 You don't always need to write types - TypeScript is smart!
+When to use explicit type vs inference:
+- Explicit: When the type is not clear from the value
+- Inference: When the type is obvious from the value (cleaner code)
 
 ## Arrays
 
+### Array with Specific Type
 \`\`\`typescript
-// Array of strings
+// Array of strings - can only contain strings
 let names: string[] = ["John", "Jane", "Bob"];
+names.push("Alice");  // OK
+names.push(123);      // Error!
 
 // Array of numbers
 let scores: number[] = [85, 90, 78];
-
-// Alternative syntax
-let names: Array<string> = ["John", "Jane"];
-
-// Mixed array (avoid if possible)
-let mixed: (string | number)[] = ["John", 25];
+scores.push(92);      // OK
+scores.push("A");     // Error!
 \`\`\`
 
-## Tuples
+### Alternative Syntax
+\`\`\`typescript
+// Both ways are equivalent:
+let names1: string[] = ["John"];
+let names2: Array<string> = ["John"];
+\`\`\`
 
-Fixed-length arrays with specific types:
+### Union Types (Multiple Types)
+\`\`\`typescript
+// Array that can contain string OR number
+let mixed: (string | number)[] = ["John", 25, "Jane", 30];
+
+// But avoid this if possible - less type-safe
+\`\`\`
+
+## Tuples (Fixed-Length Arrays)
+
+A tuple is an array with a fixed length and specific types at each position:
 
 \`\`\`typescript
-// [string, number]
+// Tuple: [string, number]
 let person: [string, number] = ["John", 25];
+
+// Access like a regular array
+console.log(person[0]);  // "John" (string)
+console.log(person[1]);  // 25 (number)
+
+// TypeScript knows the type at each position
+person[0].toUpperCase();  // OK - string method
+person[1].toFixed(2);     // OK - number method
+
+// Error - wrong type or position
+let wrong: [string, number] = [25, "John"];  // Reversed!
+let incomplete: [string, number] = ["John"];  // Missing number!
+\`\`\`
+
+### Tuple with Optional Elements
+\`\`\`typescript
+// Third element is optional
+let optional: [string, number, boolean?] = ["John", 25];
+let withThird: [string, number, boolean?] = ["John", 25, true];
+
+// Both are valid
+\`\`\`
+
+## Any - Escape Hatch (Avoid!)
+
+\`\`\`typescript
+let anything: any = "hello";
+anything = 42;              // OK
+anything = true;            // OK
+anything.foo.bar.baz();     // OK (but can error at runtime!)
+
+// Using 'any' defeats the purpose of TypeScript
+// Only use when absolutely necessary
+\`\`\`
+
+## Unknown - Safer Alternative to Any
+
+\`\`\`typescript
+let value: unknown = "hello";
+value = 42;                 // OK
+value = true;               // OK
+
+// But must check type before using
+if (typeof value === "string") {
+    console.log(value.toUpperCase());  // OK - TypeScript knows it's string
+}
+
+// Without check:
+console.log(value.toUpperCase());  // Error! value could be anything
+\`\`\`
+
+## Summary
+
+- string: Text data like "John" or 'hello'
+- number: Numeric values like 25, 3.14, or -10
+- boolean: true or false for conditions
+- null: Intentional absence of value
+- undefined: Variable not yet assigned
+- string[]: Array of strings like ["a", "b"]
+- [string, number]: Tuple with fixed structure like ["John", 25]
+- any: Avoid using - defeats TypeScript purpose
+- unknown: Safer alternative to any
 
 // Access like array
 console.log(person[0]); // "John"
@@ -195,22 +300,7 @@ Add type annotations to variables.
 <html><head><title>TypeScript Basics</title></head>
 <body><h1>TypeScript Types</h1><p>Check the TypeScript file</p></body>
 </html>` },
-                        { name: 'script.ts', language: 'typescript', content: `// Add type annotations to these variables
-
-let username = "John";
-let age = 25;
-let isStudent = true;
-let hobbies = ["coding", "gaming", "reading"];
-
-// This should cause an error after adding types:
-// username = 42;
-// age = "twenty-five";
-// isStudent = "yes";
-
-console.log(\`\${username} is \${age} years old\`);
-console.log(\`Student: \${isStudent}\`);
-console.log(\`Hobbies: \${hobbies.join(", ")}\`);
-` },
+                        { name: 'script.ts', language: 'typescript', content: `` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` }
                     ]
                 },
@@ -311,25 +401,6 @@ Add types to functions.
 <body><h1>Functions with Types</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Add types to these functions
-
-function add(a, b) {
-    return a + b;
-}
-
-// Add optional greeting parameter
-function greet(name) {
-    return "Hello, " + name;
-}
-
-// Add void return type
-function logMessage(msg) {
-    console.log(msg);
-}
-
-// Test
-console.log(add(5, 3));
-console.log(greet("ZeroCode"));
-logMessage("TypeScript is awesome!");
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -491,23 +562,6 @@ Create interfaces for a product catalog.
 <body><h1>Interfaces</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Create interfaces
-
-// Create Product interface
-// - readonly id: number
-// - name: string
-// - price: number
-// - description?: string (optional)
-
-
-// Create a product using the interface
-const laptop = {
-    id: 1,
-    name: "MacBook Pro",
-    price: 1999,
-    description: "Powerful laptop for developers"
-};
-
-console.log(\`\${laptop.name}: $\${laptop.price}\`);
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -613,39 +667,6 @@ Create type aliases for an e-commerce app.
 <body><h1>Type Aliases</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Create type aliases
-
-// Create Status union type: "pending" | "shipped" | "delivered"
-
-// Create OrderID type: string | number
-
-type Order = {
-    id: number;
-    product: string;
-    quantity: number;
-};
-
-type Customer = {
-    customerId: number;
-    name: string;
-    email: string;
-};
-
-// Create intersection type: OrderWithCustomer = Order & Customer
-
-// Use the types
-let orderId: OrderID = "ORD-001";
-let status: Status = "pending";
-
-const fullOrder: OrderWithCustomer = {
-    id: 1,
-    product: "Laptop",
-    quantity: 1,
-    customerId: 100,
-    name: "John",
-    email: "john@example.com"
-};
-
-console.log(\`Order \${orderId}: \${status}\`);
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -784,33 +805,6 @@ Create generic functions.
 <body><h1>Generic Functions</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Create generic functions
-
-// 1. Create identity function that returns what it receives
-function identity(value) {
-    return value;
-}
-
-// 2. Create getFirst that returns first element of any array
-function getFirst(arr) {
-    return arr[0];
-}
-
-// 3. Create merge that combines two objects
-function merge(a, b) {
-    return { ...a, ...b };
-}
-
-// 4. Create longest that returns the longer of two items with length
-function longest(a, b) {
-    return a.length >= b.length ? a : b;
-}
-
-// Test
-console.log(identity("hello"));
-console.log(identity(42));
-console.log(getFirst([1, 2, 3]));
-console.log(merge({ name: "John" }, { age: 25 }));
-console.log(longest("hello", "hi"));
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -935,40 +929,6 @@ Create generic interfaces and classes.
 <body><h1>Generic Interfaces & Classes</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Create generic interfaces and classes
-
-// 1. Create Result interface with generic data type
-
-
-// 2. Create Stack class with generic type
-class Stack {
-    private items = [];
-    
-    // 3. Add push method
-    push(item) {
-        this.items.push(item);
-    }
-    
-    // 4. Add pop method
-    pop() {
-        return this.items.pop();
-    }
-    
-    peek() {
-        return this.items[this.items.length - 1];
-    }
-}
-
-// Test
-const numberStack = new Stack<number>();
-numberStack.push(1);
-numberStack.push(2);
-numberStack.push(3);
-console.log(numberStack.pop()); // 3
-
-const stringStack = new Stack<string>();
-stringStack.push("a");
-stringStack.push("b");
-console.log(stringStack.peek()); // "b"
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -1111,33 +1071,6 @@ Use utility types to transform interfaces.
 <body><h1>Utility Types</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Practice Utility Types
-
-interface Product {
-    id: number;
-    name: string;
-    price: number;
-    description: string;
-    category: string;
-}
-
-// 1. Create UpdateProduct - all properties optional
-
-
-// 2. Create ProductPreview - only id and name
-
-
-// 3. Create ProductWithoutPrice - everything except price
-
-
-// 4. Create CategoryProducts - Record of category to products
-
-
-// Test
-const update: UpdateProduct = { price: 99 };
-const preview: ProductPreview = { id: 1, name: "Laptop" };
-
-console.log("Update:", update);
-console.log("Preview:", preview);
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -1275,41 +1208,6 @@ Implement type guards.
 <body><h1>Type Guards</h1></body>
 </html>` },
                         { name: 'script.ts', language: 'typescript', content: `// Practice Type Guards
-
-// 1. Use typeof guard
-function formatValue(value: string | number): string {
-    // Add typeof check here
-    return String(value);
-}
-
-interface Bird { fly(): void; }
-interface Fish { swim(): void; }
-
-// 2. Use 'in' operator guard
-function move(animal: Bird | Fish) {
-    // Add 'in' check here
-}
-
-interface Circle { kind: "circle"; radius: number; }
-interface Rectangle { kind: "rectangle"; width: number; height: number; }
-type Shape = Circle | Rectangle;
-
-// 3. Create custom type guard
-function isCircle(shape: Shape) {
-    return shape.kind === "circle";
-}
-
-// 4. Use discriminated union with switch
-function getArea(shape: Shape): number {
-    // Add switch statement here
-    return 0;
-}
-
-// Test
-console.log(formatValue("hello"));
-console.log(formatValue(42));
-console.log(getArea({ kind: "circle", radius: 5 }));
-console.log(getArea({ kind: "rectangle", width: 4, height: 3 }));
 ` },
                         { name: 'style.css', language: 'css', content: `` }
                     ]
@@ -1532,46 +1430,7 @@ Create typed React components.
 </html>` },
                         { name: 'App.tsx', language: 'typescript', content: `import React, { useState } from 'react';
 
-// 1. Create UserCardProps interface
-
-
-// 2. Create typed UserCard component
-function UserCard({ name, email }) {
-    return (
-        <div className="card">
-            <h2>{name}</h2>
-            <p>{email}</p>
-        </div>
-    );
-}
-
-// 3. Type the event handler
-function Button() {
-    const handleClick = (e) => {
-        console.log("Clicked!");
-    };
-    
-    return <button onClick={handleClick}>Click Me</button>;
-}
-
-// 4. Type useState
-interface User {
-    id: number;
-    name: string;
-}
-
-function App() {
-    const [user, setUser] = useState(null);
-    
-    return (
-        <div>
-            <UserCard name="John" email="john@example.com" />
-            <Button />
-        </div>
-    );
-}
-
-export default App;
+// Create typed React components
 ` },
                         { name: 'style.css', language: 'css', content: `.card { padding: 20px; border: 1px solid #ddd; border-radius: 8px; }` }
                     ]

@@ -5,9 +5,10 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
+    google_id VARCHAR(255) UNIQUE,
     subscription_tier VARCHAR(20) DEFAULT 'free',
     -- Tiers: 'free', 'beginner', 'intermediate', 'advanced', 'fullstack', 'admin'
     -- free: HTML, CSS, JS Basics only (demo)
@@ -17,6 +18,9 @@ CREATE TABLE IF NOT EXISTS users (
     -- fullstack: All courses (same as advanced but with discount)
     -- admin: Full access + admin dashboard
     is_admin BOOLEAN DEFAULT FALSE,
+    is_email_verified BOOLEAN DEFAULT FALSE,
+    email_verification_code VARCHAR(6),
+    email_verification_expires TIMESTAMP,
     subscription_date TIMESTAMP,
     joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

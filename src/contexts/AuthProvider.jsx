@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { sql } from '../lib/neon';
 import bcrypt from 'bcryptjs';
+import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail } from '../lib/emailService';
 
 const AuthContext = createContext({});
 
@@ -225,6 +226,146 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = async (googleToken) => {
+        try {
+            // Decode JWT token to get user info
+            const base64Url = googleToken.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            
+            const googleUser = JSON.parse(jsonPayload);
+            const { email, name, sub: googleId, picture } = googleUser;
+
+            // Check if user exists
+            let result = await sql`
+                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
+                FROM users WHERE email = ${email}
+            `;
+
+            let dbUser;
+            if (result.length === 0) {
+                // Create new user from Google
+                const verificationCode = generateVerificationCode();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+                const createResult = await sql`
+                    INSERT INTO users (email, name, google_id, subscription_tier, email_verification_code, email_verification_expires)
+                    VALUES (${email}, ${name}, ${googleId}, 'free', ${verificationCode}, ${expiresAt})
+                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
+                `;
+
+                dbUser = createResult[0];
+
+                // Send verification email
+                await sendVerificationEmail(email, verificationCode);
+            } else {
+                dbUser = result[0];
+                
+                // If not verified, send new verification code
+                if (!dbUser.is_email_verified) {
+                    const verificationCode = generateVerificationCode();
+                    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+                    await sql`
+                        UPDATE users
+                        SET email_verification_code = ${verificationCode}, email_verification_expires = ${expiresAt}
+                        WHERE id = ${dbUser.id}
+                    `;
+
+                    await sendVerificationEmail(email, verificationCode);
+                }
+            }
+
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
+
+            return { success: true, user: dbUser, needsVerification: !dbUser.is_email_verified };
+        } catch (error) {
+            console.error('Google login error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const verifyEmail = async (email, code) => {
+        try {
+            const result = await sql`
+                SELECT id, email_verification_code, email_verification_expires, is_email_verified
+                FROM users WHERE email = ${email}
+            `;
+
+            if (result.length === 0) {
+                return { success: false, error: 'User not found' };
+            }
+
+            const dbUser = result[0];
+
+            // Check if already verified
+            if (dbUser.is_email_verified) {
+                return { success: true, message: 'Email already verified' };
+            }
+
+            // Check if code matches
+            if (dbUser.email_verification_code !== code) {
+                return { success: false, error: 'Invalid verification code' };
+            }
+
+            // Check if code expired
+            if (new Date() > new Date(dbUser.email_verification_expires)) {
+                return { success: false, error: 'Verification code expired' };
+            }
+
+            // Mark as verified
+            const updateResult = await sql`
+                UPDATE users
+                SET is_email_verified = true, email_verification_code = NULL, email_verification_expires = NULL
+                WHERE email = ${email}
+                RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
+            `;
+
+            const verifiedUser = updateResult[0];
+            localStorage.setItem('zerocode_user', JSON.stringify(verifiedUser));
+            setUser(verifiedUser);
+
+            // Send welcome email
+            await sendWelcomeEmail(email, verifiedUser.name);
+
+            return { success: true, user: verifiedUser };
+        } catch (error) {
+            console.error('Verification error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const resendVerificationCode = async (email) => {
+        try {
+            const result = await sql`
+                SELECT id, name FROM users WHERE email = ${email}
+            `;
+
+            if (result.length === 0) {
+                return { success: false, error: 'User not found' };
+            }
+
+            const verificationCode = generateVerificationCode();
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+            await sql`
+                UPDATE users
+                SET email_verification_code = ${verificationCode}, email_verification_expires = ${expiresAt}
+                WHERE email = ${email}
+            `;
+
+            await sendVerificationEmail(email, verificationCode);
+
+            return { success: true, message: 'Verification code sent' };
+        } catch (error) {
+            console.error('Resend error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
     const value = {
         user,
         loading,
@@ -237,6 +378,9 @@ export const AuthProvider = ({ children }) => {
         verifyAdminCode,
         getAllUsers,
         updateUserSubscription,
+        loginWithGoogle,
+        verifyEmail,
+        resendVerificationCode,
         canAccessCourse: (courseId) => canAccessCourse(user?.subscription_tier, courseId),
         isAdmin: user?.is_admin || false,
         subscriptionTier: user?.subscription_tier || 'free',

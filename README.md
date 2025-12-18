@@ -1,127 +1,229 @@
-# ZeroCode
+# 🚀 ZeroCode - Learn to Code from Zero
 
-Learn to code from zero. A modern web development learning platform with interactive courses, hands-on projects, and a supportive community.
+**Platform pembelajaran coding interaktif dengan 16 kursus lengkap, editor kode live, dan komunitas support.**
 
-## Features
+> Dari HTML dasar sampai CI/CD DevOps - semua yang kamu butuh untuk jadi developer profesional!
 
-- **16 Courses** - From HTML basics to CI/CD, covering the full web development stack
-- **Interactive Learning** - Code editor with live preview, quizzes, and projects
-- **Progress Tracking** - Track your learning journey across all courses
-- **Subscription Tiers** - Free demo, Beginner, Intermediate, Advanced, and Fullstack packages
-- **Community Forum** - Ask questions, share knowledge, connect with learners
-- **Resource Library** - Curated docs, tools, tutorials, and cheatsheets
-- **Admin Dashboard** - Manage users and subscriptions
+---
 
-## Tech Stack
+## ✨ Fitur Utama
+
+### 📚 16 Kursus Lengkap
+- **Frontend**: HTML5, CSS3, JavaScript, React, TypeScript, Tailwind CSS
+- **Backend**: Node.js, Express, PHP, Python
+- **Database**: MySQL, MongoDB
+- **DevOps**: Git, CI/CD Pipeline
+- **Full-Stack**: Next.js, TypeScript, dan lebih banyak lagi
+
+### 💻 Interactive Code Editor
+- **Live Preview** - Lihat hasil code langsung saat kamu ketik
+- **Multi-file Support** - Edit HTML, CSS, JavaScript dalam satu tempat
+- **Python Support** - Run Python code langsung di browser (Pyodide)
+- **Real-time Validation** - Instant feedback untuk setiap task
+
+### 📊 Progress Tracking
+- Track pembelajaran di setiap kursus
+- Lihat persentase completion
+- Simpan progress otomatis
+- Resume dari mana terakhir kali belajar
+
+### 🎯 Hands-on Learning
+- **Lessons** - Penjelasan teori dengan contoh kode
+- **Projects** - Build real-world applications
+- **Quizzes** - Test pemahaman dengan soal interaktif
+- **Tasks** - Praktik langsung dengan auto-validation
+
+### 👥 Community Forum
+- Tanya jawab dengan learners lain
+- Share knowledge dan tips
+- Diskusi tentang coding challenges
+- Support dari admin dan mentor
+
+### 📖 Resource Library
+- Curated documentation links
+- Tools dan utilities recommendations
+- Tutorial videos dan articles
+- Cheatsheets untuk quick reference
+
+### 🎓 Structured Learning Path
+- **Beginner** - Dasar-dasar web development
+- **Intermediate** - Skill yang lebih advanced
+- **Advanced** - Professional-level expertise
+- **Fullstack** - Paket lengkap dengan diskon 20%
+
+---
+
+## 💰 Harga Terjangkau
+
+| Paket | Harga | Akses |
+|-------|-------|-------|
+| **Free** | Gratis | Demo courses (HTML, CSS, JS Basics) |
+| **Beginner** | Rp 50.000 | Semua beginner courses |
+| **Intermediate** | Rp 75.000 | Beginner + Intermediate courses |
+| **Advanced** | Rp 80.000 | Semua courses |
+| **Fullstack** | Rp 164.000 | Semua courses + 20% hemat |
+
+**Hubungi untuk pembelian:** [WhatsApp](https://wa.me/6281234567890)
+
+---
+
+## 🎓 Apa yang Akan Kamu Pelajari?
+
+### Beginner Track (New Recruit)
+✅ HTML5 - Struktur web  
+✅ CSS3 - Styling & layout  
+✅ JavaScript Basics - Logic & interactivity  
+✅ Git & GitHub - Version control  
+✅ Tailwind CSS - Utility-first CSS  
+
+### Intermediate Track (Systems Engineer)
+✅ DOM Manipulation - JavaScript advanced  
+✅ ES6+ Modern JavaScript - Arrow functions, async/await  
+✅ React.js - Build interactive UIs  
+✅ PHP - Backend programming  
+✅ MySQL - Database design  
+✅ Python - Scripting & automation  
+
+### Advanced Track (Lead Architect)
+✅ TypeScript - Type-safe JavaScript  
+✅ Node.js & Express - Backend framework  
+✅ MongoDB - NoSQL database  
+✅ Next.js - Full-stack React framework  
+✅ CI/CD & DevOps - Deployment & automation
+
+### 🚀 Coming Soon (Dalam Pengembangan)
+Kami terus menambah courses baru untuk memberikan pembelajaran yang lebih komprehensif:
+- 🔜 Vue.js - Progressive JavaScript framework
+- 🔜 Docker & Kubernetes - Container orchestration
+- 🔜 GraphQL - Modern API development
+- 🔜 AWS & Cloud Services - Cloud deployment
+- 🔜 Machine Learning dengan Python - AI & ML basics
+- 🔜 Mobile Development - React Native & Flutter
+- 🔜 Blockchain & Web3 - Cryptocurrency & smart contracts
+- 🔜 Dan banyak lagi...
+
+**Platform ini terus berkembang dengan konten baru setiap bulan!** 📈  
+
+---
+
+## 🌟 Keunggulan ZeroCode
+
+| Fitur | Benefit |
+|-------|---------|
+| **Live Code Editor** | Belajar sambil coding, lihat hasil langsung |
+| **Python Support** | Run Python di browser tanpa install |
+| **Real Projects** | Build aplikasi nyata, bukan hanya teori |
+| **Community** | Belajar bersama, saling support |
+| **Progress Tracking** | Motivasi dengan melihat progress |
+| **Affordable** | Harga terjangkau untuk semua kalangan |
+| **Responsive Design** | Belajar di desktop, tablet, atau mobile |
+| **Dark Theme** | Nyaman untuk mata saat belajar lama |
+
+---
+
+## 🚀 Cara Memulai
+
+### 1. Daftar Akun
+- Buka [ZeroCode](https://zerocode.vercel.app)
+- Klik "Register"
+- Isi email dan password
+
+### 2. Pilih Paket
+- Lihat pricing di landing page
+- Pilih paket sesuai kebutuhan
+- Hubungi admin untuk pembayaran
+
+### 3. Mulai Belajar
+- Akses semua courses sesuai paket
+- Pilih course yang ingin dipelajari
+- Ikuti lessons, projects, dan quizzes
+- Track progress di dashboard
+
+### 4. Bergabung Komunitas
+- Buka Forum untuk diskusi
+- Tanya jawab dengan learners lain
+- Share project dan tips
+
+---
+
+## 💡 Contoh Course
+
+### JavaScript Basics
+- **Unit 1**: Variables, Data Types, Operators
+- **Unit 2**: Control Flow (if/else, loops)
+- **Unit 3**: Functions & Scope
+- **Unit 4**: Arrays & Objects
+- **Unit 5**: DOM Manipulation
+- **Final Project**: Build a Todo App
+
+Setiap unit punya:
+- 📖 Penjelasan teori
+- 💻 Code examples
+- 🎯 Interactive tasks
+- 🧪 Quizzes
+- 🚀 Mini projects
+
+---
+
+## 🛠️ Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS
+- **Backend**: Node.js, Express
 - **Database**: Neon PostgreSQL (serverless)
-- **Auth**: Custom auth with bcrypt
-- **Deployment**: Vercel / GitHub Pages
+- **Auth**: JWT + bcrypt
+- **Code Execution**: Pyodide (Python), Monaco Editor
+- **Deployment**: Vercel
 
-## Courses
+---
 
-### Beginner (New Recruit)
-- HTML5 Fundamentals
-- CSS3 Styling
-- JavaScript Basics
-- Git & GitHub
-- Tailwind CSS
+## 📱 Responsive & User-Friendly
 
-### Intermediate (Systems Engineer)
-- DOM Manipulation
-- Modern JavaScript (ES6+)
-- React.js Fundamentals
-- PHP Backend
-- MySQL Database
-- Python Fundamentals
+- ✅ Desktop, tablet, mobile friendly
+- ✅ Dark theme untuk kenyamanan mata
+- ✅ Fast loading & smooth performance
+- ✅ Offline-ready (progress tersimpan)
+- ✅ Accessible untuk semua pengguna
 
-### Advanced (Lead Architect)
-- TypeScript
-- Node.js & Express
-- MongoDB
-- Next.js
-- CI/CD & DevOps
+---
 
-## Subscription Pricing
+## 🎯 Cocok Untuk
 
-| Tier | Price | Access |
-|------|-------|--------|
-| Free | Rp 0 | HTML, CSS, JS Basics (demo) |
-| Beginner | Rp 50,000 | All beginner courses |
-| Intermediate | Rp 75,000 | Beginner + Intermediate |
-| Advanced | Rp 80,000 | All courses |
-| Fullstack | Rp 164,000 | All courses (20% discount) |
+- 👨‍💻 Pemula yang ingin belajar coding
+- 🎓 Mahasiswa yang ingin skill praktis
+- 💼 Career changer yang ingin jadi developer
+- 🚀 Siapa saja yang ingin master web development
 
-## Setup
+---
 
-### Prerequisites
-- Node.js 18+
-- Neon PostgreSQL account
+## 📞 Hubungi Kami
 
-### Installation
+**Untuk pembelian atau pertanyaan:**
+- 📱 WhatsApp: [Klik di sini](https://wa.me/6281234567890)
+- 💬 Forum: Tanya di komunitas ZeroCode
+- 📧 Email: support@zerocode.id
 
-```bash
-# Clone repo
-git clone https://github.com/dkycdr/ZeroCode.git
-cd ZeroCode
+---
 
-# Install dependencies
-npm install
+## 🤝 Tim ZeroCode
 
-# Setup environment
-cp .env.example .env
-# Add your Neon database URL to .env
+- **Lead Developer** - Platform development & features
+- **Documentation Team** - Course content & materials
+- **Admin & Support** - User management & community support
 
-# Run database schema
-# Copy neon-schema.sql content to Neon SQL Editor and run
+---
 
-# Start dev server
-npm run dev
-```
+## 📄 License
 
-### Environment Variables
+MIT - Bebas digunakan untuk keperluan apapun
 
-```
-VITE_NEON_DATABASE_URL=postgresql://...
-```
+---
 
-## Admin Access
+## 🎉 Mulai Belajar Sekarang!
 
-1. Register a normal account
-2. Go to Profile → Click "Admin Access" link
-3. Enter secret code: `ZEROCODE2024`
-4. Or click ZeroCode logo 5 times quickly
+**Jangan tunda lagi!** Investasi terbaik adalah investasi pada diri sendiri.
 
-## Project Structure
+👉 [Daftar Gratis](https://zerocode.vercel.app) - Coba demo courses tanpa bayar!
 
-```
-src/
-├── components/     # Reusable UI components
-├── contexts/       # React contexts (Auth, Progress)
-├── data/
-│   └── courses/    # Course content files
-├── lib/            # Database connection
-├── pages/          # Page components
-└── utils/          # Helper functions
-```
+---
 
-## Deployment
-
-### Vercel
-1. Connect GitHub repo to Vercel
-2. Add `VITE_NEON_DATABASE_URL` to environment variables
-3. Deploy
-
-### GitHub Pages
-Push to main branch - GitHub Actions will auto-deploy
-
-## Team
-
-- **Lead Developer** - Building the platform
-- **Documentation** - Course content and docs
-- **Admin & Support** - User management and support
-
-## License
-
-MIT
+*ZeroCode - Learn to Code from Zero. Dari nol menjadi hero! 🚀*
