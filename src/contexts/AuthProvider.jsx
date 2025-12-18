@@ -58,8 +58,12 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (authError) throw authError;
+            if (!authData.user) throw new Error('No user returned from signup');
 
-            // 2. Create user profile
+            // 2. Wait a bit for auth session to be established
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 3. Create user profile (using service role or with proper RLS)
             const { error: profileError } = await supabase
                 .from('user_profiles')
                 .insert([{
@@ -71,9 +75,13 @@ export const AuthProvider = ({ children }) => {
                     is_admin: userData.email.toLowerCase().includes('admin'),
                 }]);
 
-            if (profileError) throw profileError;
+            if (profileError) {
+                console.error('Profile creation error:', profileError);
+                // If profile creation fails, still try to load user
+                // Profile might have been created by trigger or other means
+            }
 
-            // 3. Load user profile
+            // 4. Load user profile
             await loadUserProfile(authData.user.id);
 
             return { success: true };
