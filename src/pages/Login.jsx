@@ -52,26 +52,14 @@ export default function Login() {
         const adminPassword = 'admin123';
 
         try {
-            // Try to login first
+            // Try to login first (admin should already exist in database)
             const loginResult = await login(adminEmail, adminPassword);
             
             if (loginResult.success) {
                 navigate('/dashboard');
-                return;
-            }
-
-            // If login fails, try to register
-            const registerResult = await register({
-                name: 'Admin',
-                email: adminEmail,
-                major: 'Administrator',
-                studentId: 'ADMIN001',
-            }, adminPassword);
-
-            if (registerResult.success) {
-                navigate('/dashboard');
             } else {
-                setError('Failed to create admin account. Try registering manually with email containing "admin".');
+                // If login fails, show error
+                setError('Admin login failed. Admin account should exist in database. Error: ' + (loginResult.error || 'Unknown error'));
             }
         } catch (err) {
             setError('Admin login failed. Try registering with email: admin@test.com');

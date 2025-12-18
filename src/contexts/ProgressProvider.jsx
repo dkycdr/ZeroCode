@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
-import { supabase } from '../lib/supabase';
+import { sql } from '../lib/neon';
 
 const ProgressContext = createContext({});
 
@@ -27,22 +27,18 @@ export const ProgressProvider = ({ children }) => {
 
         try {
             // Load completed courses
-            const { data: courses, error: coursesError } = await supabase
-                .from('course_progress')
-                .select('course_id')
-                .eq('user_id', user.id)
-                .eq('completed', true);
-
-            if (coursesError) throw coursesError;
+            const courses = await sql`
+                SELECT course_id 
+                FROM course_progress 
+                WHERE user_id = ${user.id} AND completed = true
+            `;
 
             // Load completed items
-            const { data: items, error: itemsError } = await supabase
-                .from('item_progress')
-                .select('item_id')
-                .eq('user_id', user.id)
-                .eq('completed', true);
-
-            if (itemsError) throw itemsError;
+            const items = await sql`
+                SELECT item_id 
+                FROM item_progress 
+                WHERE user_id = ${user.id} AND completed = true
+            `;
 
             setCompletedCourses(courses.map(c => c.course_id));
             setCompletedItems(items.map(i => i.item_id));
@@ -57,18 +53,12 @@ export const ProgressProvider = ({ children }) => {
         if (!user) return;
 
         try {
-            const { error } = await supabase
-                .from('course_progress')
-                .upsert({
-                    user_id: user.id,
-                    course_id: courseId,
-                    completed: true,
-                    completed_at: new Date().toISOString(),
-                }, {
-                    onConflict: 'user_id,course_id'
-                });
-
-            if (error) throw error;
+            await sql`
+                INSERT INTO course_progress (user_id, course_id, completed, completed_at)
+                VALUES (${user.id}, ${courseId}, true, NOW())
+                ON CONFLICT (user_id, course_id) 
+                DO UPDATE SET completed = true, completed_at = NOW()
+            `;
 
             setCompletedCourses([...new Set([...completedCourses, courseId])]);
         } catch (error) {
@@ -80,20 +70,12 @@ export const ProgressProvider = ({ children }) => {
         if (!user) return;
 
         try {
-            const { error } = await supabase
-                .from('item_progress')
-                .upsert({
-                    user_id: user.id,
-                    item_id: itemId,
-                    course_id: courseId,
-                    unit_id: unitId,
-                    completed: true,
-                    completed_at: new Date().toISOString(),
-                }, {
-                    onConflict: 'user_id,item_id'
-                });
-
-            if (error) throw error;
+            await sql`
+                INSERT INTO item_progress (user_id, item_id, course_id, unit_id, completed, completed_at)
+                VALUES (${user.id}, ${itemId}, ${courseId}, ${unitId}, true, NOW())
+                ON CONFLICT (user_id, item_id) 
+                DO UPDATE SET completed = true, completed_at = NOW()
+            `;
 
             setCompletedItems([...new Set([...completedItems, itemId])]);
         } catch (error) {
@@ -117,10 +99,9 @@ export const ProgressProvider = ({ children }) => {
         if (!user) return;
 
         try {
-            // Delete all progress for user
-            await supabase.from('course_progress').delete().eq('user_id', user.id);
-            await supabase.from('item_progress').delete().eq('user_id', user.id);
-            await supabase.from('task_progress').delete().eq('user_id', user.id);
+            await sql`DELETE FROM course_progress WHERE user_id = ${user.id}`;
+            await sql`DELETE FROM item_progress WHERE user_id = ${user.id}`;
+            await sql`DELETE FROM task_progress WHERE user_id = ${user.id}`;
 
             setCompletedCourses([]);
             setCompletedItems([]);

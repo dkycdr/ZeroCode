@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { sql } from '../lib/neon';
+import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext({});
 
@@ -10,97 +11,80 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check current session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                loadUserProfile(session.user.id);
-            } else {
-                setLoading(false);
-            }
-        });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                loadUserProfile(session.user.id);
-            } else {
-                setUser(null);
-                setLoading(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
-
-    const loadUserProfile = async (userId) => {
-        try {
-            const { data, error } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
-
-            if (error) throw error;
-            setUser(data);
-        } catch (error) {
-            console.error('Error loading profile:', error);
-        } finally {
-            setLoading(false);
+        // Check if user is logged in (from localStorage session)
+        const sessionUser = localStorage.getItem('pulse_user');
+        if (sessionUser) {
+            setUser(JSON.parse(sessionUser));
         }
-    };
+        setLoading(false);
+    }, []);
 
     const register = async (userData, password) => {
         try {
-            // 1. Sign up with Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: userData.email,
-                password: password,
-            });
+            // Hash password
+            const passwordHash = await bcrypt.hash(password, 10);
+            
+            // Check if admin email
+            const isAdmin = userData.email.toLowerCase().includes('admin');
 
-            if (authError) throw authError;
-            if (!authData.user) throw new Error('No user returned from signup');
+            // Insert user into database
+            const result = await sql`
+                INSERT INTO users (email, password_hash, name, major, student_id, is_admin)
+                VALUES (
+                    ${userData.email},
+                    ${passwordHash},
+                    ${userData.name},
+                    ${userData.major},
+                    ${userData.studentId},
+                    ${isAdmin}
+                )
+                RETURNING id, email, name, major, student_id, is_admin, joined_date
+            `;
 
-            // 2. Wait a bit for auth session to be established
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // 3. Create user profile (using service role or with proper RLS)
-            const { error: profileError } = await supabase
-                .from('user_profiles')
-                .insert([{
-                    id: authData.user.id,
-                    name: userData.name,
-                    email: userData.email,
-                    major: userData.major,
-                    student_id: userData.studentId,
-                    is_admin: userData.email.toLowerCase().includes('admin'),
-                }]);
-
-            if (profileError) {
-                console.error('Profile creation error:', profileError);
-                // If profile creation fails, still try to load user
-                // Profile might have been created by trigger or other means
-            }
-
-            // 4. Load user profile
-            await loadUserProfile(authData.user.id);
+            const newUser = result[0];
+            
+            // Save to localStorage
+            localStorage.setItem('pulse_user', JSON.stringify(newUser));
+            setUser(newUser);
 
             return { success: true };
         } catch (error) {
             console.error('Registration error:', error);
+            if (error.message.includes('duplicate key')) {
+                return { success: false, error: 'Email already registered' };
+            }
             return { success: false, error: error.message };
         }
     };
 
     const login = async (email, password) => {
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+            // Get user from database
+            const result = await sql`
+                SELECT id, email, password_hash, name, major, student_id, is_admin, joined_date
+                FROM users
+                WHERE email = ${email}
+            `;
 
-            if (error) throw error;
+            if (result.length === 0) {
+                return { success: false, error: 'User not found' };
+            }
 
-            await loadUserProfile(data.user.id);
+            const dbUser = result[0];
+
+            // Verify password
+            const isValid = await bcrypt.compare(password, dbUser.password_hash);
+            if (!isValid) {
+                return { success: false, error: 'Invalid password' };
+            }
+
+            // Remove password_hash from user object
+            const { password_hash, ...userWithoutPassword } = dbUser;
+
+            // Save to localStorage
+            localStorage.setItem('pulse_user', JSON.stringify(userWithoutPassword));
+            setUser(userWithoutPassword);
+
             return { success: true };
         } catch (error) {
             console.error('Login error:', error);
@@ -109,20 +93,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        await supabase.auth.signOut();
+        localStorage.removeItem('pulse_user');
         setUser(null);
     };
 
     const updateUser = async (updates) => {
         try {
-            const { error } = await supabase
-                .from('user_profiles')
-                .update(updates)
-                .eq('id', user.id);
+            const result = await sql`
+                UPDATE users
+                SET 
+                    name = ${updates.name || user.name},
+                    major = ${updates.major || user.major},
+                    student_id = ${updates.student_id || user.student_id}
+                WHERE id = ${user.id}
+                RETURNING id, email, name, major, student_id, is_admin, joined_date
+            `;
 
-            if (error) throw error;
+            const updatedUser = result[0];
+            localStorage.setItem('pulse_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
 
-            setUser({ ...user, ...updates });
             return { success: true };
         } catch (error) {
             console.error('Update error:', error);
@@ -137,7 +127,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateUser,
-        // Legacy support
         signOut: logout,
     };
 
