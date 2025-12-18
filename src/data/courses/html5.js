@@ -38,14 +38,13 @@ That's it! HTML is just **labeling** different parts of your content.
 
 ## Real Example
 
-### What You Want to Show:
-```
-My First Website
-Welcome to my page!
-This is my first website.
-```
+**What You Want to Show:**
+- My First Website
+- Welcome to my page!
+- This is my first website.
 
-### How You Write it in HTML:
+**How You Write it in HTML:**
+
 \`\`\`html
 <h1>My First Website</h1>
 <p>Welcome to my page!</p>

@@ -19,7 +19,33 @@ This creates:
 - ✅ Row Level Security (RLS) policies
 - ✅ Triggers for timestamps
 
-## ✅ Step 2: Verify Tables
+## ✅ Step 2: Fix RLS Policies (IMPORTANT!)
+
+**You MUST run this to fix registration errors!**
+
+1. Still in **SQL Editor**
+2. Click **New Query**
+3. Copy ALL content from `fix-rls-policy.sql`
+4. Paste into SQL Editor
+5. Click **Run**
+6. Wait for success message
+
+This fixes the "new row violates row-level security policy" error!
+
+## ✅ Step 3: Disable Email Confirmation (IMPORTANT!)
+
+**You MUST do this or you can't login after registration!**
+
+1. Go to **Authentication** (left sidebar)
+2. Click **Providers**
+3. Find **Email** provider
+4. Click to expand settings
+5. **UNCHECK** "Confirm email"
+6. Click **Save**
+
+Now users can login immediately after registration!
+
+## ✅ Step 4: Verify Tables
 
 1. Click **Table Editor** (left sidebar)
 2. You should see 4 tables:
@@ -28,7 +54,7 @@ This creates:
    - `item_progress`
    - `task_progress`
 
-## ✅ Step 3: Test Registration
+## ✅ Step 5: Test Registration
 
 1. Run your app: `npm run dev`
 2. Go to Register page
@@ -146,25 +172,52 @@ All tables have RLS enabled:
 
 ## 🐛 Troubleshooting
 
-### "Failed to fetch" error
+### ❌ "new row violates row-level security policy"
+**SOLUTION**: Run `fix-rls-policy.sql` in SQL Editor!
+1. Go to SQL Editor
+2. Copy content from `fix-rls-policy.sql`
+3. Run it
+4. Try registration again
+
+### ❌ "Email rate limit exceeded" (429 error)
+**SOLUTION**: Wait 1 hour or change network/IP
+- Supabase has rate limit for auth operations
+- Too many registration attempts = temporary block
+- Wait 1 hour or try from different network
+- Or use "Login as Admin" button instead
+
+### ❌ Can't login after registration
+**SOLUTION**: Disable email confirmation!
+1. Go to **Authentication** → **Providers** → **Email**
+2. Uncheck "Confirm email"
+3. Save
+4. Try registration again
+
+### ❌ "Failed to fetch" error
 - Check your internet connection
 - Verify Supabase project is running
 - Check `.env` file has correct credentials
 
-### "User not found" after registration
+### ❌ "User not found" after registration
 - Check **Authentication** → **Users** in Supabase
-- Verify email confirmation is disabled (for testing)
+- Verify email confirmation is disabled
 - Check browser console for errors
+- Make sure `fix-rls-policy.sql` was run
 
-### Progress not saving
+### ❌ Progress not saving
 - Check browser console for errors
 - Verify RLS policies are set correctly
 - Check user is logged in (`user` object exists)
 
-### Admin not working
+### ❌ Admin not working
 - Check `is_admin` field in `user_profiles` table
 - Verify email contains "admin"
 - Try logging out and back in
+
+### ❌ 406 Not Acceptable error
+- Already fixed in latest code
+- Make sure you're using latest `src/lib/supabase.js`
+- Clear browser cache and try again
 
 ## 📞 Support
 

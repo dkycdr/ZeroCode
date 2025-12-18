@@ -1,283 +1,264 @@
-# Database Status - PULSE
+# 📊 Database Status - Neon PostgreSQL
 
-## 🔴 Current Status: localStorage Only
-
-PULSE currently uses **browser localStorage** for all data storage. There is **NO backend database** yet.
-
----
-
-## 📦 What's Stored in localStorage
-
-### 1. User Accounts
-- **Key**: `pulse_users`
-- **Type**: Array of user objects
-- **Contains**: 
-  - name
-  - email
-  - major
-  - studentId
-  - passwordHash (bcrypt)
-  - joinedDate
-  - isAdmin (optional)
-
-### 2. Current Session
-- **Key**: `pulse_user`
-- **Type**: Single user object
-- **Contains**: Current logged-in user (without passwordHash)
-
-### 3. Progress Data (Per User)
-- **Key**: `pulse_progress_courses_{email}`
-- **Type**: Array of completed course IDs
-- **Example**: `["html5", "css3", "js-basics"]`
-
-- **Key**: `pulse_progress_items_{email}`
-- **Type**: Array of completed item IDs
-- **Example**: `["html5-1-1", "html5-1-2", "html5-1-quiz", ...]`
+**Last Updated**: December 18, 2024  
+**Status**: ✅ Ready for Setup  
+**Database**: Neon PostgreSQL
 
 ---
 
-## ⚠️ Limitations of localStorage
+## 🎯 Current Status: NEON POSTGRESQL
 
-### Security Issues
-- ❌ Data is NOT encrypted
-- ❌ Accessible via browser DevTools
-- ❌ Vulnerable to XSS attacks
-- ❌ Password hashes visible in localStorage
+### ✅ Completed:
+- [x] Installed @neondatabase/serverless
+- [x] Installed bcryptjs for password hashing
+- [x] Created neon-schema.sql
+- [x] Updated AuthProvider for Neon
+- [x] Updated ProgressProvider for Neon
+- [x] Created NEON_SETUP.md guide
+- [x] Admin detection working (email contains "admin")
+- [x] "Login as Admin" button ready
 
-### Functionality Issues
-- ❌ No sync across devices
-- ❌ No sync across browsers
-- ❌ Data lost if browser cache cleared
-- ❌ 5-10MB storage limit
-- ❌ No real-time updates
-- ❌ No backup/recovery
-
-### Multi-user Issues
-- ❌ All data stored on client
-- ❌ No centralized user management
-- ❌ No admin dashboard
-- ❌ No analytics/reporting
+### 🔄 Pending (User Action Required):
+- [ ] Create Neon account at https://neon.tech
+- [ ] Create new project
+- [ ] Copy connection string to .env
+- [ ] Run neon-schema.sql in SQL Editor
+- [ ] Test login
 
 ---
 
-## ✅ What Works
+## 📋 Setup Instructions
 
-Despite using localStorage, these features work:
-- ✅ User registration and login
-- ✅ Password encryption (bcrypt)
-- ✅ Progress tracking per user
-- ✅ Course completion tracking
-- ✅ Multiple user accounts
-- ✅ Session persistence (until logout)
+### Step 1: Create Neon Account
+1. Go to https://neon.tech
+2. Sign up (GitHub recommended)
+3. Create new project: "pulse-db"
+4. Select region: AWS / US East (Ohio)
 
----
+### Step 2: Get Connection String
+1. After project created, copy **Pooled connection** string
+2. Format: `postgresql://username:password@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require`
 
-## 🚀 Future: Supabase Integration (TODO)
+### Step 3: Update .env
+```env
+VITE_NEON_DATABASE_URL=postgresql://your_connection_string_here
+```
 
-### Planned Features
+### Step 4: Run Schema
+1. Open Neon dashboard
+2. Click **SQL Editor**
+3. Copy ALL content from `neon-schema.sql`
+4. Paste and Run
+5. Wait for success message
 
-#### Phase 1: Basic Backend
-- [ ] Supabase project setup
-- [ ] User authentication (Supabase Auth)
-- [ ] User profiles table
-- [ ] Progress tracking table
-- [ ] Migrate localStorage data to Supabase
-
-#### Phase 2: Enhanced Features
-- [ ] Real-time progress sync
-- [ ] Cross-device sync
-- [ ] OAuth login (Google, GitHub)
-- [ ] Password reset via email
-- [ ] Email verification
-
-#### Phase 3: Admin Features
-- [ ] Admin dashboard
-- [ ] User management
-- [ ] Analytics and reporting
-- [ ] Course management
-- [ ] Content updates
-
-#### Phase 4: Advanced Features
-- [ ] Discussion forums
-- [ ] Code sharing
-- [ ] Peer review
-- [ ] Leaderboards
-- [ ] Certificates
-
----
-
-## 🔧 Migration Plan
-
-### Step 1: Setup Supabase
+### Step 5: Test
 ```bash
-# Install Supabase client
-npm install @supabase/supabase-js
-
-# Create .env file
-VITE_SUPABASE_URL=your-project-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
+npm run dev
 ```
+Then click "Login as Admin" button!
 
-### Step 2: Create Tables
+---
+
+## 🗄️ Database Schema
+
+### Table: users
 ```sql
--- Users table (handled by Supabase Auth)
--- Additional user_profiles table
-CREATE TABLE user_profiles (
-  id UUID REFERENCES auth.users PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  major TEXT,
-  student_id TEXT,
-  joined_date TIMESTAMP DEFAULT NOW()
-);
-
--- Progress table
-CREATE TABLE progress (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
-  course_id TEXT NOT NULL,
-  item_id TEXT NOT NULL,
-  completed BOOLEAN DEFAULT FALSE,
-  completed_at TIMESTAMP,
-  UNIQUE(user_id, item_id)
-);
-
--- Course completions
-CREATE TABLE course_completions (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users NOT NULL,
-  course_id TEXT NOT NULL,
-  completed_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(user_id, course_id)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    major VARCHAR(100),
+    student_id VARCHAR(50),
+    is_admin BOOLEAN DEFAULT FALSE,
+    joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### Step 3: Update Contexts
-- Update `AuthProvider.jsx` to use Supabase Auth
-- Update `ProgressProvider.jsx` to use Supabase tables
-- Keep localStorage as fallback for offline mode
+### Table: course_progress
+```sql
+CREATE TABLE course_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    course_id VARCHAR(50) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, course_id)
+);
+```
 
-### Step 4: Data Migration
-- Create migration script to move localStorage data to Supabase
-- Provide UI for users to migrate their data
-- Keep both systems running during transition
+### Table: item_progress
+```sql
+CREATE TABLE item_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    course_id VARCHAR(50) NOT NULL,
+    unit_id VARCHAR(50) NOT NULL,
+    item_id VARCHAR(100) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    quiz_score INTEGER,
+    code_html TEXT,
+    code_css TEXT,
+    code_javascript TEXT,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, item_id)
+);
+```
+
+### Table: task_progress
+```sql
+CREATE TABLE task_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    item_id VARCHAR(100) NOT NULL,
+    task_id INTEGER NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, item_id, task_id)
+);
+```
 
 ---
 
-## 📝 Current Workarounds
+## 🔐 Authentication
 
-### For Development/Testing
-1. **Admin Accounts**: Use `admin1@gmail.com`, `admin2@gmail.com`, `admin3@gmail.com`
-2. **Admin Bypass**: Admin emails automatically unlock all courses
-3. **Progress Script**: Use `setup-admin-progress.js` to set 100% completion
+### Method: bcrypt + PostgreSQL
+- Password hashing: bcrypt (10 rounds)
+- Session: localStorage
+- Admin detection: email contains "admin"
 
-### For Production (When Ready)
-1. **Backup Data**: Export localStorage to JSON before clearing
-2. **User Migration**: Provide migration tool for existing users
-3. **Gradual Rollout**: Test with small group first
+### Default Admin Account
+```
+Email: admin@pulse.dev
+Password: admin123
+```
 
----
-
-## 🎯 Why localStorage for Now?
-
-### Pros
-- ✅ Zero setup required
-- ✅ No hosting costs
-- ✅ Fast development
-- ✅ Works offline
-- ✅ No API calls needed
-- ✅ Perfect for prototyping
-
-### Cons
-- ❌ Not production-ready
-- ❌ No real database features
-- ❌ Limited scalability
-- ❌ Security concerns
+Auto-created by neon-schema.sql!
 
 ---
 
-## 🔐 Admin Account Detection
+## 🎯 Features
 
-Admin accounts are detected by email pattern:
-```javascript
-// In curriculumStructure.js
-if (userEmail && userEmail.startsWith('admin') && userEmail.includes('@gmail.com')) {
-    return true; // Unlock all courses
+### ✅ Working:
+- User registration
+- User login with password verification
+- Password hashing (bcrypt)
+- Admin auto-detection
+- Progress tracking per user
+- Course completion tracking
+- Item completion tracking
+- Task completion tracking
+- Sync across devices
+- "Login as Admin" button
+
+### 🔒 Security:
+- Passwords hashed with bcrypt
+- SQL injection protected (parameterized queries)
+- Foreign key constraints
+- Unique constraints on email
+- Cascade delete on user removal
+
+---
+
+## 📦 Dependencies
+
+```json
+{
+  "@neondatabase/serverless": "^1.0.2",
+  "bcryptjs": "^3.0.3"
 }
 ```
 
-**Admin emails that work:**
-- `admin1@gmail.com`
-- `admin2@gmail.com`
-- `admin3@gmail.com`
-- `admin{anything}@gmail.com`
+Both already installed! ✅
 
 ---
 
-## 📊 Storage Usage
+## 🚀 Deployment (Vercel)
 
-Typical storage per user:
-- User account: ~500 bytes
-- Progress data: ~2-5 KB (depends on completion)
-- Session data: ~300 bytes
-
-**Total for 100 users**: ~500 KB (well within 5MB limit)
-
----
-
-## 🚨 Important Notes
-
-### For Students
-- ⚠️ Don't clear browser cache or you'll lose progress
-- ⚠️ Use same browser and device
-- ⚠️ Bookmark the site for easy access
-- ⚠️ Complete courses in one sitting if possible
-
-### For Developers
-- ⚠️ This is NOT production-ready
-- ⚠️ Migrate to Supabase before deploying
-- ⚠️ Don't store sensitive data in localStorage
-- ⚠️ Always hash passwords (we use bcrypt)
-
-### For Admins
-- ⚠️ No centralized user management
-- ⚠️ No way to reset user passwords
-- ⚠️ No analytics or reporting
-- ⚠️ Manual user support required
-
----
-
-## 📞 Questions?
-
-**Q: When will Supabase be integrated?**
-A: It's on the roadmap but no ETA yet. localStorage works fine for development and small-scale testing.
-
-**Q: Will my data be lost when migrating to Supabase?**
-A: No, we'll provide a migration tool to transfer your localStorage data to Supabase.
-
-**Q: Can I use this in production?**
-A: Not recommended. localStorage is fine for prototypes and small-scale testing, but use a real database for production.
-
-**Q: How do I backup my data?**
-A: Open browser console and run:
-```javascript
-const backup = {
-  users: localStorage.getItem('pulse_users'),
-  currentUser: localStorage.getItem('pulse_user'),
-  progress: {}
-};
-// Get all progress keys
-Object.keys(localStorage).forEach(key => {
-  if (key.startsWith('pulse_progress_')) {
-    backup.progress[key] = localStorage.getItem(key);
-  }
-});
-console.log(JSON.stringify(backup));
-// Copy the output and save to a file
+### Environment Variables:
+```env
+VITE_NEON_DATABASE_URL=postgresql://...
 ```
 
+### Steps:
+1. Push to GitHub
+2. Import to Vercel
+3. Add environment variable
+4. Deploy!
+
 ---
 
-**Last Updated**: December 2024
-**Status**: Development / Prototype
-**Database**: localStorage (Supabase TODO)
+## 🎉 Why Neon?
+
+### vs Supabase:
+- ✅ No RLS complications
+- ✅ No rate limits
+- ✅ No email confirmation
+- ✅ Simple connection string
+- ✅ Pure PostgreSQL
+- ✅ Perfect for prototype
+
+### vs localStorage:
+- ✅ Sync across devices
+- ✅ Real database
+- ✅ Secure authentication
+- ✅ Scalable
+- ✅ Production-ready
+
+---
+
+## � Fioles
+
+### Core Files:
+- `src/lib/neon.js` - Database client
+- `src/contexts/AuthProvider.jsx` - Authentication
+- `src/contexts/ProgressProvider.jsx` - Progress tracking
+- `neon-schema.sql` - Database schema
+- `.env` - Connection string
+
+### Documentation:
+- `NEON_SETUP.md` - Setup guide
+- `MIGRATION_TO_NEON.md` - Migration details
+- `DATABASE_STATUS.md` - This file
+
+### Deprecated (not used):
+- `src/lib/supabase.js`
+- `supabase-schema.sql`
+- `fix-rls-policy.sql`
+- `SUPABASE_SETUP.md`
+- `QUICK_FIX.md`
+
+---
+
+## ❓ Troubleshooting
+
+### Connection Error
+- Check .env has correct connection string
+- Format must include `?sslmode=require`
+- Test connection in Neon dashboard
+
+### Table Not Found
+- Run neon-schema.sql in SQL Editor
+- Check Tables tab in dashboard
+- Verify all 4 tables exist
+
+### Admin Not Working
+- Check users table has admin@pulse.dev
+- Or register with email containing "admin"
+- Check is_admin column is TRUE
+
+### Login Failed
+- Check password is correct
+- bcrypt comparison is case-sensitive
+- Default admin password: admin123
+
+---
+
+**Next Step**: Follow NEON_SETUP.md to complete setup! 🚀
