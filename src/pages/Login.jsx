@@ -48,37 +48,33 @@ export default function Login() {
         setError('');
         setIsLoading(true);
 
-        try {
-            // Check if admin already exists
-            const users = JSON.parse(localStorage.getItem('pulse_users') || '[]');
-            const adminExists = users.find(u => u.email === 'admin@pulse.dev');
+        const adminEmail = 'admin@pulse.dev';
+        const adminPassword = 'admin123';
 
-            if (!adminExists) {
-                // Create admin account
-                const result = await register({
-                    name: 'Admin',
-                    email: 'admin@pulse.dev',
-                    major: 'Administrator',
-                    studentId: 'ADMIN001',
-                    joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                }, 'admin123');
-                
-                if (result.success) {
-                    navigate('/dashboard');
-                } else {
-                    setError('Failed to create admin account');
-                }
+        try {
+            // Try to login first
+            const loginResult = await login(adminEmail, adminPassword);
+            
+            if (loginResult.success) {
+                navigate('/dashboard');
+                return;
+            }
+
+            // If login fails, try to register
+            const registerResult = await register({
+                name: 'Admin',
+                email: adminEmail,
+                major: 'Administrator',
+                studentId: 'ADMIN001',
+            }, adminPassword);
+
+            if (registerResult.success) {
+                navigate('/dashboard');
             } else {
-                // Login with existing admin
-                const result = await login('admin@pulse.dev', 'admin123');
-                if (result.success) {
-                    navigate('/dashboard');
-                } else {
-                    setError('Admin login failed');
-                }
+                setError('Failed to create admin account. Try registering manually with email containing "admin".');
             }
         } catch (err) {
-            setError('Failed to create/login admin account');
+            setError('Admin login failed. Try registering with email: admin@test.com');
             console.error(err);
         } finally {
             setIsLoading(false);
