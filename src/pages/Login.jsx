@@ -82,7 +82,7 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex overflow-hidden">
+        <div className="h-screen flex">
             {/* Left Side - Form */}
             <motion.div 
                 initial={{ opacity: 0, x: -50 }}
