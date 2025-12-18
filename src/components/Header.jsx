@@ -61,6 +61,12 @@ export default function Header({ progress }) {
                     >
                         Forum
                     </Link>
+                    <Link 
+                        to="/leaderboard" 
+                        className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        Leaderboard
+                    </Link>
                 </nav>
             </div>
 
