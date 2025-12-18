@@ -67,6 +67,14 @@ export default function EditorComponent({ files, activeFile, onFileChange, onCod
                     defaultValue={files.find(f => f.name === activeFile)?.content || ''}
                     value={files.find(f => f.name === activeFile)?.content || ''}
                     onChange={handleEditorChange}
+                    loading={
+                        <div className="h-full flex items-center justify-center bg-[#0a192f] text-gray-400">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                                <p>Loading Editor...</p>
+                            </div>
+                        </div>
+                    }
                     options={{
                         // Disable all hints/suggestions as requested
                         quickSuggestions: false,
