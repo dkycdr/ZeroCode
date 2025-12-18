@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'react-resizable-panels';
 import InstructionPane from '../components/InstructionPane';
@@ -9,7 +9,7 @@ import InformationalPane from '../components/InformationalPane';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useProgress } from '../contexts/ProgressProvider';
-import { getItem, getNextItem, getPrevItem, getCourseProgress, CONTENT_TYPES } from '../data/courses/index';
+import { getItem, getNextItem, getCourseProgress, CONTENT_TYPES } from '../data/courses/index';
 import { evaluateCode } from '../utils/validator';
 import confetti from 'canvas-confetti';
 
@@ -33,20 +33,16 @@ export default function LearningLayout() {
         const currentItem = getItem(courseId, itemId);
         if (currentItem) {
             setItem(currentItem);
-            
-            // Set up files for lessons/projects
             if (currentItem.type === CONTENT_TYPES.LESSON || currentItem.type === CONTENT_TYPES.PROJECT) {
                 const itemFiles = currentItem.files || currentItem.starterFiles || [];
                 setFiles(itemFiles.map(f => ({ ...f })));
                 setActiveFile(itemFiles[0]?.name || 'index.html');
                 setTasks(currentItem.tasks?.map(t => ({ ...t, completed: false })) || []);
             }
-            
             setCompiledCode('');
             setConsoleLogs([]);
             setProgress(0);
         } else {
-            // If no itemId, redirect to syllabus
             navigate(`/course/${courseId}`);
         }
     }, [courseId, itemId, navigate]);
@@ -67,29 +63,22 @@ export default function LearningLayout() {
     }, []);
 
     const handleNext = () => {
-        // Mark current item as complete
         markItemComplete(itemId);
-        
         const next = getNextItem(courseId, itemId);
         if (next) {
             navigate(`/learn/${courseId}/${next.id}`);
         } else {
-            // Course complete
             navigate(`/course/${courseId}`);
-        }
-    };
-
-    const handlePrev = () => {
-        const prev = getPrevItem(courseId, itemId);
-        if (prev) {
-            navigate(`/learn/${courseId}/${prev.id}`);
         }
     };
 
     if (!item) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-[#0a192f] text-white font-mono">
-                Loading PULSE Environment...
+            <div className="h-screen w-full flex items-center justify-center bg-[#0a0a0a] text-white">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading ZeroCode Environment...</p>
+                </div>
             </div>
         );
     }
@@ -97,9 +86,9 @@ export default function LearningLayout() {
     // Render Quiz
     if (item.type === CONTENT_TYPES.QUIZ) {
         return (
-            <div className="h-screen w-full flex flex-col bg-gray-900">
+            <div className="h-screen w-full flex flex-col bg-[#0a0a0a] fixed inset-0">
                 <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 overflow-hidden">
                     <QuizPane quiz={item} onComplete={handleNext} />
                 </div>
             </div>
@@ -109,48 +98,30 @@ export default function LearningLayout() {
     // Render Informational
     if (item.type === CONTENT_TYPES.INFORMATIONAL) {
         return (
-            <div className="h-screen w-full flex flex-col bg-gray-900">
+            <div className="h-screen w-full flex flex-col bg-[#0a0a0a] fixed inset-0">
                 <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 overflow-hidden">
                     <InformationalPane item={item} onComplete={handleNext} />
                 </div>
             </div>
         );
     }
 
-    // Lesson/Project - Interactive coding environment
     const compile = () => {
         const html = files.find(f => f.name === 'index.html')?.content || '';
         const css = files.find(f => f.name === 'style.css')?.content || '';
         const js = files.find(f => f.name === 'script.js')?.content || '';
 
-        return `
-<!DOCTYPE html>
+        return `<!DOCTYPE html>
 <html>
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'presuniv-navy': '#0a192f',
-                        'presuniv-maroon': '#800000',
-                    }
-                }
-            }
-        }
-    </script>
     <style>${css}</style>
 </head>
 <body>
     ${html}
     <script>
-        try {
-            ${js}
-        } catch(e) {
-            console.error(e);
-        }
+        try { ${js} } catch(e) { console.error(e); }
     </script>
 </body>
 </html>`;
@@ -165,33 +136,25 @@ export default function LearningLayout() {
 
     const handleCheck = () => {
         setIsChecking(true);
-        
-        // Combine all file contents for validation
         const allContent = files.map(f => f.content).join('\n');
         const results = evaluateCode(allContent, tasks);
-        
         const updatedTasks = tasks.map((task, index) => ({
             ...task,
             completed: results[index]
         }));
-        
         setTasks(updatedTasks);
-        
         const completedCount = updatedTasks.filter(t => t.completed).length;
         const newProgress = (completedCount / updatedTasks.length) * 100;
         setProgress(newProgress);
-        
         if (newProgress === 100) {
             confetti({
                 particleCount: 150,
                 spread: 80,
                 origin: { y: 0.6 },
-                colors: ['#800000', '#FF0000', '#FFFFFF']
+                colors: ['#ffffff', '#888888', '#333333']
             });
-            // Mark item as complete
             markItemComplete(itemId);
         }
-        
         setIsChecking(false);
     };
 
@@ -201,9 +164,6 @@ export default function LearningLayout() {
         ));
     };
 
-    const toggleConsole = () => setIsConsoleOpen(!isConsoleOpen);
-
-    // Create lesson object for InstructionPane
     const lessonData = {
         title: item.title,
         content: item.content,
@@ -211,21 +171,19 @@ export default function LearningLayout() {
     };
 
     return (
-        <div className="h-screen w-full grid grid-rows-[auto_1fr_auto] overflow-hidden bg-gray-900">
+        <div className="h-screen w-full grid grid-rows-[auto_1fr_auto] overflow-hidden bg-[#0a0a0a] fixed inset-0">
             <Header progress={progress} />
 
             <div className="min-h-0 w-full relative">
                 <PanelGroup direction="horizontal" className="h-full w-full">
-                    {/* Left Pane: Instructions */}
                     <Panel defaultSize={25} minSize={20} className="h-full flex flex-col">
                         <InstructionPane lesson={lessonData} />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1.5 bg-[#0a192f] hover:bg-red-600 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
-                        <div className="h-8 w-0.5 rounded-full bg-gray-600 group-hover:bg-white transition-colors" />
+                    <PanelResizeHandle className="w-1 bg-[#0a0a0a] hover:bg-white/20 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
+                        <div className="h-8 w-0.5 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
                     </PanelResizeHandle>
 
-                    {/* Middle Pane: Editor */}
                     <Panel defaultSize={40} minSize={30} className="h-full flex flex-col">
                         <EditorComponent
                             files={files}
@@ -235,11 +193,10 @@ export default function LearningLayout() {
                         />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1.5 bg-[#0a192f] hover:bg-blue-600 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
-                        <div className="h-8 w-0.5 rounded-full bg-gray-600 group-hover:bg-white transition-colors" />
+                    <PanelResizeHandle className="w-1 bg-[#0a0a0a] hover:bg-white/20 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
+                        <div className="h-8 w-0.5 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
                     </PanelResizeHandle>
 
-                    {/* Right Pane: Preview */}
                     <Panel defaultSize={35} minSize={20} className="h-full flex flex-col">
                         <PreviewPane
                             compiledCode={compiledCode}
@@ -255,7 +212,7 @@ export default function LearningLayout() {
                 onCheck={handleCheck}
                 isRunning={isRunning}
                 isChecking={isChecking}
-                toggleConsole={toggleConsole}
+                toggleConsole={() => setIsConsoleOpen(!isConsoleOpen)}
                 isConsoleOpen={isConsoleOpen}
                 onNext={progress === 100 ? handleNext : null}
             />

@@ -174,10 +174,10 @@ SELECT * FROM students LIMIT 5, 10;
 Write SQL queries to retrieve student data.
                     `,
                     tasks: [
-                        { id: 1, description: 'Write SELECT query with WHERE clause', completed: false, regex: /SELECT[\s\S]+FROM[\s\S]+WHERE/i },
-                        { id: 2, description: 'Use ORDER BY to sort results', completed: false, regex: /ORDER\s+BY/i },
-                        { id: 3, description: 'Use LIKE for pattern matching', completed: false, regex: /LIKE\s+['"]%/i },
-                        { id: 4, description: 'Use LIMIT to restrict results', completed: false, regex: /LIMIT\s+\d+/i }
+                        { id: 1, description: 'In queries.sql, write: SELECT * FROM students WHERE gpa > 3.5; to filter data', completed: false, regex: /SELECT[\s\S]+FROM[\s\S]+WHERE/i },
+                        { id: 2, description: 'In queries.sql, add: ORDER BY name ASC; at end of query for sorting', completed: false, regex: /ORDER\s+BY/i },
+                        { id: 3, description: 'In queries.sql, write: SELECT * FROM students WHERE name LIKE "A%"; to find names starting with A', completed: false, regex: /LIKE\s+['"]%/i },
+                        { id: 4, description: 'In queries.sql, add: LIMIT 5; at end of query to limit to 5 results', completed: false, regex: /LIMIT\s+\d+/i }
                     ],
                     files: [
                         { name: 'queries.sql', language: 'sql', content: `-- SQL Query Practice
@@ -339,10 +339,10 @@ COMMIT;    -- Save if correct
 Practice INSERT, UPDATE, and DELETE operations.
                     `,
                     tasks: [
-                        { id: 1, description: 'Write INSERT statement with VALUES', completed: false, regex: /INSERT\s+INTO[\s\S]+VALUES/i },
-                        { id: 2, description: 'Write UPDATE with SET and WHERE', completed: false, regex: /UPDATE[\s\S]+SET[\s\S]+WHERE/i },
-                        { id: 3, description: 'Write DELETE with WHERE clause', completed: false, regex: /DELETE\s+FROM[\s\S]+WHERE/i },
-                        { id: 4, description: 'Insert multiple rows in one statement', completed: false, regex: /VALUES[\s\S]*\([^)]+\)\s*,\s*\([^)]+\)/i }
+                        { id: 1, description: 'In crud.sql, write: INSERT INTO students (name, age) VALUES ("Alice", 21);', completed: false, regex: /INSERT\s+INTO[\s\S]+VALUES/i },
+                        { id: 2, description: 'In crud.sql, write: UPDATE students SET gpa = 3.9 WHERE id = 1; (MUST use WHERE!)', completed: false, regex: /UPDATE[\s\S]+SET[\s\S]+WHERE/i },
+                        { id: 3, description: 'In crud.sql, write: DELETE FROM students WHERE id = 5; (MUST use WHERE!)', completed: false, regex: /DELETE\s+FROM[\s\S]+WHERE/i },
+                        { id: 4, description: 'In crud.sql, insert multiple: INSERT INTO students (name) VALUES ("Bob"), ("Charlie");', completed: false, regex: /VALUES[\s\S]*\([^)]+\)\s*,\s*\([^)]+\)/i }
                     ],
                     files: [
                         { name: 'crud.sql', language: 'sql', content: `-- CRUD Operations Practice
@@ -465,10 +465,10 @@ ORDER BY avg_gpa DESC;      -- Finally sort
 Use aggregate functions to analyze student data.
                     `,
                     tasks: [
-                        { id: 1, description: 'Use COUNT(*) to count rows', completed: false, regex: /COUNT\s*\(\s*\*\s*\)/i },
-                        { id: 2, description: 'Use AVG() to calculate average', completed: false, regex: /AVG\s*\(/i },
-                        { id: 3, description: 'Use GROUP BY to group data', completed: false, regex: /GROUP\s+BY/i },
-                        { id: 4, description: 'Use HAVING to filter groups', completed: false, regex: /HAVING/i }
+                        { id: 1, description: 'In aggregates.sql, write: SELECT COUNT(*) FROM students; to count rows', completed: false, regex: /COUNT\s*\(\s*\*\s*\)/i },
+                        { id: 2, description: 'In aggregates.sql, write: SELECT AVG(gpa) FROM students; for average GPA', completed: false, regex: /AVG\s*\(/i },
+                        { id: 3, description: 'In aggregates.sql, write: SELECT major, COUNT(*) FROM students GROUP BY major; to group data', completed: false, regex: /GROUP\s+BY/i },
+                        { id: 4, description: 'In aggregates.sql, add: HAVING COUNT(*) > 5; after GROUP BY to filter groups', completed: false, regex: /HAVING/i }
                     ],
                     files: [
                         { name: 'aggregates.sql', language: 'sql', content: `-- Aggregate Functions Practice
@@ -745,10 +745,10 @@ HAVING COUNT(e.id) > 3;
 Practice JOIN operations to connect tables.
                     `,
                     tasks: [
-                        { id: 1, description: 'Write INNER JOIN query', completed: false, regex: /INNER\s+JOIN/i },
-                        { id: 2, description: 'Write LEFT JOIN query', completed: false, regex: /LEFT\s+JOIN/i },
-                        { id: 3, description: 'Use table aliases (AS)', completed: false, regex: /FROM\s+\w+\s+\w+\s+(INNER|LEFT|RIGHT)\s+JOIN/i },
-                        { id: 4, description: 'Combine JOIN with GROUP BY', completed: false, regex: /JOIN[\s\S]+GROUP\s+BY/i }
+                        { id: 1, description: 'In joins.sql, write: SELECT * FROM students INNER JOIN enrollments ON students.id = enrollments.student_id;', completed: false, regex: /INNER\s+JOIN/i },
+                        { id: 2, description: 'In joins.sql, write: SELECT * FROM students LEFT JOIN enrollments ON students.id = enrollments.student_id;', completed: false, regex: /LEFT\s+JOIN/i },
+                        { id: 3, description: 'In joins.sql, use aliases: SELECT s.name FROM students s INNER JOIN enrollments e ON s.id = e.student_id;', completed: false, regex: /FROM\s+\w+\s+\w+\s+(INNER|LEFT|RIGHT)\s+JOIN/i },
+                        { id: 4, description: 'In joins.sql, combine: SELECT s.name, COUNT(e.id) FROM students s LEFT JOIN enrollments e ON s.id = e.student_id GROUP BY s.id;', completed: false, regex: /JOIN[\s\S]+GROUP\s+BY/i }
                     ],
                     files: [
                         { name: 'joins.sql', language: 'sql', content: `-- JOIN Practice
@@ -1133,12 +1133,12 @@ Practice creating normalized database schemas.
                     title: 'University Management System',
                     duration: '180 min',
                     difficulty: 'Advanced',
-                    description: 'Design and implement a comprehensive database for President University.',
+                    description: 'Design and implement a comprehensive database for ZeroCode.',
                     content: `
 # 🎯 Final Project: University Management System
 
 ## Overview
-Build a complete relational database for President University's management system.
+Build a complete relational database for ZeroCode's management system.
 
 ## Database Requirements
 
@@ -1294,8 +1294,8 @@ Good luck! 🚀
                         { name: 'schema.sql', language: 'sql', content: `-- University Management System Database
 
 -- Create database
-CREATE DATABASE IF NOT EXISTS presuniv_system;
-USE presuniv_system;
+CREATE DATABASE IF NOT EXISTS zerocode_system;
+USE zerocode_system;
 
 -- 1. Create majors table
 
@@ -1419,7 +1419,7 @@ CREATE TABLE students (
 
 -- INSERT
 INSERT INTO students (name, email, gpa)
-VALUES ('Alice', 'alice@presuniv.ac.id', 3.8);
+VALUES ('Alice', 'alice@zerocode.ac.id', 3.8);
 
 -- SELECT
 SELECT * FROM students WHERE gpa > 3.5 ORDER BY gpa DESC LIMIT 10;
@@ -1488,7 +1488,7 @@ HAVING AVG(gpa) > 3.5;
 - E-commerce platform
 - Social media application
 - Content management system
-- Learning management system (like PULSE!)
+- Learning management system (like ZeroCode!)
 - Inventory management
 - Customer relationship management (CRM)
 

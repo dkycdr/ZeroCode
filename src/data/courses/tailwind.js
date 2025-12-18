@@ -142,11 +142,11 @@ Tailwind uses a consistent spacing scale:
 Build a card component using Tailwind utilities.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add background color with bg-white', completed: false, regex: /bg-white/ },
-                        { id: 2, description: 'Add padding with p-6 or p-8', completed: false, regex: /p-[468]/ },
-                        { id: 3, description: 'Add rounded corners with rounded-lg', completed: false, regex: /rounded-lg/ },
-                        { id: 4, description: 'Add shadow with shadow-md or shadow-lg', completed: false, regex: /shadow-(md|lg)/ },
-                        { id: 5, description: 'Style heading with text-2xl and font-bold', completed: false, regex: /text-2xl[\s\S]*font-bold|font-bold[\s\S]*text-2xl/ }
+                        { id: 1, description: 'Add "bg-white" class to the <div> card container (line 8) for white background', completed: false, regex: /bg-white/ },
+                        { id: 2, description: 'Add "p-6" or "p-8" class to the <div> card container (line 8) for padding', completed: false, regex: /p-[468]/ },
+                        { id: 3, description: 'Add "rounded-lg" class to the <div> card container (line 8) for rounded corners', completed: false, regex: /rounded-lg/ },
+                        { id: 4, description: 'Add "shadow-md" or "shadow-lg" class to the <div> card container (line 8) for shadow', completed: false, regex: /shadow-(md|lg)/ },
+                        { id: 5, description: 'Add "text-2xl font-bold" classes to the <h2> element (line 9) for heading style', completed: false, regex: /text-2xl[\s\S]*font-bold|font-bold[\s\S]*text-2xl/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -276,10 +276,10 @@ Build a card component using Tailwind utilities.
 Build a navigation bar with Flexbox.
                     `,
                     tasks: [
-                        { id: 1, description: 'Make container flex with "flex"', completed: false, regex: /class="[^"]*flex[^"]*"/ },
-                        { id: 2, description: 'Use justify-between for spacing', completed: false, regex: /justify-between/ },
-                        { id: 3, description: 'Use items-center for vertical alignment', completed: false, regex: /items-center/ },
-                        { id: 4, description: 'Add gap-4 or gap-6 between items', completed: false, regex: /gap-[46]/ }
+                        { id: 1, description: 'Add "flex" class to the <div> inside <nav> (line 9) to create a flexbox container', completed: false, regex: /class="[^"]*flex[^"]*"/ },
+                        { id: 2, description: 'Add "justify-between" class to the <div> container (line 9) for spacing between logo and menu', completed: false, regex: /justify-between/ },
+                        { id: 3, description: 'Add "items-center" class to the <div> container (line 9) for vertical alignment', completed: false, regex: /items-center/ },
+                        { id: 4, description: 'Add "gap-4" or "gap-6" class to the menu links <div> (line 11) for spacing between links', completed: false, regex: /gap-[46]/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -291,7 +291,7 @@ Build a navigation bar with Flexbox.
     <!-- Build a navbar with Flexbox -->
     <nav class="bg-gray-800 text-white p-4">
         <div class="">
-            <div class="text-xl font-bold">PULSE</div>
+            <div class="text-xl font-bold">ZeroCode</div>
             <div class="">
                 <a href="#" class="hover:text-blue-400">Home</a>
                 <a href="#" class="hover:text-blue-400">Courses</a>
@@ -362,10 +362,10 @@ Tailwind is mobile-first. Add prefixes for larger screens:
 Create a responsive card grid.
                     `,
                     tasks: [
-                        { id: 1, description: 'Use grid with grid-cols-1', completed: false, regex: /grid[\s\S]*grid-cols-1/ },
-                        { id: 2, description: 'Add md:grid-cols-2 for tablets', completed: false, regex: /md:grid-cols-2/ },
-                        { id: 3, description: 'Add lg:grid-cols-3 for desktop', completed: false, regex: /lg:grid-cols-3/ },
-                        { id: 4, description: 'Add gap-4 or gap-6', completed: false, regex: /gap-[46]/ }
+                        { id: 1, description: 'Add "grid grid-cols-1" classes to the grid container <div> (line 10) for 1 column on mobile', completed: false, regex: /grid[\s\S]*grid-cols-1/ },
+                        { id: 2, description: 'Add "md:grid-cols-2" class to the grid container <div> (line 10) for 2 columns on tablet', completed: false, regex: /md:grid-cols-2/ },
+                        { id: 3, description: 'Add "lg:grid-cols-3" class to the grid container <div> (line 10) for 3 columns on desktop', completed: false, regex: /lg:grid-cols-3/ },
+                        { id: 4, description: 'Add "gap-4" or "gap-6" class to the grid container <div> (line 10) for spacing between cards', completed: false, regex: /gap-[46]/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -614,10 +614,10 @@ You can use arbitrary values:
 Create a modern card with shadows and effects.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add shadow-lg or shadow-xl to card', completed: false, regex: /shadow-(lg|xl|2xl)/ },
-                        { id: 2, description: 'Use rounded-xl or rounded-2xl', completed: false, regex: /rounded-(xl|2xl|3xl)/ },
-                        { id: 3, description: 'Add hover:shadow-2xl for hover effect', completed: false, regex: /hover:shadow/ },
-                        { id: 4, description: 'Use gradient background', completed: false, regex: /bg-gradient-to/ }
+                        { id: 1, description: 'Add "shadow-lg" or "shadow-xl" class to the main card <div> (line 9) for large shadow', completed: false, regex: /shadow-(lg|xl|2xl)/ },
+                        { id: 2, description: 'Add "rounded-xl" or "rounded-2xl" class to the main card <div> (line 9) for extra rounded corners', completed: false, regex: /rounded-(xl|2xl|3xl)/ },
+                        { id: 3, description: 'Add "hover:shadow-2xl" class to the main card <div> (line 9) for hover shadow effect', completed: false, regex: /hover:shadow/ },
+                        { id: 4, description: 'Add "bg-gradient-to-r from-blue-500 to-purple-600" to the icon <div> (line 10) for gradient background', completed: false, regex: /bg-gradient-to/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -716,7 +716,7 @@ Built-in animations:
 \`\`\`html
 <div class="animate-spin">Spinning</div>
 <div class="animate-ping">Pinging</div>
-<div class="animate-pulse">Pulsing</div>
+<div class="animate-zerocode">Pulsing</div>
 <div class="animate-bounce">Bouncing</div>
 \`\`\`
 
@@ -739,10 +739,10 @@ Built-in animations:
 Create an interactive card with smooth transitions.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add transition-all to card', completed: false, regex: /transition(-all)?/ },
-                        { id: 2, description: 'Add hover:scale-105 or similar', completed: false, regex: /hover:scale/ },
-                        { id: 3, description: 'Add hover:shadow-xl', completed: false, regex: /hover:shadow/ },
-                        { id: 4, description: 'Add duration-300 or similar', completed: false, regex: /duration-\d+/ }
+                        { id: 1, description: 'Add "transition-all" class to all three card <div> elements (lines 5, 11, 17) for smooth animation', completed: false, regex: /transition(-all)?/ },
+                        { id: 2, description: 'Add "hover:scale-105" class to all three card <div> elements for zoom effect on hover', completed: false, regex: /hover:scale/ },
+                        { id: 3, description: 'Add "hover:shadow-xl" class to all three card <div> elements for shadow on hover', completed: false, regex: /hover:shadow/ },
+                        { id: 4, description: 'Add "duration-300" class to all three card <div> elements for 300ms animation duration', completed: false, regex: /duration-\d+/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1102,12 +1102,12 @@ Build a complete component library with buttons, cards, and forms.
                 {
                     id: 'tailwind-3-project',
                     type: CONTENT_TYPES.PROJECT,
-                    title: 'PULSE Landing Page',
+                    title: 'ZeroCode Landing Page',
                     duration: '90 min',
                     difficulty: 'Beginner',
-                    description: 'Build a responsive landing page for PULSE using Tailwind CSS.',
+                    description: 'Build a responsive landing page for ZeroCode using Tailwind CSS.',
                     content: `
-# 🎯 Project: PULSE Landing Page
+# 🎯 Project: ZeroCode Landing Page
 
 ## Overview
 Create a professional, responsive landing page using only Tailwind CSS.
@@ -1130,7 +1130,7 @@ Create a professional, responsive landing page using only Tailwind CSS.
 - [ ] Consistent spacing
 - [ ] Hover effects on buttons/links
 - [ ] Shadows and rounded corners
-- [ ] PresUniv colors (#800000 maroon, #0a192f navy)
+- [ ] ZeroCode colors (#800000 maroon, #0a192f navy)
 
 ## Grading Criteria
 
@@ -1155,15 +1155,15 @@ Create a professional, responsive landing page using only Tailwind CSS.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PULSE - President University Learning System</title>
+    <title>ZeroCode - ZeroCode Learning System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'presuniv-maroon': '#800000',
-                        'presuniv-navy': '#0a192f',
+                        'zerocode-maroon': '#800000',
+                        'zerocode-navy': '#0a192f',
                     }
                 }
             }

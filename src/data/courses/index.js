@@ -9,6 +9,12 @@ import domCourse from './dom';
 import phpCourse from './php';
 import mysqlCourse from './mysql';
 import pythonCourse from './python';
+import jsEs6Course from './jsEs6';
+import typescriptCourse from './typescript';
+import nodeCourse from './node';
+import mongodbCourse from './mongodb';
+import nextjsCourse from './nextjs';
+import cicdCourse from './cicd';
 import { CONTENT_TYPES, courses as courseMeta, LEVELS } from '../curriculumStructure';
 
 // All course content
@@ -19,11 +25,16 @@ export const courseContent = {
     'tailwind': tailwindCourse,
     'js-basics': jsBasicsCourse,
     'dom': domCourse,
+    'js-es6': jsEs6Course,
+    'react': reactCourse,
     'php': phpCourse,
     'mysql': mysqlCourse,
     'python': pythonCourse,
-    'react': reactCourse,
-    // Add more courses as they're created
+    'typescript': typescriptCourse,
+    'node': nodeCourse,
+    'mongodb': mongodbCourse,
+    'nextjs': nextjsCourse,
+    'cicd': cicdCourse,
 };
 
 // Get full course with content

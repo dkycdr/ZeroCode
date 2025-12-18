@@ -1,5 +1,5 @@
 
-// PULSE: Unified Course System - COMPLETE EDITION
+// ZeroCode: Unified Course System - COMPLETE EDITION
 // All 16 courses with full content
 
 import { lessons } from './sampleLesson';
@@ -51,7 +51,7 @@ const additionalLessons = {
         content: `
 # Git & GitHub: Version Control for Engineers
 
-Version control is the **foundation** of modern software development. At President University, every engineering project uses Git.
+Version control is the **foundation** of modern software development. At ZeroCode, every engineering project uses Git.
 
 ---
 
@@ -100,7 +100,7 @@ A parallel timeline of your code. The \`main\` branch is production-ready code. 
 
 ## Mission: Your First Repository
 
-You'll initialize a Git repo, make commits, and simulate the workflow used at Google, Microsoft, and President University's Software Engineering Lab.
+You'll initialize a Git repo, make commits, and simulate the workflow used at Google, Microsoft, and ZeroCode's Software Engineering Lab.
         `,
         tasks: [
             {
@@ -154,7 +154,7 @@ echo "# My First Repo" > README.md
                 language: 'markdown',
                 content: `# My First Repository
 
-This is a practice repo for learning Git at President University.
+This is a practice repo for learning Git at ZeroCode.
 `
             }
         ]
@@ -165,7 +165,7 @@ This is a practice repo for learning Git at President University.
         content: `
 # Python: The Swiss Army Knife of Programming
 
-Python is used everywhere: AI, Data Science, Web Backends, Automation. At President University, it's essential for Engineering students.
+Python is used everywhere: AI, Data Science, Web Backends, Automation. At ZeroCode, it's essential for Engineering students.
 
 ---
 
@@ -449,7 +449,7 @@ db.students.deleteOne({ name: "Alice" });
 
 ## Mission: Campus Social Feed Database
 
-Design a MongoDB schema for a President University social feed where students can post updates, like posts, and comment.
+Design a MongoDB schema for a ZeroCode social feed where students can post updates, like posts, and comment.
         `,
         tasks: [
             {
@@ -616,7 +616,7 @@ Build a blog with:
 ## Part 3: GitHub Actions Workflow
 
 \`\`\`.yaml
-name: Deploy PULSE
+name: Deploy ZeroCode
 on:
   push:
     branches: [main]
@@ -650,7 +650,7 @@ DATABASE_URL=mongodb://prod-server:27017
 
 ---
 
-## Mission: Deploy PULSE to Production
+## Mission: Deploy ZeroCode to Production
 
 Set up a GitHub Actions pipeline that:
 1. Runs tests on every commit
@@ -678,7 +678,7 @@ Set up a GitHub Actions pipeline that:
                 content: `# GitHub Actions Workflow
 # Define your deployment pipeline:
 
-name: Deploy PULSE
+name: Deploy ZeroCode
 
 on:
   push:
@@ -724,7 +724,7 @@ export const courses = {
             en: 'Box Model, Selectors, Typography, and Transitions.',
             id: 'Box Model, Selector, Tipografi, dan Transisi.'
         },
-        goalProject: 'Style the event page with PULSE Navy & Maroon'
+        goalProject: 'Style the event page with ZeroCode Navy & Maroon'
     },
     'tailwind': {
         ...lessons.tailwind,
@@ -738,7 +738,7 @@ export const courses = {
             en: 'Utility-first workflow, Responsive design, and Dark mode.',
             id: 'Workflow Utility-first, Desain Responsif, dan Dark mode.'
         },
-        goalProject: 'Build a responsive navigation bar for PULSE'
+        goalProject: 'Build a responsive navigation bar for ZeroCode'
     },
     'git': {
         ...comprehensiveLessons.git,
@@ -811,7 +811,7 @@ export const courses = {
             en: 'Logic flow, Superglobals ($_POST, $_GET), and Sessions.',
             id: 'Alur logika, Superglobal, dan Session.'
         },
-        goalProject: 'Build a secure Login system for PULSE'
+        goalProject: 'Build a secure Login system for ZeroCode'
     },
     'mysql': {
         ...lessons.mysql,
@@ -883,7 +883,7 @@ export const courses = {
             en: 'Middleware, Routing, and REST API Architecture.',
             id: 'Middleware, Routing, dan Arsitektur REST API.'
         },
-        goalProject: 'Create an API for PULSE\'s student registration'
+        goalProject: 'Create an API for ZeroCode\'s student registration'
     },
     'mongodb': {
         ...additionalLessons.mongodb,
@@ -925,7 +925,7 @@ export const courses = {
             en: 'GitHub Actions, Environment Variables, and Vercel/DigitalOcean.',
             id: 'GitHub Action, Env Variable, dan Deployment.'
         },
-        goalProject: 'Set up an automated pipeline to deploy PULSE to production'
+        goalProject: 'Set up an automated pipeline to deploy ZeroCode to production'
     },
 };
 

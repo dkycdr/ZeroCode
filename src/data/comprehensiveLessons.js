@@ -7,7 +7,7 @@ export const comprehensiveLessons = {
         content: `
 # Git & GitHub: The Foundation of Modern Development
 
-At President University, **every** Software Engineering project uses Git. This isn't a "nice to have"—it's mandatory industry standard.
+In professional software development, **every** project uses Git. This isn't a "nice to have"—it's mandatory industry standard.
 
 ---
 
@@ -75,12 +75,12 @@ When your laptop dies, your code lives on GitHub.
 
 ## Chapter 3: The Professional Workflow
 
-This is how Google, Microsoft, and PresUniv Software Lab work:
+This is how Google, Microsoft, and professional teams work:
 
 ### Step 1: Clone
 \`\`\`bash
-git clone https://github.com/presuniv/pulse.git
-cd pulse
+git clone https://github.com/zerocode/project.git
+cd project
 \`\`\`
 
 ### Step 2: Create Feature Branch
@@ -117,7 +117,7 @@ git push origin feature-dashboard
 ### Setup (Do Once)
 \`\`\`bash
 git config --global user.name "Your Name"
-git config --global user.email "you@presuniv.ac.id"
+git config --global user.email "you@example.com"
 \`\`\`
 
 ### Daily Workflow
@@ -149,7 +149,7 @@ git revert abc123           # Undo specific commit (safe!)
 
 ---
 
-## Chapter 5: Real Scenarios at PresUniv
+## Chapter 5: Real Scenarios
 
 ### Scenario 1: "I committed my database password!"
 \`\`\`bash
@@ -207,7 +207,7 @@ git checkout feature-login
 
 ## Mission: Professional Git Workflow
 
-Practice the exact workflow used at PresUniv Software Engineering Lab.
+Practice the exact workflow used by professional development teams.
         `,
         tasks: [
             { id: 1, description: 'Type "git init" in the terminal', completed: false, regex: /git\s+init/ },
@@ -234,10 +234,10 @@ Practice the exact workflow used at PresUniv Software Engineering Lab.
     </style>
 </head>
 <body>
-    <h2>🖥️ Git Terminal Simulator - President University</h2>
+    <h2>🖥️ Git Terminal Simulator - ZeroCode</h2>
     <p style="color: #fff;">Type Git commands: git init, git status, git add, git commit</p>
     <div id="terminal">
-        <div class="output">PresUniv Git Lab v1.0</div>
+        <div class="output">ZeroCode Git Lab v1.0</div>
         <div class="output">Type 'help' for commands</div>
     </div>
     <script>
@@ -247,7 +247,7 @@ Practice the exact workflow used at PresUniv Software Engineering Lab.
         function addPrompt() {
             const div = document.createElement('div');
             div.className = 'prompt';
-            div.innerHTML = \`student@presuniv:\${branch}$ <input type="text" id="cmd" autofocus />\`;
+            div.innerHTML = \`user@zerocode:\${branch}$ <input type="text" id="cmd" autofocus />\`;
             terminal.appendChild(div);
             const input = document.getElementById('cmd');
             input.focus();

@@ -6,45 +6,85 @@ const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
 
+// Admin secret code - change this to your own secret!
+const ADMIN_SECRET_CODE = 'ZEROCODE2024';
+
+// Subscription tier access levels
+export const SUBSCRIPTION_TIERS = {
+    free: {
+        label: 'Free',
+        courses: ['html5', 'css3', 'js-basics'], // Demo courses only
+        color: 'gray'
+    },
+    beginner: {
+        label: 'Beginner',
+        courses: ['html5', 'css3', 'js-basics', 'git', 'tailwind'],
+        color: 'blue'
+    },
+    intermediate: {
+        label: 'Intermediate',
+        courses: ['html5', 'css3', 'js-basics', 'git', 'tailwind', 'dom', 'js-es6', 'react', 'php', 'mysql', 'python'],
+        color: 'purple'
+    },
+    advanced: {
+        label: 'Advanced',
+        courses: 'all',
+        color: 'red'
+    },
+    fullstack: {
+        label: 'Fullstack',
+        courses: 'all',
+        color: 'green'
+    },
+    admin: {
+        label: 'Admin',
+        courses: 'all',
+        color: 'yellow'
+    }
+};
+
+// Check if user can access a course
+export const canAccessCourse = (userTier, courseId) => {
+    if (!userTier) return false;
+
+    const tier = SUBSCRIPTION_TIERS[userTier];
+    if (!tier) return false;
+
+    // Admin, fullstack, advanced have access to all
+    if (tier.courses === 'all') return true;
+
+    // Check if course is in allowed list
+    return tier.courses.includes(courseId);
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in (from localStorage session)
-        const sessionUser = localStorage.getItem('pulse_user');
+        const sessionUser = localStorage.getItem('zerocode_user');
         if (sessionUser) {
-            setUser(JSON.parse(sessionUser));
+            try {
+                setUser(JSON.parse(sessionUser));
+            } catch (e) {
+                localStorage.removeItem('zerocode_user');
+            }
         }
         setLoading(false);
     }, []);
 
     const register = async (userData, password) => {
         try {
-            // Hash password
             const passwordHash = await bcrypt.hash(password, 10);
-            
-            // Check if admin email
-            const isAdmin = userData.email.toLowerCase().includes('admin');
 
-            // Insert user into database
             const result = await sql`
-                INSERT INTO users (email, password_hash, name, major, student_id, is_admin)
-                VALUES (
-                    ${userData.email},
-                    ${passwordHash},
-                    ${userData.name},
-                    ${userData.major},
-                    ${userData.studentId},
-                    ${isAdmin}
-                )
-                RETURNING id, email, name, major, student_id, is_admin, joined_date
+                INSERT INTO users (email, password_hash, name, is_admin, subscription_tier)
+                VALUES (${userData.email}, ${passwordHash}, ${userData.name}, false, 'free')
+                RETURNING id, email, name, is_admin, subscription_tier, joined_date
             `;
 
             const newUser = result[0];
-            
-            // Save to localStorage
-            localStorage.setItem('pulse_user', JSON.stringify(newUser));
+            localStorage.setItem('zerocode_user', JSON.stringify(newUser));
             setUser(newUser);
 
             return { success: true };
@@ -59,11 +99,9 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            // Get user from database
             const result = await sql`
-                SELECT id, email, password_hash, name, major, student_id, is_admin, joined_date
-                FROM users
-                WHERE email = ${email}
+                SELECT id, email, password_hash, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+                FROM users WHERE email = ${email}
             `;
 
             if (result.length === 0) {
@@ -71,18 +109,13 @@ export const AuthProvider = ({ children }) => {
             }
 
             const dbUser = result[0];
-
-            // Verify password
             const isValid = await bcrypt.compare(password, dbUser.password_hash);
             if (!isValid) {
                 return { success: false, error: 'Invalid password' };
             }
 
-            // Remove password_hash from user object
             const { password_hash, ...userWithoutPassword } = dbUser;
-
-            // Save to localStorage
-            localStorage.setItem('pulse_user', JSON.stringify(userWithoutPassword));
+            localStorage.setItem('zerocode_user', JSON.stringify(userWithoutPassword));
             setUser(userWithoutPassword);
 
             return { success: true };
@@ -93,7 +126,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        localStorage.removeItem('pulse_user');
+        localStorage.removeItem('zerocode_user');
         setUser(null);
     };
 
@@ -101,21 +134,93 @@ export const AuthProvider = ({ children }) => {
         try {
             const result = await sql`
                 UPDATE users
-                SET 
-                    name = ${updates.name || user.name},
-                    major = ${updates.major || user.major},
-                    student_id = ${updates.student_id || user.student_id}
+                SET name = ${updates.name || user.name}, phone = ${updates.phone || user.phone || null}
                 WHERE id = ${user.id}
-                RETURNING id, email, name, major, student_id, is_admin, joined_date
+                RETURNING id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
             `;
 
             const updatedUser = result[0];
-            localStorage.setItem('pulse_user', JSON.stringify(updatedUser));
+            localStorage.setItem('zerocode_user', JSON.stringify(updatedUser));
             setUser(updatedUser);
 
             return { success: true };
         } catch (error) {
             console.error('Update error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const refreshUser = async () => {
+        if (!user?.id) return;
+
+        try {
+            const result = await sql`
+                SELECT id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+                FROM users WHERE id = ${user.id}
+            `;
+
+            if (result.length > 0) {
+                localStorage.setItem('zerocode_user', JSON.stringify(result[0]));
+                setUser(result[0]);
+            }
+        } catch (error) {
+            console.error('Refresh error:', error);
+        }
+    };
+
+    const verifyAdminCode = async (code) => {
+        if (code !== ADMIN_SECRET_CODE) {
+            return { success: false, error: 'Invalid admin code' };
+        }
+
+        if (!user?.id) {
+            return { success: false, error: 'Not logged in' };
+        }
+
+        try {
+            const result = await sql`
+                UPDATE users
+                SET is_admin = true, subscription_tier = 'admin'
+                WHERE id = ${user.id}
+                RETURNING id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+            `;
+
+            const updatedUser = result[0];
+            localStorage.setItem('zerocode_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const getAllUsers = async () => {
+        if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
+
+        try {
+            const result = await sql`
+                SELECT id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+                FROM users ORDER BY joined_date DESC
+            `;
+            return { success: true, users: result };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const updateUserSubscription = async (userId, newTier) => {
+        if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
+
+        try {
+            const result = await sql`
+                UPDATE users
+                SET subscription_tier = ${newTier}, subscription_date = CURRENT_TIMESTAMP, is_admin = ${newTier === 'admin'}
+                WHERE id = ${userId}
+                RETURNING id, email, name, subscription_tier
+            `;
+            return { success: true, user: result[0] };
+        } catch (error) {
             return { success: false, error: error.message };
         }
     };
@@ -127,7 +232,14 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateUser,
+        refreshUser,
         signOut: logout,
+        verifyAdminCode,
+        getAllUsers,
+        updateUserSubscription,
+        canAccessCourse: (courseId) => canAccessCourse(user?.subscription_tier, courseId),
+        isAdmin: user?.is_admin || false,
+        subscriptionTier: user?.subscription_tier || 'free',
     };
 
     return (

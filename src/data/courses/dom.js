@@ -119,10 +119,10 @@ document.querySelector('li:nth-child(2)');
 Select elements and log them to console.
                     `,
                     tasks: [
-                        { id: 1, description: 'Use querySelector to select an element by ID', completed: false, regex: /querySelector\s*\(\s*['"]#/ },
-                        { id: 2, description: 'Use querySelector to select by class', completed: false, regex: /querySelector\s*\(\s*['"]\./ },
-                        { id: 3, description: 'Use querySelectorAll to select multiple elements', completed: false, regex: /querySelectorAll/ },
-                        { id: 4, description: 'Log selected element to console', completed: false, regex: /console\.log\s*\([^)]*querySelector/ }
+                        { id: 1, description: 'In script.js, select <h1> by ID: const title = document.querySelector("#title");', completed: false, regex: /querySelector\s*\(\s*['"]#/ },
+                        { id: 2, description: 'In script.js, select first <p> by class: const text = document.querySelector(".text");', completed: false, regex: /querySelector\s*\(\s*['"]\./ },
+                        { id: 3, description: 'In script.js, select all <button> elements: const buttons = document.querySelectorAll(".btn");', completed: false, regex: /querySelectorAll/ },
+                        { id: 4, description: 'In script.js, log element: console.log(document.querySelector("#title"));', completed: false, regex: /console\.log\s*\([^)]*querySelector/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -239,10 +239,10 @@ img.removeAttribute('title');
 Create a theme toggle button.
                     `,
                     tasks: [
-                        { id: 1, description: 'Change textContent of an element', completed: false, regex: /\.textContent\s*=/ },
-                        { id: 2, description: 'Change style property (backgroundColor, color, etc)', completed: false, regex: /\.style\.\w+\s*=/ },
-                        { id: 3, description: 'Use classList.add() or classList.toggle()', completed: false, regex: /classList\.(add|toggle)\s*\(/ },
-                        { id: 4, description: 'Add click event listener', completed: false, regex: /addEventListener\s*\(\s*['"]click['"]/ }
+                        { id: 1, description: 'In script.js, change button text: themeBtn.textContent = "Light Mode"; after toggle', completed: false, regex: /\.textContent\s*=/ },
+                        { id: 2, description: 'In script.js, change style: document.body.style.backgroundColor = "#1a1a1a";', completed: false, regex: /\.style\.\w+\s*=/ },
+                        { id: 3, description: 'In script.js, toggle dark class: document.body.classList.toggle("dark");', completed: false, regex: /classList\.(add|toggle)\s*\(/ },
+                        { id: 4, description: 'In script.js, add event: themeBtn.addEventListener("click", function() { ... });', completed: false, regex: /addEventListener\s*\(\s*['"]click['"]/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -253,7 +253,7 @@ Create a theme toggle button.
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Welcome to PULSE</h1>
+        <h1 id="title">Welcome to ZeroCode</h1>
         <p id="description">Click the button to toggle dark mode</p>
         <button id="themeBtn">Toggle Dark Mode</button>
     </div>
@@ -414,10 +414,10 @@ form.addEventListener('submit', (e) => {
 Create an interactive counter.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add click event to increment button', completed: false, regex: /addEventListener\s*\(\s*['"]click['"][\s\S]*\+\+/ },
-                        { id: 2, description: 'Add click event to decrement button', completed: false, regex: /addEventListener\s*\(\s*['"]click['"][\s\S]*--/ },
-                        { id: 3, description: 'Update textContent to show count', completed: false, regex: /textContent\s*=[\s\S]*count/ },
-                        { id: 4, description: 'Add reset button functionality', completed: false, regex: /addEventListener[\s\S]*count\s*=\s*0/ }
+                        { id: 1, description: 'In script.js, add event to #incrementBtn: incrementBtn.addEventListener("click", () => { count++; });', completed: false, regex: /addEventListener\s*\(\s*['"]click['"][\s\S]*\+\+/ },
+                        { id: 2, description: 'In script.js, add event to #decrementBtn: decrementBtn.addEventListener("click", () => { count--; });', completed: false, regex: /addEventListener\s*\(\s*['"]click['"][\s\S]*--/ },
+                        { id: 3, description: 'In script.js, update display: countDisplay.textContent = count; in each event handler', completed: false, regex: /textContent\s*=[\s\S]*count/ },
+                        { id: 4, description: 'In script.js, add reset event: resetBtn.addEventListener("click", () => { count = 0; });', completed: false, regex: /addEventListener[\s\S]*count\s*=\s*0/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -588,11 +588,11 @@ let count = 0;
 | Code quality | 15% |
                     `,
                     tasks: [
-                        { id: 1, description: 'Create addTodo function', completed: false, regex: /function\s+addTodo|const\s+addTodo\s*=/ },
-                        { id: 2, description: 'Use createElement to create todo elements', completed: false, regex: /createElement/ },
-                        { id: 3, description: 'Add event listener for form submit', completed: false, regex: /addEventListener\s*\(\s*['"]submit['"]/ },
-                        { id: 4, description: 'Toggle complete with classList', completed: false, regex: /classList\.(toggle|add|remove)/ },
-                        { id: 5, description: 'Delete todo with removeChild or remove()', completed: false, regex: /(removeChild|\.remove\s*\()/ }
+                        { id: 1, description: 'In script.js, create function: function addTodo(text) { ... } to add new todo', completed: false, regex: /function\s+addTodo|const\s+addTodo\s*=/ },
+                        { id: 2, description: 'In script.js, create element: const li = document.createElement("li"); for todo item', completed: false, regex: /createElement/ },
+                        { id: 3, description: 'In script.js, handle form: todoForm.addEventListener("submit", (e) => { e.preventDefault(); });', completed: false, regex: /addEventListener\s*\(\s*['"]submit['"]/ },
+                        { id: 4, description: 'In script.js, toggle complete: li.classList.toggle("completed"); when checkbox clicked', completed: false, regex: /classList\.(toggle|add|remove)/ },
+                        { id: 5, description: 'In script.js, delete todo: li.remove(); or todoList.removeChild(li); when delete clicked', completed: false, regex: /(removeChild|\.remove\s*\()/ }
                     ],
                     starterFiles: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>

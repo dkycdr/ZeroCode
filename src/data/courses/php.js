@@ -169,10 +169,10 @@ $literal = 'Hello, $first';  // Outputs: Hello, $first
 Create PHP variables and output them.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create a variable with $ prefix', completed: false, regex: /\$\w+\s*=/ },
-                        { id: 2, description: 'Use echo to output a variable', completed: false, regex: /echo\s+\$\w+/ },
-                        { id: 3, description: 'Concatenate strings with .', completed: false, regex: /\$\w+\s*\.\s*["']|["']\s*\.\s*\$\w+/ },
-                        { id: 4, description: 'Create an array with []', completed: false, regex: /\$\w+\s*=\s*\[/ }
+                        { id: 1, description: 'In index.php, create variable: $name = "Alice"; (PHP variables use $ prefix)', completed: false, regex: /\$\w+\s*=/ },
+                        { id: 2, description: 'In index.php, display variable: echo $name; to output to browser', completed: false, regex: /echo\s+\$\w+/ },
+                        { id: 3, description: 'In index.php, concatenate strings: echo "Hello " . $name; (use dot for concat)', completed: false, regex: /\$\w+\s*\.\s*["']|["']\s*\.\s*\$\w+/ },
+                        { id: 4, description: 'In index.php, create array: $courses = ["HTML", "CSS", "JS"];', completed: false, regex: /\$\w+\s*=\s*\[/ }
                     ],
                     files: [
                         { name: 'index.php', language: 'php', content: `<?php
@@ -340,10 +340,10 @@ foreach ($student as $key => $value) {
 Create a grade calculator using conditionals and loops.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create an if/elseif/else statement', completed: false, regex: /if\s*\([^)]+\)[\s\S]*elseif[\s\S]*else/ },
-                        { id: 2, description: 'Use a foreach loop', completed: false, regex: /foreach\s*\([^)]+as/ },
-                        { id: 3, description: 'Create an associative array with =>', completed: false, regex: /["']\w+["']\s*=>\s*/ },
-                        { id: 4, description: 'Use comparison operators (>=, <=, ==)', completed: false, regex: /(>=|<=|==)/ }
+                        { id: 1, description: 'In index.php, create condition: if ($grade >= 85) { echo "A"; } elseif ($grade >= 70) { echo "B"; } else { echo "C"; }', completed: false, regex: /if\s*\([^)]+\)[\s\S]*elseif[\s\S]*else/ },
+                        { id: 2, description: 'In index.php, loop array: foreach ($grades as $grade) { echo $grade; }', completed: false, regex: /foreach\s*\([^)]+as/ },
+                        { id: 3, description: 'In index.php, create associative array: $student = ["name" => "Alice", "age" => 21];', completed: false, regex: /["']\w+["']\s*=>\s*/ },
+                        { id: 4, description: 'In index.php, use comparison operators: if ($grade >= 85) or if ($grade == 100)', completed: false, regex: /(>=|<=|==)/ }
                     ],
                     files: [
                         { name: 'index.php', language: 'php', content: `<?php
@@ -465,10 +465,10 @@ rand(1, 10);               // Random 1-10
 Create utility functions for a student system.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create a function with function keyword', completed: false, regex: /function\s+\w+\s*\(/ },
-                        { id: 2, description: 'Function should accept parameters', completed: false, regex: /function\s+\w+\s*\([^)]+\)/ },
-                        { id: 3, description: 'Use return statement', completed: false, regex: /return\s+[^;]+;/ },
-                        { id: 4, description: 'Call the function and echo result', completed: false, regex: /echo\s+\w+\s*\(/ }
+                        { id: 1, description: 'In index.php, create function: function calculateGPA($grades) { ... }', completed: false, regex: /function\s+\w+\s*\(/ },
+                        { id: 2, description: 'In function, accept parameter: function calculateGPA($grades) - $grades is array of values', completed: false, regex: /function\s+\w+\s*\([^)]+\)/ },
+                        { id: 3, description: 'Inside function, return result: return $total / count($grades);', completed: false, regex: /return\s+[^;]+;/ },
+                        { id: 4, description: 'In index.php, call function: echo calculateGPA($myGrades);', completed: false, regex: /echo\s+\w+\s*\(/ }
                     ],
                     files: [
                         { name: 'index.php', language: 'php', content: `<?php
@@ -716,11 +716,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 Create a student registration form with validation.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create form with method="POST"', completed: false, regex: /<form[^>]*method=["']POST["']/i },
-                        { id: 2, description: 'Check REQUEST_METHOD == POST', completed: false, regex: /\$_SERVER\s*\[\s*['"]REQUEST_METHOD['"]\s*\]\s*==\s*['"]POST['"]/ },
-                        { id: 3, description: 'Access form data with $_POST', completed: false, regex: /\$_POST\s*\[/ },
-                        { id: 4, description: 'Validate input (empty, strlen, filter_var)', completed: false, regex: /(empty\s*\(|strlen\s*\(|filter_var\s*\()/ },
-                        { id: 5, description: 'Display error or success message', completed: false, regex: /(echo|<\?=)\s*\$\w*(error|success)/ }
+                        { id: 1, description: 'In index.php, form already has method="POST" - make sure it exists in HTML', completed: false, regex: /<form[^>]*method=["']POST["']/i },
+                        { id: 2, description: 'In PHP, check method: if ($_SERVER["REQUEST_METHOD"] == "POST") { ... }', completed: false, regex: /\$_SERVER\s*\[\s*['"]REQUEST_METHOD['"]\s*\]\s*==\s*['"]POST['"]/ },
+                        { id: 3, description: 'In PHP, get form data: $name = $_POST["name"]; $email = $_POST["email"];', completed: false, regex: /\$_POST\s*\[/ },
+                        { id: 4, description: 'In PHP, validate: if (empty($name)) { $error = "Name required"; }', completed: false, regex: /(empty\s*\(|strlen\s*\(|filter_var\s*\()/ },
+                        { id: 5, description: 'In HTML, display message: <?php echo $error; ?> or <?php echo $success; ?>', completed: false, regex: /(echo|<\?=)\s*\$\w*(error|success)/ }
                     ],
                     files: [
                         { name: 'index.php', language: 'php', content: `<?php

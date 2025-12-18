@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useProgress } from '../contexts/ProgressProvider';
+import { useAuth } from '../contexts/AuthProvider';
 import { getCourseWithContent, CONTENT_TYPES, getCourseProgress } from '../data/courses/index';
-import { BookOpen, Code, HelpCircle, Rocket, FileText, ChevronRight, CheckCircle2, Circle, Lock, Clock, ArrowLeft } from 'lucide-react';
+import { BookOpen, Code, HelpCircle, Rocket, FileText, ChevronRight, CheckCircle2, Circle, Clock, ArrowLeft, Crown, MessageCircle } from 'lucide-react';
 import clsx from 'clsx';
 
-const ITEM_ICONS = {
-    [CONTENT_TYPES.LESSON]: <Code size={18} />,
-    [CONTENT_TYPES.QUIZ]: <HelpCircle size={18} />,
-    [CONTENT_TYPES.PROJECT]: <Rocket size={18} />,
-    [CONTENT_TYPES.INFORMATIONAL]: <FileText size={18} />
-};
+const WHATSAPP_NUMBER = '6281234567890';
 
-const ITEM_COLORS = {
-    [CONTENT_TYPES.LESSON]: 'bg-blue-500',
-    [CONTENT_TYPES.QUIZ]: 'bg-purple-500',
-    [CONTENT_TYPES.PROJECT]: 'bg-orange-500',
-    [CONTENT_TYPES.INFORMATIONAL]: 'bg-green-500'
+const ITEM_ICONS = {
+    [CONTENT_TYPES.LESSON]: <Code size={16} />,
+    [CONTENT_TYPES.QUIZ]: <HelpCircle size={16} />,
+    [CONTENT_TYPES.PROJECT]: <Rocket size={16} />,
+    [CONTENT_TYPES.INFORMATIONAL]: <FileText size={16} />
 };
 
 export default function CourseSyllabus() {
@@ -26,12 +22,14 @@ export default function CourseSyllabus() {
     const [course, setCourse] = useState(null);
     const [expandedUnits, setExpandedUnits] = useState({});
     const { completedItems } = useProgress();
+    const { user, canAccessCourse, subscriptionTier } = useAuth();
+
+    const hasAccess = canAccessCourse(courseId, course?.level);
 
     useEffect(() => {
         const courseData = getCourseWithContent(courseId);
         if (courseData) {
             setCourse(courseData);
-            // Expand first unit by default
             if (courseData.units?.length > 0) {
                 setExpandedUnits({ [courseData.units[0].id]: true });
             }
@@ -40,10 +38,20 @@ export default function CourseSyllabus() {
         }
     }, [courseId, navigate]);
 
+    const handleUpgrade = () => {
+        const message = encodeURIComponent(
+            `Hi ZeroCode! I want to access the "${course?.title}" course.\n\nEmail: ${user?.email}\nName: ${user?.name}\nCurrent tier: ${subscriptionTier}`
+        );
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+    };
+
     if (!course) {
         return (
-            <div className="h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-white">Loading...</div>
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading...</p>
+                </div>
             </div>
         );
     }
@@ -59,32 +67,58 @@ export default function CourseSyllabus() {
     };
 
     return (
-        <div className="h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex flex-col overflow-hidden">
+        <div className="min-h-screen bg-[#0a0a0a]">
             <Header progress={progress.percentage} />
 
-            <main className="flex-1 overflow-y-auto min-h-0">
-                <div className="max-w-4xl mx-auto px-4 py-8">
+            <main className="min-h-[calc(100vh-56px)] overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-6 py-8">
                     {/* Back Button */}
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+                        className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={18} />
                         <span>Back to Dashboard</span>
                     </button>
 
+                    {/* Access Denied Banner */}
+                    {!hasAccess && (
+                        <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl border border-yellow-500/30 p-6 mb-8">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                                        <Crown size={24} className="text-yellow-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-white mb-1">🔒 Premium Course</h3>
+                                        <p className="text-gray-400 text-sm">
+                                            Upgrade your account to access this course
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleUpgrade}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                                >
+                                    <MessageCircle size={16} />
+                                    Upgrade Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Course Header */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-presuniv-maroon">
-                        <div className="flex items-start justify-between">
+                    <div className="bg-[#111111] rounded-xl border border-white/10 p-8 mb-8">
+                        <div className="flex items-start justify-between mb-6">
                             <div>
-                                <div className="flex items-center gap-2 text-presuniv-maroon text-sm font-bold uppercase tracking-wider mb-2">
-                                    <BookOpen size={16} />
+                                <div className="flex items-center gap-2 text-gray-500 text-xs font-medium uppercase tracking-wider mb-3">
+                                    <BookOpen size={14} />
                                     <span>Course</span>
                                 </div>
-                                <h1 className="text-3xl font-bold text-slate-900 mb-2">{course.title}</h1>
-                                <p className="text-gray-600 mb-4">{course.description}</p>
+                                <h1 className="text-3xl font-bold text-white mb-3">{course.title}</h1>
+                                <p className="text-gray-400 mb-4">{course.description}</p>
                                 <div className="flex items-center gap-4 text-sm text-gray-500">
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-1.5">
                                         <Clock size={14} />
                                         {course.duration}
                                     </span>
@@ -93,57 +127,57 @@ export default function CourseSyllabus() {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-4xl font-bold text-presuniv-maroon">{progress.percentage}%</div>
+                                <div className="text-4xl font-bold text-white">{progress.percentage}%</div>
                                 <div className="text-sm text-gray-500">Complete</div>
                             </div>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="mt-6">
-                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-presuniv-maroon to-red-500 transition-all duration-500"
-                                    style={{ width: `${progress.percentage}%` }}
-                                />
-                            </div>
+                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-white transition-all duration-500"
+                                style={{ width: `${progress.percentage}%` }}
+                            />
                         </div>
                     </div>
 
                     {/* Syllabus */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {course.units?.map((unit, unitIndex) => {
                             const isExpanded = expandedUnits[unit.id];
                             const unitCompleted = unit.items.filter(i => completedItems.includes(i.id)).length;
                             const unitProgress = Math.round((unitCompleted / unit.items.length) * 100);
 
                             return (
-                                <div key={unit.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div key={unit.id} className="bg-[#111111] rounded-xl border border-white/10 overflow-hidden">
                                     {/* Unit Header */}
                                     <button
                                         onClick={() => toggleUnit(unit.id)}
-                                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={clsx(
-                                                "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold",
-                                                unitProgress === 100 ? "bg-green-500" : "bg-presuniv-navy"
+                                                "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold",
+                                                unitProgress === 100 
+                                                    ? "bg-green-500/20 text-green-400 border border-green-500/30" 
+                                                    : "bg-white/5 text-white border border-white/10"
                                             )}>
-                                                {unitProgress === 100 ? <CheckCircle2 size={20} /> : unitIndex + 1}
+                                                {unitProgress === 100 ? <CheckCircle2 size={18} /> : unitIndex + 1}
                                             </div>
                                             <div className="text-left">
-                                                <h3 className="font-bold text-slate-900">{unit.title}</h3>
+                                                <h3 className="font-semibold text-white">{unit.title}</h3>
                                                 <p className="text-sm text-gray-500">{unit.description}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="text-right">
-                                                <div className="text-sm font-semibold text-gray-700">{unitCompleted}/{unit.items.length}</div>
-                                                <div className="text-xs text-gray-400">completed</div>
+                                                <div className="text-sm font-medium text-gray-300">{unitCompleted}/{unit.items.length}</div>
+                                                <div className="text-xs text-gray-500">completed</div>
                                             </div>
                                             <ChevronRight
-                                                size={20}
+                                                size={18}
                                                 className={clsx(
-                                                    "text-gray-400 transition-transform",
+                                                    "text-gray-500 transition-transform",
                                                     isExpanded && "rotate-90"
                                                 )}
                                             />
@@ -152,27 +186,31 @@ export default function CourseSyllabus() {
 
                                     {/* Unit Items */}
                                     {isExpanded && (
-                                        <div className="border-t border-gray-100">
-                                            {unit.items.map((item, itemIndex) => {
+                                        <div className="border-t border-white/5">
+                                            {unit.items.map((item) => {
                                                 const isCompleted = completedItems.includes(item.id);
-                                                const isLocked = false; // TODO: Implement prerequisite logic
+                                                const isLocked = false;
 
                                                 return (
                                                     <button
                                                         key={item.id}
-                                                        onClick={() => !isLocked && handleItemClick(item)}
-                                                        disabled={isLocked}
+                                                        onClick={() => !isLocked && hasAccess && handleItemClick(item)}
+                                                        disabled={isLocked || !hasAccess}
                                                         className={clsx(
-                                                            "w-full px-6 py-4 flex items-center gap-4 border-b border-gray-50 last:border-b-0 transition-colors",
-                                                            isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-50 cursor-pointer"
+                                                            "w-full px-6 py-4 flex items-center gap-4 border-b border-white/5 last:border-b-0 transition-colors",
+                                                            (isLocked || !hasAccess)
+                                                                ? "opacity-40 cursor-not-allowed" 
+                                                                : "hover:bg-white/5 cursor-pointer"
                                                         )}
                                                     >
                                                         {/* Status Icon */}
                                                         <div className={clsx(
-                                                            "w-8 h-8 rounded-full flex items-center justify-center",
-                                                            isCompleted ? "bg-green-100 text-green-600" :
-                                                            isLocked ? "bg-gray-100 text-gray-400" :
-                                                            "bg-gray-100 text-gray-500"
+                                                            "w-8 h-8 rounded-lg flex items-center justify-center",
+                                                            isCompleted 
+                                                                ? "bg-green-500/20 text-green-400" 
+                                                                : isLocked 
+                                                                    ? "bg-white/5 text-gray-600" 
+                                                                    : "bg-white/5 text-gray-400"
                                                         )}>
                                                             {isCompleted ? <CheckCircle2 size={16} /> :
                                                              isLocked ? <Lock size={14} /> :
@@ -180,18 +218,15 @@ export default function CourseSyllabus() {
                                                         </div>
 
                                                         {/* Type Badge */}
-                                                        <div className={clsx(
-                                                            "w-8 h-8 rounded-lg flex items-center justify-center text-white",
-                                                            ITEM_COLORS[item.type]
-                                                        )}>
+                                                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-400">
                                                             {ITEM_ICONS[item.type]}
                                                         </div>
 
                                                         {/* Content */}
                                                         <div className="flex-1 text-left">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-medium text-slate-900">{item.title}</span>
-                                                                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 capitalize">
+                                                                <span className="font-medium text-white">{item.title}</span>
+                                                                <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-gray-500 capitalize">
                                                                     {item.type}
                                                                 </span>
                                                             </div>
@@ -200,7 +235,7 @@ export default function CourseSyllabus() {
 
                                                         {/* Arrow */}
                                                         {!isLocked && (
-                                                            <ChevronRight size={18} className="text-gray-400" />
+                                                            <ChevronRight size={16} className="text-gray-500" />
                                                         )}
                                                     </button>
                                                 );

@@ -45,13 +45,13 @@ Git tracks every change, who made it, and when:
 
 \`\`\`
 commit 3a7f2c1
-Author: Alice <alice@presuniv.ac.id>
+Author: Alice <alice@zerocode.ac.id>
 Date: Mon Dec 18 10:30:00 2024
 
     Add navigation menu
 
 commit 9b4e8d2
-Author: Bob <bob@presuniv.ac.id>
+Author: Bob <bob@zerocode.ac.id>
 Date: Mon Dec 18 09:15:00 2024
 
     Initial commit
@@ -130,7 +130,7 @@ Set your identity (required for commits):
 
 \`\`\`bash
 git config --global user.name "Your Name"
-git config --global user.email "your.email@presuniv.ac.id"
+git config --global user.email "your.email@zerocode.ac.id"
 \`\`\`
 
 ## Check Configuration
@@ -159,10 +159,10 @@ git config --global core.editor "code --wait"  # VS Code
 Configure Git with your information.
                     `,
                     tasks: [
-                        { id: 1, description: 'Check Git version with git --version', completed: false, regex: /git\s+--version/ },
-                        { id: 2, description: 'Set your name with git config --global user.name', completed: false, regex: /git\s+config\s+--global\s+user\.name/ },
-                        { id: 3, description: 'Set your email with git config --global user.email', completed: false, regex: /git\s+config\s+--global\s+user\.email/ },
-                        { id: 4, description: 'View config with git config --list', completed: false, regex: /git\s+config\s+--list/ }
+                        { id: 1, description: 'In terminal, type: git --version to check if Git is installed', completed: false, regex: /git\s+--version/ },
+                        { id: 2, description: 'In terminal, type: git config --global user.name "Your Name" to set your name', completed: false, regex: /git\s+config\s+--global\s+user\.name/ },
+                        { id: 3, description: 'In terminal, type: git config --global user.email "your@email.com" to set your email', completed: false, regex: /git\s+config\s+--global\s+user\.email/ },
+                        { id: 4, description: 'In terminal, type: git config --list to view all configuration settings', completed: false, regex: /git\s+config\s+--list/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -183,7 +183,7 @@ Configure Git with your information.
 // git config --global user.name "Your Name"
 
 // 3. Set your email
-// git config --global user.email "your.email@presuniv.ac.id"
+// git config --global user.email "your.email@zerocode.ac.id"
 
 // 4. View configuration
 // git config --list
@@ -373,11 +373,11 @@ git commit -m "Initial commit"
 Create a Git repository for a simple website.
                     `,
                     tasks: [
-                        { id: 1, description: 'Initialize Git with git init', completed: false, regex: /git\s+init/ },
-                        { id: 2, description: 'Check status with git status', completed: false, regex: /git\s+status/ },
-                        { id: 3, description: 'Stage files with git add', completed: false, regex: /git\s+add/ },
-                        { id: 4, description: 'Commit with git commit -m "message"', completed: false, regex: /git\s+commit\s+-m\s+["']/ },
-                        { id: 5, description: 'View history with git log', completed: false, regex: /git\s+log/ }
+                        { id: 1, description: 'In terminal (project folder), type: git init to initialize a repository', completed: false, regex: /git\s+init/ },
+                        { id: 2, description: 'In terminal, type: git status to see changed files', completed: false, regex: /git\s+status/ },
+                        { id: 3, description: 'In terminal, type: git add . to stage all files (or git add filename)', completed: false, regex: /git\s+add/ },
+                        { id: 4, description: 'In terminal, type: git commit -m "Initial commit" to save changes', completed: false, regex: /git\s+commit\s+-m\s+["']/ },
+                        { id: 5, description: 'In terminal, type: git log to view commit history', completed: false, regex: /git\s+log/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -515,7 +515,7 @@ Download changes from GitHub to your computer.
 ## Step 1: Create GitHub Account
 
 1. Go to [github.com](https://github.com)
-2. Sign up with your PresUniv email
+2. Sign up with your ZeroCode email
 3. Verify your email
 
 ## Step 2: Create Repository on GitHub
@@ -587,10 +587,10 @@ git@github.com:username/repo.git
 Push your local repository to GitHub.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add remote with git remote add origin', completed: false, regex: /git\s+remote\s+add\s+origin/ },
-                        { id: 2, description: 'Verify remote with git remote -v', completed: false, regex: /git\s+remote\s+-v/ },
-                        { id: 3, description: 'Push with git push -u origin main', completed: false, regex: /git\s+push\s+-u\s+origin\s+main/ },
-                        { id: 4, description: 'Clone a repository with git clone', completed: false, regex: /git\s+clone/ }
+                        { id: 1, description: 'In terminal, type: git remote add origin https://github.com/username/repo.git to connect to GitHub', completed: false, regex: /git\s+remote\s+add\s+origin/ },
+                        { id: 2, description: 'In terminal, type: git remote -v to verify remote is connected', completed: false, regex: /git\s+remote\s+-v/ },
+                        { id: 3, description: 'In terminal, type: git push -u origin main to upload code to GitHub', completed: false, regex: /git\s+push\s+-u\s+origin\s+main/ },
+                        { id: 4, description: 'In terminal, type: git clone https://github.com/user/repo.git to download a repo', completed: false, regex: /git\s+clone/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -739,11 +739,11 @@ Your site will be live at: \`https://username.github.io/portfolio\`
 | Website quality | 20% |
                     `,
                     tasks: [
-                        { id: 1, description: 'Initialize Git repository', completed: false, regex: /git\s+init/ },
-                        { id: 2, description: 'Make at least 3 commits', completed: false, regex: /git\s+commit[\s\S]*git\s+commit[\s\S]*git\s+commit/ },
-                        { id: 3, description: 'Add remote repository', completed: false, regex: /git\s+remote\s+add/ },
-                        { id: 4, description: 'Push to GitHub', completed: false, regex: /git\s+push/ },
-                        { id: 5, description: 'Create README.md file', completed: false, regex: /README\.md/ }
+                        { id: 1, description: 'In terminal (portfolio folder), type: git init to start tracking', completed: false, regex: /git\s+init/ },
+                        { id: 2, description: 'Create at least 3 commits: git add . && git commit -m "message" (repeat 3x with different changes)', completed: false, regex: /git\s+commit[\s\S]*git\s+commit[\s\S]*git\s+commit/ },
+                        { id: 3, description: 'In terminal, type: git remote add origin https://github.com/username/portfolio.git', completed: false, regex: /git\s+remote\s+add/ },
+                        { id: 4, description: 'In terminal, type: git push -u origin main to upload to GitHub', completed: false, regex: /git\s+push/ },
+                        { id: 5, description: 'Create README.md file in project folder with your portfolio description', completed: false, regex: /README\.md/ }
                     ],
                     starterFiles: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -777,7 +777,7 @@ Personal portfolio website showcasing my projects and skills.
 [View Live](https://username.github.io/portfolio)
 
 ## Author
-Your Name - President University
+Your Name - ZeroCode
 ` },
                         { name: 'script.js', language: 'javascript', content: `// Git commands for this project:
 

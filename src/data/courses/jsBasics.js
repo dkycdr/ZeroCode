@@ -448,11 +448,11 @@ Create a calculator that:
 3. Prints all results to console
                     `,
                     tasks: [
-                        { id: 1, description: 'Create two number variables', completed: false, regex: /let\s+\w+\s*=\s*\d+/ },
-                        { id: 2, description: 'Calculate sum (addition)', completed: false, regex: /\+/ },
-                        { id: 3, description: 'Calculate difference (subtraction)', completed: false, regex: /-/ },
-                        { id: 4, description: 'Calculate product (multiplication)', completed: false, regex: /\*/ },
-                        { id: 5, description: 'Use console.log to print results', completed: false, regex: /console\.log/ }
+                        { id: 1, description: 'In script.js, create 2 number variables: "let num1 = 10;" and "let num2 = 5;"', completed: false, regex: /let\s+\w+\s*=\s*\d+/ },
+                        { id: 2, description: 'In script.js, calculate sum: "let sum = num1 + num2;"', completed: false, regex: /\+/ },
+                        { id: 3, description: 'In script.js, calculate difference: "let diff = num1 - num2;"', completed: false, regex: /-/ },
+                        { id: 4, description: 'In script.js, calculate product: "let product = num1 * num2;"', completed: false, regex: /\*/ },
+                        { id: 5, description: 'In script.js, display result: "console.log(sum);" - open Console (F12) to see output', completed: false, regex: /console\.log/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -860,10 +860,10 @@ console.log(true);
 Write your first JavaScript code using console.log()
                     `,
                     tasks: [
-                        { id: 1, description: 'Use console.log() to print "Hello, PULSE!"', completed: false, regex: /console\.log\s*\(\s*["']Hello,?\s*PULSE!?["']\s*\)/i },
-                        { id: 2, description: 'Print your student ID as a number', completed: false, regex: /console\.log\s*\(\s*\d+\s*\)/ },
-                        { id: 3, description: 'Print true or false (boolean)', completed: false, regex: /console\.log\s*\(\s*(true|false)\s*\)/ },
-                        { id: 4, description: 'Add a comment explaining your code', completed: false, regex: /\/\/.*|\/\*[\s\S]*?\*\// }
+                        { id: 1, description: 'In script.js, write console.log("Hello, ZeroCode!"); to print text to console', completed: false, regex: /console\.log\s*\(\s*["']Hello,?\s*ZeroCode!?["']\s*\)/i },
+                        { id: 2, description: 'In script.js, write console.log(12345); to print a number (use your ID)', completed: false, regex: /console\.log\s*\(\s*\d+\s*\)/ },
+                        { id: 3, description: 'In script.js, write console.log(true); or console.log(false); to print a boolean', completed: false, regex: /console\.log\s*\(\s*(true|false)\s*\)/ },
+                        { id: 4, description: 'In script.js, add a comment with // this is a comment to explain your code', completed: false, regex: /\/\/.*|\/\*[\s\S]*?\*\// }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1011,11 +1011,11 @@ typeof undefined   // "undefined"
 Create variables of different types for a student profile.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create a string variable for student name', completed: false, regex: /(let|const)\s+\w+\s*=\s*["'][^"']+["']/ },
-                        { id: 2, description: 'Create a number variable for age', completed: false, regex: /(let|const)\s+\w*[Aa]ge\w*\s*=\s*\d+/ },
-                        { id: 3, description: 'Create a number variable for GPA (decimal)', completed: false, regex: /(let|const)\s+\w*[Gg][Pp][Aa]\w*\s*=\s*\d+\.\d+/ },
-                        { id: 4, description: 'Create a boolean for isActive', completed: false, regex: /(let|const)\s+\w*[Aa]ctive\w*\s*=\s*(true|false)/ },
-                        { id: 5, description: 'Use console.log with typeof to check a type', completed: false, regex: /console\.log\s*\(\s*typeof\s+\w+\s*\)/ }
+                        { id: 1, description: 'In script.js, create a string variable: let name = "Alice"; (text in quotes)', completed: false, regex: /(let|const)\s+\w+\s*=\s*["'][^"']+["']/ },
+                        { id: 2, description: 'In script.js, create a number variable: let age = 21; (number without quotes)', completed: false, regex: /(let|const)\s+\w*[Aa]ge\w*\s*=\s*\d+/ },
+                        { id: 3, description: 'In script.js, create a decimal variable: let gpa = 3.75; (GPA with decimal point)', completed: false, regex: /(let|const)\s+\w*[Gg][Pp][Aa]\w*\s*=\s*\d+\.\d+/ },
+                        { id: 4, description: 'In script.js, create a boolean variable: let isActive = true; (true or false without quotes)', completed: false, regex: /(let|const)\s+\w*[Aa]ctive\w*\s*=\s*(true|false)/ },
+                        { id: 5, description: 'In script.js, check data type: console.log(typeof name); to see variable type', completed: false, regex: /console\.log\s*\(\s*typeof\s+\w+\s*\)/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1069,15 +1069,15 @@ let full2 = \`\${first} \${last}\`;
 ## String Properties & Methods
 
 \`\`\`javascript
-let text = "President University";
+let text = "ZeroCode";
 
-text.length           // 20
-text.toUpperCase()    // "PRESIDENT UNIVERSITY"
-text.toLowerCase()    // "president university"
-text.includes("Uni")  // true
-text.startsWith("Pre") // true
-text.slice(0, 9)      // "President"
-text.replace("University", "Univ")  // "President Univ"
+text.length           // 8
+text.toUpperCase()    // "ZEROCODE"
+text.toLowerCase()    // "zerocode"
+text.includes("Code") // true
+text.startsWith("Zero") // true
+text.slice(0, 4)      // "Zero"
+text.replace("Code", "Dev")  // "ZeroDev"
 \`\`\`
 
 ---
@@ -1086,10 +1086,10 @@ text.replace("University", "Univ")  // "President Univ"
 Practice string manipulation with student data.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create firstName and lastName variables', completed: false, regex: /(let|const)\s+firstName\s*=[\s\S]*(let|const)\s+lastName\s*=/ },
-                        { id: 2, description: 'Combine them using template literal', completed: false, regex: /`[^`]*\$\{[^}]+\}[^`]*\$\{[^}]+\}[^`]*`/ },
-                        { id: 3, description: 'Use .toUpperCase() on a string', completed: false, regex: /\.toUpperCase\s*\(\s*\)/ },
-                        { id: 4, description: 'Check string length with .length', completed: false, regex: /\.length/ }
+                        { id: 1, description: 'In script.js, create 2 variables: let firstName = "John"; and let lastName = "Doe";', completed: false, regex: /(let|const)\s+firstName\s*=[\s\S]*(let|const)\s+lastName\s*=/ },
+                        { id: 2, description: 'In script.js, combine with template literal: let fullName = `${firstName} ${lastName}`;', completed: false, regex: /`[^`]*\$\{[^}]+\}[^`]*\$\{[^}]+\}[^`]*`/ },
+                        { id: 3, description: 'In script.js, convert to uppercase: console.log(firstName.toUpperCase());', completed: false, regex: /\.toUpperCase\s*\(\s*\)/ },
+                        { id: 4, description: 'In script.js, check string length: console.log(firstName.length);', completed: false, regex: /\.length/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1413,7 +1413,7 @@ let result = grade >= 60 ? "Pass" : "Fail";
 ---
 
 ## Your Mission
-Build a grade classifier for PresUniv grading system.
+Build a grade classifier for ZeroCode grading system.
                     `,
                     tasks: [
                         { id: 1, description: 'Create a score variable', completed: false, regex: /(let|const)\s+score\s*=\s*\d+/ },
@@ -1425,10 +1425,10 @@ Build a grade classifier for PresUniv grading system.
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
 <html><head><title>Grade Classifier</title></head>
-<body><h1>PresUniv Grade Classifier</h1><script src="script.js"></script></body>
+<body><h1>ZeroCode Grade Classifier</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
-                        { name: 'script.js', language: 'javascript', content: `// PresUniv Grade Classifier
+                        { name: 'script.js', language: 'javascript', content: `// ZeroCode Grade Classifier
 // A: 85-100, B: 70-84, C: 55-69, D: 40-54, E: <40
 
 // 1. Create score variable
@@ -1945,7 +1945,7 @@ Manage a student roster.
 # 🎯 Project: GPA Calculator
 
 ## Overview
-Build a GPA calculator for President University students that:
+Build a GPA calculator for ZeroCode students that:
 - Stores course grades
 - Calculates semester GPA
 - Determines academic standing
@@ -1986,14 +1986,14 @@ Build a GPA calculator for President University students that:
     <title>GPA Calculator</title>
 </head>
 <body>
-    <h1>🎓 PresUniv GPA Calculator</h1>
+    <h1>🎓 ZeroCode GPA Calculator</h1>
     <p>Check console for results</p>
     <script src="script.js"></script>
 </body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: linear-gradient(135deg, #0a192f, #112240); color: white; min-height: 100vh; }
 h1 { color: #64ffda; }` },
-                        { name: 'script.js', language: 'javascript', content: `// PresUniv GPA Calculator
+                        { name: 'script.js', language: 'javascript', content: `// ZeroCode GPA Calculator
 // Build your calculator here!
 
 // 1. Create courses array

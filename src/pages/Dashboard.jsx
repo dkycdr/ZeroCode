@@ -1,119 +1,136 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useProgress } from '../contexts/ProgressProvider';
 import { useAuth } from '../contexts/AuthProvider';
-import { courses, LEVELS, getCoursesByLevel, checkPrerequisites, getOverallProgress } from '../data/curriculumStructure';
-import { Code, Palette, Terminal, Database, ArrowRight, Lock, CheckCircle2, Circle, Clock, Award } from 'lucide-react';
+import { LEVELS, getCoursesByLevel, getOverallProgress } from '../data/curriculumStructure';
+import { Code, Palette, Terminal, Database, ArrowRight, CheckCircle2, Clock, Crown, MessageCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 // Icon mapping
 const COURSE_ICONS = {
-    html5: <Code size={24} className="text-orange-500" />,
-    css3: <Palette size={24} className="text-blue-500" />,
-    git: <Terminal size={24} className="text-gray-700" />,
-    tailwind: <Palette size={24} className="text-cyan-500" />,
-    'js-basics': <Terminal size={24} className="text-yellow-500" />,
-    dom: <Code size={24} className="text-purple-500" />,
-    'js-es6': <Terminal size={24} className="text-yellow-600" />,
-    php: <Code size={24} className="text-indigo-600" />,
-    mysql: <Database size={24} className="text-blue-700" />,
-    python: <Terminal size={24} className="text-blue-600" />,
-    react: <Code size={24} className="text-cyan-600" />,
-    typescript: <Code size={24} className="text-blue-700" />,
-    node: <Terminal size={24} className="text-green-600" />,
-    mongodb: <Database size={24} className="text-green-700" />,
-    nextjs: <Code size={24} className="text-black" />,
-    cicd: <Terminal size={24} className="text-gray-600" />
+    html5: <Code size={20} className="text-orange-400" />,
+    css3: <Palette size={20} className="text-blue-400" />,
+    git: <Terminal size={20} className="text-gray-400" />,
+    tailwind: <Palette size={20} className="text-cyan-400" />,
+    'js-basics': <Terminal size={20} className="text-yellow-400" />,
+    dom: <Code size={20} className="text-purple-400" />,
+    'js-es6': <Terminal size={20} className="text-yellow-500" />,
+    php: <Code size={20} className="text-indigo-400" />,
+    mysql: <Database size={20} className="text-blue-400" />,
+    python: <Terminal size={20} className="text-blue-400" />,
+    react: <Code size={20} className="text-cyan-400" />,
+    typescript: <Code size={20} className="text-blue-400" />,
+    node: <Terminal size={20} className="text-green-400" />,
+    mongodb: <Database size={20} className="text-green-400" />,
+    nextjs: <Code size={20} className="text-white" />,
+    cicd: <Terminal size={20} className="text-gray-400" />
+};
+
+const WHATSAPP_NUMBER = '6281234567890'; // Ganti dengan nomor WA admin
+
+const TIER_BADGES = {
+    free: { label: 'Free', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
+    beginner: { label: 'Beginner', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+    intermediate: { label: 'Intermediate', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+    advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+    fullstack: { label: 'Fullstack', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+    admin: { label: 'Admin', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' }
 };
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const [selectedLevel, setSelectedLevel] = useState('all');
     const { completedCourses, loading } = useProgress();
-    const { user } = useAuth();
+    const { user, canAccessCourse, subscriptionTier } = useAuth();
 
     const progress = getOverallProgress(completedCourses);
 
     if (loading) {
         return (
-            <div className="h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-white text-xl">Loading your progress...</div>
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                    <p className="text-gray-400">Loading your progress...</p>
+                </div>
             </div>
         );
     }
 
+    const handleUpgrade = () => {
+        const message = encodeURIComponent(
+            `Hi ZeroCode! I want to upgrade my account.\n\nEmail: ${user?.email}\nName: ${user?.name}\nCurrent tier: ${subscriptionTier}`
+        );
+        window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+    };
+
     const renderCourseCard = (courseData) => {
-        const { id, title, level, duration, prerequisites, shortDesc, order } = courseData;
+        const { id, title, level, duration, shortDesc, order } = courseData;
         const isCompleted = completedCourses.includes(id);
-        const isLocked = !checkPrerequisites(id, completedCourses, user?.email);
-        const canAccess = !isLocked || isCompleted;
+        const hasAccess = canAccessCourse(id);
+        const isLocked = !hasAccess;
 
         return (
             <div
                 key={id}
-                onClick={() => canAccess && navigate(`/course/${id}`)}
+                onClick={() => hasAccess && navigate(`/course/${id}`)}
                 className={clsx(
-                    "group relative bg-white rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-300",
-                    canAccess ? "hover:shadow-2xl cursor-pointer hover:-translate-y-2 border-gray-200 hover:border-presuniv-maroon" : "opacity-50 cursor-not-allowed border-gray-100"
+                    "group relative bg-[#111111] rounded-xl border overflow-hidden transition-all duration-200",
+                    hasAccess 
+                        ? "hover:bg-[#161616] cursor-pointer border-white/10 hover:border-white/20" 
+                        : "opacity-50 cursor-not-allowed border-white/5"
                 )}
             >
-                {/* Top Accent Bar */}
-                <div className={clsx("h-1.5 bg-gradient-to-r", LEVELS[level.toUpperCase()].color)} />
+                {/* Lock overlay for paid content */}
+                {isLocked && (
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                        <div className="text-center p-4">
+                            <Crown size={24} className="text-yellow-400 mx-auto mb-2" />
+                            <p className="text-xs text-gray-400">Upgrade to access</p>
+                        </div>
+                    </div>
+                )}
 
-                <div className="p-6">
-                    {/* Header Row */}
+                <div className="p-5">
+                    {/* Header */}
                     <div className="flex items-start justify-between mb-4">
-                        {/* Icon */}
-                        <div className={clsx(
-                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
-                            LEVELS[level.toUpperCase()].bgColor,
-                            canAccess && "group-hover:scale-110"
-                        )}>
-                            {COURSE_ICONS[id] || <Code size={24} />}
+                        <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                            {COURSE_ICONS[id] || <Code size={20} className="text-gray-400" />}
                         </div>
 
-                        {/* Status Badge */}
                         {isCompleted ? (
-                            <div className="flex items-center space-x-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-full">
-                                <CheckCircle2 size={16} strokeWidth={2.5} />
-                                <span className="text-xs font-bold">Completed</span>
+                            <div className="flex items-center gap-1.5 text-green-400 text-xs">
+                                <CheckCircle2 size={14} />
+                                <span>Done</span>
                             </div>
                         ) : isLocked ? (
-                            <div className="flex items-center space-x-1.5 bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full">
-                                <Lock size={14} />
-                                <span className="text-xs font-medium">Locked</span>
+                            <div className="flex items-center gap-1.5 text-yellow-400 text-xs">
+                                <Crown size={14} />
+                                <span>Premium</span>
                             </div>
-                        ) : (
-                            <div className="flex items-center space-x-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full">
-                                <Circle size={14} strokeWidth={2} />
-                                <span className="text-xs font-medium">Start</span>
-                            </div>
-                        )}
+                        ) : null}
                     </div>
 
-                    {/* Title & Order */}
-                    <div className="mb-3">
-                        <div className="flex items-center space-x-2 mb-1">
-                            <span className="text-xs font-bold text-gray-400">#{order}</span>
-                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{level}</span>
+                    {/* Content */}
+                    <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs text-gray-500">#{order}</span>
+                            <span className="text-xs text-gray-500 uppercase">{level}</span>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 leading-tight">{title}</h3>
+                        <h3 className="text-base font-semibold text-white mb-2">{title}</h3>
+                        <p className="text-sm text-gray-500 line-clamp-2">{shortDesc}</p>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">{shortDesc}</p>
-
-                    {/* Footer Meta */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <div className="flex items-center space-x-1.5 text-gray-500">
-                            <Clock size={14} />
-                            <span className="text-xs font-medium">{duration}</span>
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                        <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                            <Clock size={12} />
+                            <span>{duration}</span>
                         </div>
-                        {canAccess && (
-                            <div className="flex items-center space-x-1 text-presuniv-navy font-semibold text-sm group-hover:text-presuniv-maroon transition-colors">
+                        {hasAccess && (
+                            <div className="flex items-center gap-1 text-white text-sm group-hover:gap-2 transition-all">
                                 <span>{isCompleted ? 'Review' : 'Start'}</span>
-                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight size={14} />
                             </div>
                         )}
                     </div>
@@ -126,66 +143,96 @@ export default function Dashboard() {
         ? Object.values(LEVELS)
         : [LEVELS[selectedLevel.toUpperCase()]];
 
+    const tierBadge = TIER_BADGES[subscriptionTier] || TIER_BADGES.free;
+
     return (
-        <div className="h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50 flex flex-col overflow-hidden">
+        <div className="min-h-screen bg-[#0a0a0a]">
             <Header progress={progress.percentage} />
 
-            <main className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+            <main className="min-h-[calc(100vh-56px)] overflow-y-auto">
+                <div className="max-w-6xl mx-auto px-6 py-12">
 
                     {/* Hero Section */}
-                    <div className="text-center mb-12">
-                        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-presuniv-maroon to-red-600 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6 shadow-lg">
-                            <Award size={14} />
-                            <span>Full-Stack Career Path</span>
-                        </div>
-                        <h1 className="text-6xl font-black text-slate-900 mb-4 tracking-tight">
-                            Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-presuniv-maroon via-red-600 to-orange-500">PULSE</span> Journey
-                        </h1>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
-                            16 modules. 3 levels. Infinite possibilities.
-                        </p>
-
-                        {/* Progress Card */}
-                        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6 border-2 border-gray-100">
-                            <div className="flex justify-between items-center mb-3">
-                                <span className="text-sm font-semibold text-gray-700">Overall Progress</span>
-                                <span className="text-2xl font-black text-presuniv-maroon">{progress.percentage}%</span>
-                            </div>
-                            <div className="h-4 bg-gray-100 rounded-full overflow-hidden shadow-inner mb-2">
-                                <div
-                                    className="h-full bg-gradient-to-r from-presuniv-maroon via-red-600 to-orange-500 transition-all duration-1000 ease-out shadow-lg"
-                                    style={{ width: `${progress.percentage}%` }}
-                                />
-                            </div>
-                            <p className="text-xs text-gray-500 font-medium">
-                                {progress.completed} of {progress.total} modules completed
+                    <div className="flex items-start justify-between mb-8">
+                        <div>
+                            <h1 className="text-4xl font-bold text-white mb-3">
+                                Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}
+                            </h1>
+                            <p className="text-gray-400 text-lg">
+                                Continue your learning journey
                             </p>
+                        </div>
+                        <span className={clsx(
+                            "px-3 py-1.5 rounded-full text-sm font-medium border",
+                            tierBadge.color
+                        )}>
+                            {tierBadge.label}
+                        </span>
+                    </div>
+
+                    {/* Upgrade Banner for Free Users */}
+                    {subscriptionTier === 'free' && (
+                        <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-xl border border-purple-500/30 p-6 mb-8">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white mb-1">🚀 Upgrade for Full Access</h3>
+                                    <p className="text-gray-400 text-sm">
+                                        You're on a free account. Upgrade to unlock all courses!
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={handleUpgrade}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                                >
+                                    <MessageCircle size={16} />
+                                    Upgrade Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Progress Card */}
+                    <div className="bg-[#111111] rounded-xl border border-white/10 p-6 mb-12">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <p className="text-sm text-gray-400 mb-1">Overall Progress</p>
+                                <p className="text-3xl font-bold text-white">{progress.percentage}%</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm text-gray-400 mb-1">Completed</p>
+                                <p className="text-lg text-white">{progress.completed} / {progress.total} courses</p>
+                            </div>
+                        </div>
+                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-white transition-all duration-500"
+                                style={{ width: `${progress.percentage}%` }}
+                            />
                         </div>
                     </div>
 
                     {/* Level Filter */}
-                    <div className="flex justify-center space-x-3 mb-10">
+                    <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
                         <button
                             onClick={() => setSelectedLevel('all')}
                             className={clsx(
-                                "px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300",
+                                "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
                                 selectedLevel === 'all'
-                                    ? "bg-slate-900 text-white shadow-lg scale-105"
-                                    : "bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200"
+                                    ? "bg-white text-black"
+                                    : "bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10"
                             )}
                         >
-                            All Levels
+                            All Courses
                         </button>
                         {Object.values(LEVELS).map(level => (
                             <button
                                 key={level.id}
                                 onClick={() => setSelectedLevel(level.id)}
                                 className={clsx(
-                                    "px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center space-x-2",
+                                    "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap",
                                     selectedLevel === level.id
-                                        ? `bg-gradient-to-r ${level.color} text-white shadow-lg scale-105`
-                                        : "bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200"
+                                        ? "bg-white text-black"
+                                        : "bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10"
                                 )}
                             >
                                 <span>{level.icon}</span>
@@ -195,40 +242,30 @@ export default function Dashboard() {
                     </div>
 
                     {/* Level Sections */}
-                    {filteredLevels.map((level, idx) => {
+                    {filteredLevels.map((level) => {
                         const levelCourses = getCoursesByLevel(level.id);
                         const levelCompleted = levelCourses.filter(c => completedCourses.includes(c.id)).length;
-                        const levelProgress = Math.round((levelCompleted / levelCourses.length) * 100);
 
                         return (
-                            <div key={level.id} className="mb-16">
+                            <div key={level.id} className="mb-12">
                                 {/* Level Header */}
-                                <div className={clsx(
-                                    "bg-gradient-to-r p-8 rounded-3xl shadow-2xl mb-8 border-2",
-                                    level.color,
-                                    level.borderColor
-                                )}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <span className="text-5xl">{level.icon}</span>
-                                            <div>
-                                                <div className="text-white/80 text-sm font-semibold mb-1">LEVEL {idx + 1}</div>
-                                                <h2 className="text-4xl font-black text-white tracking-tight">
-                                                    {level.label.en.toUpperCase()}
-                                                </h2>
-                                                <p className="text-white/90 text-base font-light mt-1">{level.tagline.id}</p>
-                                            </div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">{level.icon}</span>
+                                        <div>
+                                            <h2 className="text-xl font-semibold text-white">
+                                                {level.label.en}
+                                            </h2>
+                                            <p className="text-sm text-gray-500">{level.tagline.en}</p>
                                         </div>
-                                        <div className="text-right bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4">
-                                            <div className="text-white/80 text-xs font-semibold mb-1">PROGRESS</div>
-                                            <div className="text-4xl font-black text-white">{levelProgress}%</div>
-                                            <div className="text-white/70 text-xs mt-1">{levelCompleted}/{levelCourses.length} Done</div>
-                                        </div>
+                                    </div>
+                                    <div className="text-sm text-gray-400">
+                                        {levelCompleted} / {levelCourses.length} completed
                                     </div>
                                 </div>
 
                                 {/* Course Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {levelCourses.map(course => renderCourseCard(course))}
                                 </div>
                             </div>

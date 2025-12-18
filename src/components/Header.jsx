@@ -1,85 +1,112 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
-import { User, LogOut, Code2, BookOpen, Users, Bell } from 'lucide-react';
+import { User, LogOut, Code2, Shield } from 'lucide-react';
 
 export default function Header({ progress }) {
-    const { user, signOut } = useAuth();
+    const { user, logout, isAdmin } = useAuth();
+    const navigate = useNavigate();
+    const [clickCount, setClickCount] = useState(0);
+    const clickTimer = useRef(null);
+
+    // Hidden admin access - click logo 5 times quickly
+    const handleLogoClick = (e) => {
+        e.preventDefault();
+        
+        setClickCount(prev => prev + 1);
+        
+        // Reset after 2 seconds of no clicks
+        clearTimeout(clickTimer.current);
+        clickTimer.current = setTimeout(() => setClickCount(0), 2000);
+        
+        // 5 clicks = go to admin access
+        if (clickCount >= 4) {
+            setClickCount(0);
+            if (isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/admin/access');
+            }
+        }
+    };
 
     return (
-        <header className="h-16 bg-[#0a192f]/95 backdrop-blur-md text-white flex items-center justify-between px-6 border-b border-gray-800 shadow-lg relative z-30">
-            {/* Logo Section */}
-            <div className="flex items-center space-x-6">
-                <Link to="/dashboard" className="flex items-center space-x-3 group">
-                    <img
-                        src="/assets/pulse_logo_horizontal_1766021930585.png"
-                        alt="PULSE - President University Learning System"
-                        className="h-10 object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                </Link>
+        <header className="h-14 bg-[#0a0a0a] text-white flex items-center justify-between px-6 border-b border-white/10">
+            {/* Logo */}
+            <div className="flex items-center gap-8">
+                <button onClick={handleLogoClick} className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                        <Code2 size={18} className="text-white" />
+                    </div>
+                    <span className="text-lg font-semibold">ZeroCode</span>
+                </button>
 
-                <div className="h-8 w-px bg-gray-700 mx-2 hidden lg:block"></div>
-
-                {/* Navigation Links */}
-                <nav className="hidden lg:flex items-center space-x-1 bg-white/5 rounded-full p-1 border border-white/10">
-                    <Link to="/dashboard" className="flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                        <Code2 size={16} />
-                        <span>Curriculum</span>
+                {/* Nav */}
+                <nav className="hidden md:flex items-center gap-1">
+                    <Link 
+                        to="/dashboard" 
+                        className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        Curriculum
                     </Link>
-                    <Link to="/resources" className="flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                        <BookOpen size={16} />
-                        <span>Library</span>
+                    <Link 
+                        to="/resources" 
+                        className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        Library
                     </Link>
-                    <Link to="/community" className="flex items-center space-x-2 px-4 py-1.5 rounded-full text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
-                        <Users size={16} />
-                        <span>Forum</span>
+                    <Link 
+                        to="/community" 
+                        className="px-3 py-1.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        Forum
                     </Link>
                 </nav>
             </div>
 
-            {/* Right Section */}
-            <div className="flex items-center space-x-6">
-                {/* Progress Stats */}
+            {/* Right */}
+            <div className="flex items-center gap-4">
+                {/* Progress */}
                 {progress !== undefined && (
-                    <div className="hidden md:flex flex-col w-40 group cursor-default">
-                        <div className="flex justify-between text-xs font-medium text-gray-400 mb-1.5 px-1">
-                            <span className="group-hover:text-red-400 transition-colors">Lesson Progress</span>
-                            <span className="text-white font-bold">{Math.round(progress)}%</span>
-                        </div>
-                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden border border-gray-700/50">
+                    <div className="hidden sm:flex items-center gap-3">
+                        <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-presuniv-maroon to-red-500 shadow-[0_0_10px_rgba(128,0,0,0.5)] transition-all duration-700 ease-out"
+                                className="h-full bg-white transition-all duration-500"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
+                        <span className="text-xs text-gray-400">{Math.round(progress)}%</span>
                     </div>
                 )}
 
-                <div className="flex items-center space-x-4 pl-6 border-l border-gray-700">
-                    <button className="text-gray-400 hover:text-white transition-colors relative">
-                        <Bell size={20} />
-                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0a192f]"></span>
-                    </button>
-
-                    <div className="flex items-center space-x-3">
-                        <Link to="/profile" className="flex items-center space-x-3 group">
-                            <div className="text-right hidden xl:block">
-                                <div className="text-sm font-semibold text-white group-hover:text-red-400 transition-colors">{user?.name || user?.email?.split('@')[0] || 'Student'}</div>
-                                <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{user?.major || 'Student'}</div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border-2 border-gray-600 group-hover:border-red-500 flex items-center justify-center transition-all shadow-lg overflow-hidden">
-                                <User size={20} className="text-gray-300" />
-                            </div>
-                        </Link>
-
+                {/* User */}
+                <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                    {isAdmin && (
                         <button
-                            onClick={() => signOut()}
-                            className="p-2.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                            title="Sign Out"
+                            onClick={() => navigate('/admin')}
+                            className="p-2 rounded-lg text-yellow-400 hover:bg-yellow-500/10 transition-all"
+                            title="Admin Dashboard"
                         >
-                            <LogOut size={18} />
+                            <Shield size={16} />
                         </button>
-                    </div>
+                    )}
+                    
+                    <Link to="/profile" className="flex items-center gap-2">
+                        <span className="text-sm text-gray-300 hidden sm:block">
+                            {user?.name || user?.email?.split('@')[0] || 'User'}
+                        </span>
+                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                            <User size={16} className="text-gray-400" />
+                        </div>
+                    </Link>
+
+                    <button
+                        onClick={() => logout()}
+                        className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+                        title="Sign Out"
+                    >
+                        <LogOut size={16} />
+                    </button>
                 </div>
             </div>
         </header>

@@ -1,4 +1,4 @@
-// PULSE Career Path: Complete Course Catalog
+// ZeroCode Career Path: Complete Course Catalog
 // 16 Modules across 3 Levels (Beginner → Intermediate → Advanced)
 
 export const LEVELS = {

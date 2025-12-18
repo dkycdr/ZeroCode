@@ -81,7 +81,7 @@ A component is a **reusable piece of UI**. Think of it like LEGO blocks - you bu
 
 \`\`\`jsx
 function Welcome() {
-    return <h1>Hello, PULSE!</h1>;
+    return <h1>Hello, ZeroCode!</h1>;
 }
 \`\`\`
 
@@ -121,10 +121,10 @@ function Card() {
 Create your first React component!
                     `,
                     tasks: [
-                        { id: 1, description: 'Create a function called Greeting', completed: false, regex: /function\s+Greeting\s*\(/ },
-                        { id: 2, description: 'Return JSX with an <h1> tag', completed: false, regex: /return\s*\(?[\s\S]*<h1>/ },
-                        { id: 3, description: 'Add a <p> tag below the h1', completed: false, regex: /<h1>[\s\S]*<\/h1>[\s\S]*<p>/ },
-                        { id: 4, description: 'Wrap elements in a fragment <> or div', completed: false, regex: /(<>|<div)[\s\S]*<h1>[\s\S]*<p>[\s\S]*(<\/>|<\/div>)/ }
+                        { id: 1, description: 'In script.js, create component: function Greeting() { return ... }', completed: false, regex: /function\s+Greeting\s*\(/ },
+                        { id: 2, description: 'Inside Greeting return, add <h1>Hello ZeroCode!</h1>', completed: false, regex: /return\s*\(?[\s\S]*<h1>/ },
+                        { id: 3, description: 'Inside Greeting return, add <p>Welcome to React</p> after h1', completed: false, regex: /<h1>[\s\S]*<\/h1>[\s\S]*<p>/ },
+                        { id: 4, description: 'Wrap h1 and p with <> ... </> or <div> ... </div> because React needs 1 parent element', completed: false, regex: /(<>|<div)[\s\S]*<h1>[\s\S]*<p>[\s\S]*(<\/>|<\/div>)/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -327,11 +327,11 @@ function Card({ children }) {
 Create a reusable StudentCard component with props.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create StudentCard function with props', completed: false, regex: /function\s+StudentCard\s*\(\s*\{/ },
-                        { id: 2, description: 'Destructure name prop', completed: false, regex: /\{\s*name[^}]*\}/ },
-                        { id: 3, description: 'Destructure major prop', completed: false, regex: /\{\s*[^}]*major[^}]*\}/ },
-                        { id: 4, description: 'Display props in JSX using {}', completed: false, regex: /\{name\}[\s\S]*\{major\}|\{major\}[\s\S]*\{name\}/ },
-                        { id: 5, description: 'Use the component with props', completed: false, regex: /<StudentCard\s+[^>]*name=/ }
+                        { id: 1, description: 'In script.js, create component: function StudentCard({ name, major }) { ... }', completed: false, regex: /function\s+StudentCard\s*\(\s*\{/ },
+                        { id: 2, description: 'In StudentCard parameter, destructure name prop: function StudentCard({ name, ... })', completed: false, regex: /\{\s*name[^}]*\}/ },
+                        { id: 3, description: 'In StudentCard parameter, destructure major prop: function StudentCard({ name, major })', completed: false, regex: /\{\s*[^}]*major[^}]*\}/ },
+                        { id: 4, description: 'In StudentCard return, display props: <h3>{name}</h3> and <p>{major}</p>', completed: false, regex: /\{name\}[\s\S]*\{major\}|\{major\}[\s\S]*\{name\}/ },
+                        { id: 5, description: 'In App, use component: <StudentCard name="Alice" major="Software Engineering" />', completed: false, regex: /<StudentCard\s+[^>]*name=/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -520,11 +520,11 @@ setUser({ ...user, name: 'Alice' });
 Build a counter with increment, decrement, and reset.
                     `,
                     tasks: [
-                        { id: 1, description: 'Import or use useState', completed: false, regex: /useState/ },
-                        { id: 2, description: 'Create count state with initial value 0', completed: false, regex: /useState\s*\(\s*0\s*\)/ },
-                        { id: 3, description: 'Create increment function using setCount', completed: false, regex: /setCount\s*\([^)]*\+/ },
-                        { id: 4, description: 'Create decrement function', completed: false, regex: /setCount\s*\([^)]*-/ },
-                        { id: 5, description: 'Add onClick handlers to buttons', completed: false, regex: /onClick\s*=\s*\{/ }
+                        { id: 1, description: 'In script.js, useState is available from React (const { useState } = React;)', completed: false, regex: /useState/ },
+                        { id: 2, description: 'In Counter, create state: const [count, setCount] = useState(0);', completed: false, regex: /useState\s*\(\s*0\s*\)/ },
+                        { id: 3, description: 'In Counter, create increment function: const increment = () => setCount(count + 1);', completed: false, regex: /setCount\s*\([^)]*\+/ },
+                        { id: 4, description: 'In Counter, create decrement function: const decrement = () => setCount(count - 1);', completed: false, regex: /setCount\s*\([^)]*-/ },
+                        { id: 5, description: 'On button, add onClick: <button onClick={increment}>+</button>', completed: false, regex: /onClick\s*=\s*\{/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -651,11 +651,11 @@ function Form() {
 Build a login form with controlled inputs.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create email state', completed: false, regex: /useState\s*\(\s*['"]['"]\s*\)[\s\S]*email|email[\s\S]*useState\s*\(\s*['"]['"]\s*\)/ },
-                        { id: 2, description: 'Create password state', completed: false, regex: /useState\s*\(\s*['"]['"]\s*\)[\s\S]*password|password[\s\S]*useState\s*\(\s*['"]['"]\s*\)/ },
-                        { id: 3, description: 'Add value prop to inputs', completed: false, regex: /value\s*=\s*\{(email|password)\}/ },
-                        { id: 4, description: 'Add onChange handlers', completed: false, regex: /onChange\s*=\s*\{.*set(Email|Password)/ },
-                        { id: 5, description: 'Handle form submission with onSubmit', completed: false, regex: /onSubmit\s*=\s*\{/ }
+                        { id: 1, description: 'In LoginForm, create email state: const [email, setEmail] = useState("");', completed: false, regex: /useState\s*\(\s*['"]['"]\s*\)[\s\S]*email|email[\s\S]*useState\s*\(\s*['"]['"]\s*\)/ },
+                        { id: 2, description: 'In LoginForm, create password state: const [password, setPassword] = useState("");', completed: false, regex: /useState\s*\(\s*['"]['"]\s*\)[\s\S]*password|password[\s\S]*useState\s*\(\s*['"]['"]\s*\)/ },
+                        { id: 3, description: 'On email input, add value={email} for controlled input', completed: false, regex: /value\s*=\s*\{(email|password)\}/ },
+                        { id: 4, description: 'On email input, add onChange={(e) => setEmail(e.target.value)}', completed: false, regex: /onChange\s*=\s*\{.*set(Email|Password)/ },
+                        { id: 5, description: 'On form, add onSubmit={handleSubmit} to handle submission', completed: false, regex: /onSubmit\s*=\s*\{/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -692,7 +692,7 @@ function LoginForm() {
     
     return (
         <form className="login-form" onSubmit={handleSubmit}>
-            <h2>🔐 PULSE Login</h2>
+            <h2>🔐 ZeroCode Login</h2>
             
             {/* 3. Add controlled inputs */}
             <input
@@ -880,11 +880,11 @@ useEffect(() => {
 Fetch and display a list of posts from an API.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create posts state as empty array', completed: false, regex: /useState\s*\(\s*\[\s*\]\s*\)/ },
-                        { id: 2, description: 'Create loading state', completed: false, regex: /useState\s*\(\s*true\s*\)/ },
-                        { id: 3, description: 'Use useEffect with empty dependency array', completed: false, regex: /useEffect\s*\([^)]*,\s*\[\s*\]\s*\)/ },
-                        { id: 4, description: 'Fetch data inside useEffect', completed: false, regex: /fetch\s*\(/ },
-                        { id: 5, description: 'Map over posts to render list', completed: false, regex: /\.map\s*\(/ }
+                        { id: 1, description: 'In PostList, create state: const [posts, setPosts] = useState([]); to store data', completed: false, regex: /useState\s*\(\s*\[\s*\]\s*\)/ },
+                        { id: 2, description: 'In PostList, create loading state: const [loading, setLoading] = useState(true);', completed: false, regex: /useState\s*\(\s*true\s*\)/ },
+                        { id: 3, description: 'In PostList, use useEffect with [] to fetch only once: useEffect(() => { ... }, []);', completed: false, regex: /useEffect\s*\([^)]*,\s*\[\s*\]\s*\)/ },
+                        { id: 4, description: 'Inside useEffect, fetch data: fetch("https://jsonplaceholder.typicode.com/posts")', completed: false, regex: /fetch\s*\(/ },
+                        { id: 5, description: 'In return, render list: posts.map(post => <div key={post.id}>{post.title}</div>)', completed: false, regex: /\.map\s*\(/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1046,7 +1046,7 @@ function TodoApp() {
     
     return (
         <div className="todo-app">
-            <h1>✅ PULSE Todo</h1>
+            <h1>✅ ZeroCode Todo</h1>
             
             {/* Input section */}
             <div className="todo-input">

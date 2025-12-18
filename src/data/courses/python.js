@@ -72,7 +72,7 @@ export const pythonCourse = {
 
 \`\`\`python
 print("Hello, World!")
-print("Hello", "PULSE")  # Multiple arguments
+print("Hello", "ZeroCode")  # Multiple arguments
 print(42)
 print(3.14)
 \`\`\`
@@ -149,15 +149,15 @@ age = int(input("Enter your age: "))  # Convert to int
 Create Python variables and use print statements.
                     `,
                     tasks: [
-                        { id: 1, description: 'Use print() to output text', completed: false, regex: /print\s*\(/ },
-                        { id: 2, description: 'Create a variable and assign a value', completed: false, regex: /\w+\s*=\s*["'\d]/ },
-                        { id: 3, description: 'Use f-string with {variable}', completed: false, regex: /f["'][^"']*\{[^}]+\}/ },
-                        { id: 4, description: 'Create a list with []', completed: false, regex: /\w+\s*=\s*\[/ }
+                        { id: 1, description: 'In main.py, write: print("Hello, ZeroCode!") to output to console', completed: false, regex: /print\s*\(/ },
+                        { id: 2, description: 'In main.py, create variable: name = "Alice" or age = 21 (no let/const needed)', completed: false, regex: /\w+\s*=\s*["'\d]/ },
+                        { id: 3, description: 'In main.py, use f-string: print(f"Hello {name}!") to embed variables', completed: false, regex: /f["'][^"']*\{[^}]+\}/ },
+                        { id: 4, description: 'In main.py, create list: courses = ["HTML", "CSS", "Python"]', completed: false, regex: /\w+\s*=\s*\[/ }
                     ],
                     files: [
                         { name: 'main.py', language: 'python', content: `# Python Basics Practice
 
-# 1. Print "Hello, PULSE!"
+# 1. Print "Hello, ZeroCode!"
 
 
 # 2. Create variables for student info
@@ -308,10 +308,10 @@ evens = [i for i in range(10) if i % 2 == 0]
 Create a grade calculator with loops and conditionals.
                     `,
                     tasks: [
-                        { id: 1, description: 'Write if/elif/else statement', completed: false, regex: /if\s+[^:]+:[\s\S]*elif[\s\S]*else\s*:/ },
-                        { id: 2, description: 'Use for loop with range()', completed: false, regex: /for\s+\w+\s+in\s+range\s*\(/ },
-                        { id: 3, description: 'Use logical operator (and, or, not)', completed: false, regex: /\s(and|or|not)\s/ },
-                        { id: 4, description: 'Create a list comprehension', completed: false, regex: /\[[^\]]+for\s+\w+\s+in\s+[^\]]+\]/ }
+                        { id: 1, description: 'In main.py, write condition: if grade >= 85: print("A") elif grade >= 70: print("B") else: print("C")', completed: false, regex: /if\s+[^:]+:[\s\S]*elif[\s\S]*else\s*:/ },
+                        { id: 2, description: 'In main.py, write loop: for i in range(5): print(i) to loop 0-4', completed: false, regex: /for\s+\w+\s+in\s+range\s*\(/ },
+                        { id: 3, description: 'In main.py, use logical operator: if age >= 18 and has_id: (use and/or/not)', completed: false, regex: /\s(and|or|not)\s/ },
+                        { id: 4, description: 'In main.py, create list comprehension: squares = [x**2 for x in range(5)]', completed: false, regex: /\[[^\]]+for\s+\w+\s+in\s+[^\]]+\]/ }
                     ],
                     files: [
                         { name: 'main.py', language: 'python', content: `# Grade Calculator
@@ -423,10 +423,10 @@ evens = list(filter(lambda x: x % 2 == 0, numbers))
 Create utility functions for student data.
                     `,
                     tasks: [
-                        { id: 1, description: 'Define function with def keyword', completed: false, regex: /def\s+\w+\s*\(/ },
-                        { id: 2, description: 'Function should accept parameters', completed: false, regex: /def\s+\w+\s*\([^)]+\)/ },
-                        { id: 3, description: 'Use return statement', completed: false, regex: /return\s+[^\n]+/ },
-                        { id: 4, description: 'Call the function and print result', completed: false, regex: /print\s*\([^)]*\w+\s*\(/ }
+                        { id: 1, description: 'In main.py, create function: def calculate_gpa(grades): (use def, not function)', completed: false, regex: /def\s+\w+\s*\(/ },
+                        { id: 2, description: 'In main.py, function accepts parameter: def calculate_gpa(grades): - grades is list of values', completed: false, regex: /def\s+\w+\s*\([^)]+\)/ },
+                        { id: 3, description: 'Inside function, return result: return sum(grades) / len(grades)', completed: false, regex: /return\s+[^\n]+/ },
+                        { id: 4, description: 'In main.py, call function: print(calculate_gpa([3.5, 3.8, 4.0]))', completed: false, regex: /print\s*\([^)]*\w+\s*\(/ }
                     ],
                     files: [
                         { name: 'main.py', language: 'python', content: `# Student Utility Functions
@@ -618,7 +618,7 @@ print(student.get("email", "N/A"))  # N/A (default)
 
 # Modifying
 student["gpa"] = 3.9             # Update
-student["email"] = "alice@presuniv.ac.id"  # Add new
+student["email"] = "alice@zerocode.ac.id"  # Add new
 
 # Removing
 del student["age"]               # Delete key
@@ -698,10 +698,10 @@ unique = list(set(numbers))   # [1, 2, 3, 4]
 Build a student database with dictionaries.
                     `,
                     tasks: [
-                        { id: 1, description: 'Create dictionary with {} and key-value pairs', completed: false, regex: /\w+\s*=\s*\{[^}]*["']\w+["']\s*:\s*[^}]+\}/ },
-                        { id: 2, description: 'Access dictionary value with ["key"]', completed: false, regex: /\w+\s*\[\s*["'][^"']+["']\s*\]/ },
-                        { id: 3, description: 'Use .items() to iterate', completed: false, regex: /\.items\s*\(\)/ },
-                        { id: 4, description: 'Create a list of dictionaries', completed: false, regex: /\[\s*\{[^}]+\}[^]]*\]/ }
+                        { id: 1, description: 'In main.py, create dictionary: student = {"name": "Alice", "age": 21, "major": "SE"}', completed: false, regex: /\w+\s*=\s*\{[^}]*["']\w+["']\s*:\s*[^}]+\}/ },
+                        { id: 2, description: 'In main.py, access value: print(student["name"]) to get name', completed: false, regex: /\w+\s*\[\s*["'][^"']+["']\s*\]/ },
+                        { id: 3, description: 'In main.py, loop dictionary: for key, value in student.items(): print(key, value)', completed: false, regex: /\.items\s*\(\)/ },
+                        { id: 4, description: 'In main.py, create list of dicts: students = [{"name": "Alice"}, {"name": "Bob"}]', completed: false, regex: /\[\s*\{[^}]+\}[^]]*\]/ }
                     ],
                     files: [
                         { name: 'main.py', language: 'python', content: `# Student Database
@@ -830,7 +830,7 @@ print(f"Alice's GPA: {alice.get_gpa()}")
 \`\`\`python
 class University:
     # Class variable (shared by all instances)
-    name = "President University"
+    name = "ZeroCode"
     
     def __init__(self, campus):
         # Instance variable (unique to each instance)
@@ -839,7 +839,7 @@ class University:
 jababeka = University("Jababeka")
 cikarang = University("Cikarang")
 
-print(University.name)      # President University
+print(University.name)      # ZeroCode
 print(jababeka.campus)      # Jababeka
 \`\`\`
 
@@ -985,10 +985,10 @@ print(student.gpa)  # Uses getter
 Create a course management system with classes.
                     `,
                     tasks: [
-                        { id: 1, description: 'Define class with class keyword', completed: false, regex: /class\s+\w+/ },
-                        { id: 2, description: 'Create __init__ constructor', completed: false, regex: /def\s+__init__\s*\(/ },
-                        { id: 3, description: 'Define at least 2 methods', completed: false, regex: /def\s+\w+\s*\([^)]*self[^)]*\)[\s\S]*def\s+\w+\s*\([^)]*self/ },
-                        { id: 4, description: 'Create object instance', completed: false, regex: /\w+\s*=\s*\w+\s*\(/ }
+                        { id: 1, description: 'In main.py, create class: class Student: (class names use PascalCase)', completed: false, regex: /class\s+\w+/ },
+                        { id: 2, description: 'Inside class, create constructor: def __init__(self, name, student_id): self.name = name', completed: false, regex: /def\s+__init__\s*\(/ },
+                        { id: 3, description: 'Inside class, create 2 methods: def enroll(self, course): and def get_info(self):', completed: false, regex: /def\s+\w+\s*\([^)]*self[^)]*\)[\s\S]*def\s+\w+\s*\([^)]*self/ },
+                        { id: 4, description: 'In main.py, create object: alice = Student("Alice", "001") to instantiate class', completed: false, regex: /\w+\s*=\s*\w+\s*\(/ }
                     ],
                     files: [
                         { name: 'main.py', language: 'python', content: `# Course Management System

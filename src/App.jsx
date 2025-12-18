@@ -1,19 +1,35 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthProvider';
 import { ProgressProvider } from './contexts/ProgressProvider';
+import LandingPage from './pages/LandingPage';
 import LearningLayout from './pages/LearningLayout';
 import CourseSyllabus from './pages/CourseSyllabus';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
-import Library from './pages/Library';
-import Forum from './pages/Forum';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminAccess from './pages/AdminAccess';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
     if (loading) return null;
     if (!user) return <Navigate to="/login" />;
+    return children;
+};
+
+const AdminRoute = ({ children }) => {
+    const { user, loading, isAdmin } = useAuth();
+    if (loading) return null;
+    if (!user) return <Navigate to="/login" />;
+    if (!isAdmin) return <Navigate to="/dashboard" />;
+    return children;
+};
+
+const PublicRoute = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) return null;
+    if (user) return <Navigate to="/dashboard" />;
     return children;
 };
 
@@ -23,8 +39,30 @@ function App() {
             <AuthProvider>
                 <ProgressProvider>
                 <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                    {/* Public Routes */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={
+                        <PublicRoute>
+                            <Login />
+                        </PublicRoute>
+                    } />
+                    <Route path="/register" element={
+                        <PublicRoute>
+                            <Register />
+                        </PublicRoute>
+                    } />
+
+                    {/* Admin Routes */}
+                    <Route path="/admin/access" element={
+                        <ProtectedRoute>
+                            <AdminAccess />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin" element={
+                        <AdminRoute>
+                            <AdminDashboard />
+                        </AdminRoute>
+                    } />
 
                     {/* Course Syllabus - shows all units/lessons */}
                     <Route path="/course/:courseId" element={
@@ -57,19 +95,9 @@ function App() {
                             <Dashboard />
                         </ProtectedRoute>
                     } />
-                    <Route path="/library" element={
-                        <ProtectedRoute>
-                            <Library />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/resources" element={<Navigate to="/library" />} />
-                    <Route path="/forum" element={
-                        <ProtectedRoute>
-                            <Forum />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/community" element={<Navigate to="/forum" />} />
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                    
+                    {/* Catch all */}
+                    <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
                 </ProgressProvider>
             </AuthProvider>

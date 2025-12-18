@@ -2,9 +2,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-presuniv-navy: #003366;
-  --color-presuniv-maroon: #800000;
-  --color-presuniv-light: #F5F5F5;
+  --color-zerocode-dark: #0a0a0a;
+  --color-zerocode-card: #111111;
+  --color-zerocode-border: rgba(255, 255, 255, 0.1);
 }
 
 :root {
@@ -24,13 +24,16 @@ body,
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Only prevent scroll on specific pages that need it (like learning layout) */
+.no-scroll {
   overflow: hidden;
-  /* Prevent global scroll */
 }
 
 body {
-  background-color: #ffffff;
-  color: #1e293b;
+  background-color: #0a0a0a;
+  color: #e5e5e5;
 }
 
 /* Custom Scrollbar */
@@ -44,12 +47,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #333333;
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #444444;
 }
 
 /* Prose overrides for Instruction Pane */
@@ -62,7 +65,7 @@ body {
 .prose h3 {
   margin-top: 1.5em;
   margin-bottom: 0.8em;
-  color: #0f172a;
+  color: #ffffff;
 }
 
 .prose code {

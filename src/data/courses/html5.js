@@ -238,7 +238,7 @@ Paragraphs use \`<p>\` tag:
 Links use \`<a>\` tag with \`href\` attribute:
 
 \`\`\`html
-<a href="https://presuniv.ac.id">Visit PresUniv</a>
+<a href="https://zerocode.ac.id">Visit ZeroCode</a>
 \`\`\`
 
 - **\`href\`** = where the link goes
@@ -285,14 +285,14 @@ Create a simple "About Me" page with:
 - A heading with your name
 - A paragraph about yourself
 - A list of your hobbies
-- A link to President University website
+- A link to ZeroCode website
                     `,
                     tasks: [
-                        { id: 1, description: 'Add <!DOCTYPE html> at the top', completed: false, regex: /<!DOCTYPE html>/i },
-                        { id: 2, description: 'Add <html>, <head>, and <body> tags', completed: false, regex: /<html>[\s\S]*<head>[\s\S]*<body>/i },
-                        { id: 3, description: 'Add an <h1> heading', completed: false, regex: /<h1>.*<\/h1>/ },
-                        { id: 4, description: 'Add at least one <p> paragraph', completed: false, regex: /<p>.*<\/p>/ },
-                        { id: 5, description: 'Add a list (<ul> or <ol>)', completed: false, regex: /<(ul|ol)>[\s\S]*<li>[\s\S]*<\/(ul|ol)>/ }
+                        { id: 1, description: 'Write <!DOCTYPE html> at the very top of the file to declare HTML5 document', completed: false, regex: /<!DOCTYPE html>/i },
+                        { id: 2, description: 'Create basic structure: <html> wraps everything, <head> for metadata, <body> for content', completed: false, regex: /<html>[\s\S]*<head>[\s\S]*<body>/i },
+                        { id: 3, description: 'Add <h1>Your Name</h1> inside <body> as the main heading', completed: false, regex: /<h1>.*<\/h1>/ },
+                        { id: 4, description: 'Add <p>about yourself</p> inside <body> after <h1> for a paragraph', completed: false, regex: /<p>.*<\/p>/ },
+                        { id: 5, description: 'Add <ul> or <ol> inside <body> with at least 3 <li> items for your hobbies list', completed: false, regex: /<(ul|ol)>[\s\S]*<li>[\s\S]*<\/(ul|ol)>/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!-- Write your first HTML page here! -->
@@ -309,7 +309,7 @@ Create a simple "About Me" page with:
 <!-- Step 4: Add a list of your hobbies -->
 
 
-<!-- Step 5: Add a link to PresUniv -->
+<!-- Step 5: Add a link to ZeroCode -->
 
 ` },
                         { name: 'style.css', language: 'css', content: '' },
@@ -341,7 +341,7 @@ Attributes give **extra information** to tags. They go inside the opening tag:
 Tells where the link goes:
 
 \`\`\`html
-<a href="https://presuniv.ac.id">PresUniv</a>
+<a href="https://zerocode.ac.id">ZeroCode</a>
 <a href="about.html">About Page</a>
 <a href="#section">Jump to section</a>
 \`\`\`
@@ -577,7 +577,7 @@ HTML uses **tags** to define different types of content:
 \`\`\`html
 <h1>This is a heading</h1>
 <p>This is a paragraph of text.</p>
-<a href="https://presuniv.ac.id">This is a link</a>
+<a href="https://zerocode.ac.id">This is a link</a>
 <img src="logo.png" alt="Logo">
 \`\`\`
 
@@ -648,7 +648,7 @@ Contains **visible content** - everything users see on the page.
 
 ## Your Mission
 
-Create a basic HTML page for President University with:
+Create a basic HTML page for ZeroCode with:
 1. Proper DOCTYPE declaration
 2. HTML tag with English language
 3. Head section with a title
@@ -657,31 +657,31 @@ Create a basic HTML page for President University with:
                     tasks: [
                         { 
                             id: 1, 
-                            description: 'Add <!DOCTYPE html> at the very top', 
+                            description: 'Write <!DOCTYPE html> at line 1 (very top) to declare HTML5 document', 
                             completed: false, 
                             regex: /<!DOCTYPE\s+html>/i 
                         },
                         { 
                             id: 2, 
-                            description: 'Add <html lang="en"> opening tag', 
+                            description: 'Write <html lang="en"> at line 2 as the opening tag for HTML document', 
                             completed: false, 
                             regex: /<html[^>]*lang=["']en["'][^>]*>/i 
                         },
                         { 
                             id: 3, 
-                            description: 'Add a <title> inside <head> with text "PULSE"', 
+                            description: 'Add <title>ZeroCode</title> inside <head> section for browser tab title', 
                             completed: false, 
-                            regex: /<head>[\s\S]*<title>[\s\S]*PULSE[\s\S]*<\/title>[\s\S]*<\/head>/i 
+                            regex: /<head>[\s\S]*<title>[\s\S]*ZeroCode[\s\S]*<\/title>[\s\S]*<\/head>/i 
                         },
                         { 
                             id: 4, 
-                            description: 'Add an <h1> inside <body> with text "Welcome"', 
+                            description: 'Add <h1>Welcome</h1> inside <body> section as the main page heading', 
                             completed: false, 
                             regex: /<body>[\s\S]*<h1>[\s\S]*Welcome[\s\S]*<\/h1>[\s\S]*<\/body>/i 
                         },
                         { 
                             id: 5, 
-                            description: 'Add a <p> paragraph with any text', 
+                            description: 'Add <p>your text here</p> inside <body> after <h1> (minimum 10 characters)', 
                             completed: false, 
                             regex: /<body>[\s\S]*<p>[\s\S]{10,}<\/p>[\s\S]*<\/body>/i 
                         }
@@ -777,31 +777,31 @@ Build a simple "About Me" section using various HTML elements.
                     tasks: [
                         { 
                             id: 1, 
-                            description: 'Create an <h1> with your name or "Student Name"', 
+                            description: 'Add <h1>Your Name</h1> inside <body> as the main heading (minimum 3 characters)', 
                             completed: false, 
                             regex: /<h1>[^<]{3,}<\/h1>/i 
                         },
                         { 
                             id: 2, 
-                            description: 'Add an <h2> subtitle like "Software Engineering"', 
+                            description: 'Add <h2>Software Engineering</h2> below <h1> as a subtitle', 
                             completed: false, 
                             regex: /<h2>[^<]{3,}<\/h2>/i 
                         },
                         { 
                             id: 3, 
-                            description: 'Write a <p> paragraph (at least 20 characters)', 
+                            description: 'Add <p>description about yourself</p> below <h2> (minimum 20 characters)', 
                             completed: false, 
                             regex: /<p>[\s\S]{20,}<\/p>/i 
                         },
                         { 
                             id: 4, 
-                            description: 'Use <strong> to highlight something important', 
+                            description: 'Use <strong>important text</strong> inside <p> to bold important words', 
                             completed: false, 
                             regex: /<strong>[^<]+<\/strong>/i 
                         },
                         { 
                             id: 5, 
-                            description: 'Add a horizontal rule <hr> to separate sections', 
+                            description: 'Add <hr> between sections for a horizontal divider line', 
                             completed: false, 
                             regex: /<hr\s*\/?>/i 
                         }
@@ -1085,7 +1085,7 @@ Bottom of page or section:
 
 ## Your Mission
 
-Build a semantic blog layout for President University's tech blog.
+Build a semantic blog layout for ZeroCode's tech blog.
                     `,
                     tasks: [
                         { 
@@ -1127,7 +1127,7 @@ Build a semantic blog layout for President University's tech blog.
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PULSE Tech Blog</title>
+    <title>ZeroCode Tech Blog</title>
 </head>
 <body>
     <!-- Build a semantic page structure -->
@@ -1658,7 +1658,7 @@ For multi-line text:
 
 ## Your Mission
 
-Create a contact form for President University's IT support.
+Create a contact form for ZeroCode's IT support.
                     `,
                     tasks: [
                         { 
@@ -2523,7 +2523,7 @@ Thank you for completing this course. We're excited to see what you'll build nex
 
 ---
 
-*Course created for President University Learning System (PULSE)*  
+*Course created for ZeroCode Learning System (ZeroCode)*  
 *Questions? Contact IT Support through the platform*
                     `
                 }

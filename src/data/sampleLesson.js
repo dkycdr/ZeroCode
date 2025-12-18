@@ -44,7 +44,7 @@ This lesson challenges you to refactor a "Legacy Codebase" (full of divs) into m
 <footer class="site-footer">...</footer>
 \`\`\`
 
-Let's modernize this codebase to PULSE standards.
+Let's modernize this codebase to ZeroCode standards.
         `,
         tasks: [
             {
@@ -88,7 +88,7 @@ Let's modernize this codebase to PULSE standards.
 
   <!-- STEP 3: Refactor this Footer -->
   <div class="site-footer">
-    <p>&copy; 2024 President University</p>
+    <p>&copy; 2024 ZeroCode</p>
   </div>
 </body>
 </html>`
@@ -136,7 +136,7 @@ To activate Flexbox, you apply \`display: flex;\` to the **Parent Container**. T
 ---
 
 ## Mission Objective
-We need to build a **Navigation Bar** for the PULSE system.
+We need to build a **Navigation Bar** for the ZeroCode system.
 1.  **Logo** on the left.
 2.  **Menu Links** on the right.
 3.  **Vertically Centered**.
@@ -168,7 +168,7 @@ Use the properties learned above to achieve this.
                 name: 'index.html',
                 language: 'html',
                 content: `<nav class="navbar">
-  <div class="logo">PULSE</div>
+  <div class="logo">ZeroCode</div>
   <ul class="links">
     <li>Home</li>
     <li>Curriculum</li>
@@ -226,10 +226,10 @@ You write:
 <button class="bg-blue-500 p-2.5 rounded">
 \`\`\`
 
-## Pulse Design System Tokens
-We have configured special colors for President University:
--   \`bg-presuniv-navy\`: The deep blue background.
--   \`text-presuniv-maroon\`: The accent red color.
+## ZeroCode Design System Tokens
+We have configured special colors for ZeroCode:
+-   \`bg-zerocode-navy\`: The deep blue background.
+-   \`text-zerocode-maroon\`: The accent red color.
 
 ---
 
@@ -237,7 +237,7 @@ We have configured special colors for President University:
 Your task is to "Engineer" a profile card component using only Tailwind classes.
 1.  **Container**: Needs white background (\`bg-white\`) and shadow (\`shadow-xl\`).
 2.  **Typography**: Title needs to be large (\`text-2xl\`) and bold (\`font-bold\`).
-3.  **Button**: Needs to be our custom maroon (\`bg-presuniv-maroon\`) with white text (\`text-white\`).
+3.  **Button**: Needs to be our custom maroon (\`bg-zerocode-maroon\`) with white text (\`text-white\`).
         `,
         tasks: [
             {
@@ -254,9 +254,9 @@ Your task is to "Engineer" a profile card component using only Tailwind classes.
             },
             {
                 id: 3,
-                description: 'Style button: "bg-presuniv-maroon", "text-white", "rounded-lg".',
+                description: 'Style button: "bg-zerocode-maroon", "text-white", "rounded-lg".',
                 completed: false,
-                regex: /<button[^>]*class=["'](?=.*\bbg-presuniv-maroon\b)(?=.*\btext-white\b)(?=.*\brounded-lg\b)[^"']*["'][^>]*>/
+                regex: /<button[^>]*class=["'](?=.*\bbg-zerocode-maroon\b)(?=.*\btext-white\b)(?=.*\brounded-lg\b)[^"']*["'][^>]*>/
             }
         ],
         files: [
@@ -340,7 +340,7 @@ git pull origin main     # Download latest changes
 ---
 
 ## Mission: Simulate a Code Review
-You'll practice the **Pull Request workflow** used at Google, Facebook, and President University projects.
+You'll practice the **Pull Request workflow** used at Google, Facebook, and ZeroCode projects.
         `,
         tasks: [
             { id: 1, description: 'Initialize a Git repository with "git init"', completed: false, regex: /git\s+init/ },
@@ -396,7 +396,7 @@ app.listen(3000);
 ---
 
 ## Mission Checklist
-We are building the API for the "PULSE" system.
+We are building the API for the "ZeroCode" system.
 1.  **Initialize**: Get the Express module.
 2.  **Route**: Create a Homepage (\`/\`) that confirms the system is online.
 3.  **Port**: Open port \`3000\`.

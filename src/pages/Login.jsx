@@ -288,7 +288,7 @@ export default function Login() {
                         {[
                             { number: '16+', label: 'Courses' },
                             { number: '100+', label: 'Lessons' },
-                            { number: '0', label: 'Cost' }
+                            { number: '∞', label: 'Lifetime' }
                         ].map((stat, index) => (
                             <div key={index} className="text-center">
                                 <div className="text-3xl font-bold text-white mb-1">{stat.number}</div>

@@ -1,15 +1,23 @@
--- Neon PostgreSQL Schema for PULSE
--- Simple schema without RLS complications
+-- Neon PostgreSQL Schema for ZeroCode
+-- E-commerce learning platform with subscription tiers
 
--- Users table
+-- Users table with subscription tiers
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    major VARCHAR(100),
-    student_id VARCHAR(50),
+    phone VARCHAR(20),
+    subscription_tier VARCHAR(20) DEFAULT 'free',
+    -- Tiers: 'free', 'beginner', 'intermediate', 'advanced', 'fullstack', 'admin'
+    -- free: HTML, CSS, JS Basics only (demo)
+    -- beginner: All beginner courses
+    -- intermediate: Beginner + Intermediate courses
+    -- advanced: Beginner + Intermediate + Advanced courses
+    -- fullstack: All courses (same as advanced but with discount)
+    -- admin: Full access + admin dashboard
     is_admin BOOLEAN DEFAULT FALSE,
+    subscription_date TIMESTAMP,
     joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -59,6 +67,7 @@ CREATE TABLE IF NOT EXISTS task_progress (
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_subscription ON users(subscription_tier);
 CREATE INDEX IF NOT EXISTS idx_course_progress_user ON course_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_item_progress_user ON item_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_task_progress_user ON task_progress(user_id);
@@ -72,23 +81,31 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_course_progress_updated_at ON course_progress;
 CREATE TRIGGER update_course_progress_updated_at BEFORE UPDATE ON course_progress
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_item_progress_updated_at ON item_progress;
 CREATE TRIGGER update_item_progress_updated_at BEFORE UPDATE ON item_progress
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert default admin account (password: admin123)
--- Password hash for 'admin123' using bcrypt
-INSERT INTO users (email, password_hash, name, major, student_id, is_admin)
-VALUES (
-    'admin@pulse.dev',
-    '$2a$10$rZ5c3HqLH5xH5xH5xH5xHOqLH5xH5xH5xH5xH5xH5xH5xH5xH5xH5',
-    'Admin User',
-    'System Administrator',
-    'ADMIN001',
-    TRUE
-) ON CONFLICT (email) DO NOTHING;
+-- Migration: Add subscription_tier column if not exists
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'subscription_tier') THEN
+        ALTER TABLE users ADD COLUMN subscription_tier VARCHAR(20) DEFAULT 'free';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'subscription_date') THEN
+        ALTER TABLE users ADD COLUMN subscription_date TIMESTAMP;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'phone') THEN
+        ALTER TABLE users ADD COLUMN phone VARCHAR(20);
+    END IF;
+END $$;
+
+-- Update existing admin users to have admin tier
+UPDATE users SET subscription_tier = 'admin' WHERE is_admin = TRUE;

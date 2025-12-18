@@ -151,7 +151,7 @@ export default function Register() {
                         <h1 className="text-4xl font-bold text-white mb-2">
                             Create Account
                         </h1>
-                        <p className="text-gray-400 text-base">Join ZeroCode - it's free forever</p>
+                        <p className="text-gray-400 text-base">Start learning with a free account</p>
                     </motion.div>
 
                     {/* Error Message */}
@@ -295,13 +295,13 @@ export default function Register() {
                         <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                                 <Zap size={16} className="text-white" />
-                                <span className="text-sm font-semibold text-white">What you get:</span>
+                                <span className="text-sm font-semibold text-white">Free account includes:</span>
                             </div>
                             <ul className="text-xs text-gray-400 space-y-1 ml-6">
-                                <li>• 16 comprehensive courses</li>
+                                <li>• 3 demo courses (HTML, CSS, JS)</li>
                                 <li>• Interactive coding environment</li>
                                 <li>• Track your progress</li>
-                                <li>• 100% free forever</li>
+                                <li>• Upgrade anytime for full access</li>
                             </ul>
                         </div>
                     </motion.form>

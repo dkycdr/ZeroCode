@@ -344,11 +344,11 @@ Let's combine everything you learned!
 **Goal:** Make the heading big, centered, and navy blue. Make the paragraph gray and readable.
                     `,
                     tasks: [
-                        { id: 1, description: 'Make h1 navy blue', completed: false, regex: /h1\s*{[^}]*color\s*:\s*navy/ },
-                        { id: 2, description: 'Make h1 font-size 48px', completed: false, regex: /h1\s*{[^}]*font-size\s*:\s*48px/ },
-                        { id: 3, description: 'Center the h1 text', completed: false, regex: /h1\s*{[^}]*text-align\s*:\s*center/ },
-                        { id: 4, description: 'Make paragraph gray', completed: false, regex: /p\s*{[^}]*color\s*:\s*gray/ },
-                        { id: 5, description: 'Make paragraph font-size 18px', completed: false, regex: /p\s*{[^}]*font-size\s*:\s*18px/ }
+                        { id: 1, description: 'In style.css, add "color: navy;" inside the h1 { } selector for dark blue color', completed: false, regex: /h1\s*{[^}]*color\s*:\s*navy/ },
+                        { id: 2, description: 'In style.css, add "font-size: 48px;" inside the h1 { } selector for large size', completed: false, regex: /h1\s*{[^}]*font-size\s*:\s*48px/ },
+                        { id: 3, description: 'In style.css, add "text-align: center;" inside the h1 { } selector for center alignment', completed: false, regex: /h1\s*{[^}]*text-align\s*:\s*center/ },
+                        { id: 4, description: 'In style.css, add "color: gray;" inside the p { } selector for gray text', completed: false, regex: /p\s*{[^}]*color\s*:\s*gray/ },
+                        { id: 5, description: 'In style.css, add "font-size: 18px;" inside the p { } selector for text size', completed: false, regex: /p\s*{[^}]*font-size\s*:\s*18px/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -357,8 +357,8 @@ Let's combine everything you learned!
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to PULSE</h1>
-    <p>President University Learning System for Everyone</p>
+    <h1>Welcome to ZeroCode</h1>
+    <p>ZeroCode Learning System for Everyone</p>
     <p>Learn web development from absolute zero to hero!</p>
 </body>
 </html>` },
@@ -491,14 +491,14 @@ color: rgba(0, 0, 0, 0.8);     /* Dark overlay (80% black) */
 
 **When to use RGBA?** Overlays, shadows, transparent backgrounds!
 
-## President University Colors
+## ZeroCode Colors
 
 \`\`\`css
-/* PresUniv Navy */
+/* ZeroCode Navy */
 color: #0a192f;
 color: rgb(10, 25, 47);
 
-/* PresUniv Maroon */
+/* ZeroCode Maroon */
 color: #800000;
 color: rgb(128, 0, 0);
 \`\`\`
@@ -529,7 +529,7 @@ color: #333333;       /* Dark gray text */
 background: #1a1a1a;  /* Almost black */
 color: #ffffff;       /* White text */
 
-/* PresUniv theme */
+/* ZeroCode theme */
 background: #0a192f;  /* Navy */
 color: #64ffda;       /* Teal accent */
 \`\`\`
@@ -704,10 +704,10 @@ li:nth-child(odd) { background: #f5f5f5; }
 Style a navigation menu using different selectors.
                     `,
                     tasks: [
-                        { id: 1, description: 'Use element selector to style all <a> tags', completed: false, regex: /^\s*a\s*{/m },
-                        { id: 2, description: 'Use class selector .nav-link', completed: false, regex: /\.nav-link\s*{/ },
-                        { id: 3, description: 'Use :hover pseudo-class', completed: false, regex: /:hover\s*{/ },
-                        { id: 4, description: 'Use descendant selector (nav a or nav li)', completed: false, regex: /nav\s+[a-z]+\s*{/ }
+                        { id: 1, description: 'In style.css, create "a { }" selector to style all links (e.g., text-decoration: none;)', completed: false, regex: /^\s*a\s*{/m },
+                        { id: 2, description: 'In style.css, create ".nav-link { }" selector to style elements with nav-link class', completed: false, regex: /\.nav-link\s*{/ },
+                        { id: 3, description: 'In style.css, create "a:hover { }" or ".nav-link:hover { }" selector for hover effect', completed: false, regex: /:hover\s*{/ },
+                        { id: 4, description: 'In style.css, create "nav a { }" selector to style links inside nav element', completed: false, regex: /nav\s+[a-z]+\s*{/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -876,10 +876,10 @@ Vertical margins collapse (only the larger one applies):
 Create a card component with proper spacing.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add padding to .card', completed: false, regex: /\.card\s*{[^}]*padding\s*:/ },
-                        { id: 2, description: 'Add margin to .card', completed: false, regex: /\.card\s*{[^}]*margin\s*:/ },
-                        { id: 3, description: 'Add border to .card', completed: false, regex: /\.card\s*{[^}]*border\s*:/ },
-                        { id: 4, description: 'Use box-sizing: border-box', completed: false, regex: /box-sizing\s*:\s*border-box/ }
+                        { id: 1, description: 'In style.css, add "padding: 20px;" inside .card { } selector for inner spacing', completed: false, regex: /\.card\s*{[^}]*padding\s*:/ },
+                        { id: 2, description: 'In style.css, add "margin: 20px auto;" inside .card { } selector for outer spacing and centering', completed: false, regex: /\.card\s*{[^}]*margin\s*:/ },
+                        { id: 3, description: 'In style.css, add "border: 1px solid #ddd;" inside .card { } selector for border', completed: false, regex: /\.card\s*{[^}]*border\s*:/ },
+                        { id: 4, description: 'In style.css, add "box-sizing: border-box;" inside * { } selector so width includes padding', completed: false, regex: /box-sizing\s*:\s*border-box/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -889,7 +889,7 @@ Create a card component with proper spacing.
     <div class="card">
         <h2>Student Card</h2>
         <p>Software Engineering</p>
-        <p>President University</p>
+        <p>ZeroCode</p>
     </div>
 </body>
 </html>` },
@@ -1065,10 +1065,10 @@ flex-direction: column
 Build a navigation bar with Flexbox.
                     `,
                     tasks: [
-                        { id: 1, description: 'Add display: flex to .navbar', completed: false, regex: /\.navbar\s*{[^}]*display\s*:\s*flex/ },
-                        { id: 2, description: 'Use justify-content: space-between', completed: false, regex: /justify-content\s*:\s*space-between/ },
-                        { id: 3, description: 'Use align-items: center', completed: false, regex: /align-items\s*:\s*center/ },
-                        { id: 4, description: 'Add gap between nav links', completed: false, regex: /gap\s*:\s*\d+/ }
+                        { id: 1, description: 'In style.css, add "display: flex;" inside .navbar { } selector for flexbox layout', completed: false, regex: /\.navbar\s*{[^}]*display\s*:\s*flex/ },
+                        { id: 2, description: 'In style.css, add "justify-content: space-between;" inside .navbar { } for horizontal spacing', completed: false, regex: /justify-content\s*:\s*space-between/ },
+                        { id: 3, description: 'In style.css, add "align-items: center;" inside .navbar { } for vertical centering', completed: false, regex: /align-items\s*:\s*center/ },
+                        { id: 4, description: 'In style.css, add "gap: 20px;" inside .nav-links { } for spacing between links', completed: false, regex: /gap\s*:\s*\d+/ }
                     ],
                     files: [
                         { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
@@ -1076,7 +1076,7 @@ Build a navigation bar with Flexbox.
 <head><link rel="stylesheet" href="style.css"></head>
 <body>
     <nav class="navbar">
-        <div class="logo">PULSE</div>
+        <div class="logo">ZeroCode</div>
         <ul class="nav-links">
             <li><a href="#">Home</a></li>
             <li><a href="#">Courses</a></li>
@@ -1276,8 +1276,8 @@ color: coral;
 
 /* Hexadecimal */
 color: #ff0000;     /* Red */
-color: #0a192f;     /* PresUniv Navy */
-color: #800000;     /* PresUniv Maroon */
+color: #0a192f;     /* ZeroCode Navy */
+color: #800000;     /* ZeroCode Maroon */
 
 /* RGB */
 color: rgb(255, 0, 0);
@@ -1317,8 +1317,8 @@ Create a gradient hero section.
     <section class="hero">
         <div class="overlay"></div>
         <div class="content">
-            <h1>Welcome to PULSE</h1>
-            <p>President University Learning System</p>
+            <h1>Welcome to ZeroCode</h1>
+            <p>ZeroCode Learning System</p>
         </div>
     </section>
 </body>
@@ -1523,12 +1523,12 @@ p {
                     title: 'Build a Landing Page',
                     duration: '60 min',
                     difficulty: 'Beginner',
-                    description: 'Create a complete landing page for PULSE using all CSS concepts learned.',
+                    description: 'Create a complete landing page for ZeroCode using all CSS concepts learned.',
                     content: `
-# 🎯 Project: PULSE Landing Page
+# 🎯 Project: ZeroCode Landing Page
 
 ## Overview
-Build a professional landing page for the PULSE learning platform.
+Build a professional landing page for the ZeroCode learning platform.
 
 ## Requirements
 
@@ -1539,7 +1539,7 @@ Build a professional landing page for the PULSE learning platform.
 - [ ] Footer with multiple columns
 
 ### Styling
-- [ ] Use PresUniv colors (#0a192f navy, #800000 maroon)
+- [ ] Use ZeroCode colors (#0a192f navy, #800000 maroon)
 - [ ] Gradient background on hero
 - [ ] Box shadows on cards
 - [ ] Hover effects on buttons and links
@@ -1568,13 +1568,13 @@ Build a professional landing page for the PULSE learning platform.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PULSE - PresUniv Learning System</title>
+    <title>ZeroCode - ZeroCode Learning System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="logo">PULSE</div>
+        <div class="logo">ZeroCode</div>
         <ul class="nav-links">
             <li><a href="#">Home</a></li>
             <li><a href="#">Courses</a></li>
@@ -1585,7 +1585,7 @@ Build a professional landing page for the PULSE learning platform.
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Learn to Code at President University</h1>
+        <h1>Learn to Code at ZeroCode</h1>
         <p>Master web development with interactive lessons</p>
         <button class="btn btn-large">Start Learning</button>
     </section>
@@ -1608,11 +1608,11 @@ Build a professional landing page for the PULSE learning platform.
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 President University</p>
+        <p>&copy; 2024 ZeroCode</p>
     </footer>
 </body>
 </html>` },
-                        { name: 'style.css', language: 'css', content: `/* PULSE Landing Page Styles */
+                        { name: 'style.css', language: 'css', content: `/* ZeroCode Landing Page Styles */
 /* Add your CSS here! */
 
 * {

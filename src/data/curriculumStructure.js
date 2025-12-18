@@ -1,4 +1,4 @@
-// PULSE Curriculum Structure
+// ZeroCode Curriculum Structure
 // Flow: Lesson → Quiz → Project → Informational (like Codecademy)
 
 export const CONTENT_TYPES = {
