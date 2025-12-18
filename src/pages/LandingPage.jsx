@@ -28,7 +28,7 @@ const PRICING = {
     }
 };
 
-const WHATSAPP_NUMBER = '6281234567890';
+const WHATSAPP_NUMBER = '6283875727384';
 
 export default function LandingPage() {
     const navigate = useNavigate();

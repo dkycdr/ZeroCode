@@ -27,7 +27,7 @@ const COURSE_ICONS = {
     cicd: <Terminal size={20} className="text-gray-400" />
 };
 
-const WHATSAPP_NUMBER = '6281234567890'; // Ganti dengan nomor WA admin
+const WHATSAPP_NUMBER = '6283875727384'; 
 
 const TIER_BADGES = {
     free: { label: 'Free', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },

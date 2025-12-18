@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import { BookOpen, Trophy, Award, TrendingUp, Edit2, LogOut, Save, X, Crown, MessageCircle, Phone, Shield } from 'lucide-react';
 import clsx from 'clsx';
 
-const WHATSAPP_NUMBER = '6281234567890';
+const WHATSAPP_NUMBER = '6283875727384';
 
 const TIER_BADGES = {
     free: { label: 'Free', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30', desc: '3 demo courses' },

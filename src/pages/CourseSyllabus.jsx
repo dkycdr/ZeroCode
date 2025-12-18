@@ -7,7 +7,7 @@ import { getCourseWithContent, CONTENT_TYPES, getCourseProgress } from '../data/
 import { BookOpen, Code, HelpCircle, Rocket, FileText, ChevronRight, CheckCircle2, Circle, Clock, ArrowLeft, Crown, MessageCircle } from 'lucide-react';
 import clsx from 'clsx';
 
-const WHATSAPP_NUMBER = '6281234567890';
+const WHATSAPP_NUMBER = '6283875727384';
 
 const ITEM_ICONS = {
     [CONTENT_TYPES.LESSON]: <Code size={16} />,
