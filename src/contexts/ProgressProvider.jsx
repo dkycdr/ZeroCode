@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
+import { supabase } from '../lib/supabase';
 
 const ProgressContext = createContext({});
 
@@ -15,30 +16,36 @@ export const ProgressProvider = ({ children }) => {
         if (user) {
             loadProgress();
         } else {
-            // Guest mode - load from localStorage
-            loadLocalProgress();
+            setCompletedCourses([]);
+            setCompletedItems([]);
+            setLoading(false);
         }
     }, [user]);
 
     const loadProgress = async () => {
-        // TODO: Load from Supabase
-        // For now, load from localStorage
-        loadLocalProgress();
-    };
+        if (!user) return;
 
-    const loadLocalProgress = () => {
         try {
-            // Use user email as key for separate progress per user
-            const userKey = user?.email || 'guest';
-            const savedCourses = localStorage.getItem(`pulse_progress_courses_${userKey}`);
-            const savedItems = localStorage.getItem(`pulse_progress_items_${userKey}`);
-            
-            if (savedCourses) {
-                setCompletedCourses(JSON.parse(savedCourses));
-            }
-            if (savedItems) {
-                setCompletedItems(JSON.parse(savedItems));
-            }
+            // Load completed courses
+            const { data: courses, error: coursesError } = await supabase
+                .from('course_progress')
+                .select('course_id')
+                .eq('user_id', user.id)
+                .eq('completed', true);
+
+            if (coursesError) throw coursesError;
+
+            // Load completed items
+            const { data: items, error: itemsError } = await supabase
+                .from('item_progress')
+                .select('item_id')
+                .eq('user_id', user.id)
+                .eq('completed', true);
+
+            if (itemsError) throw itemsError;
+
+            setCompletedCourses(courses.map(c => c.course_id));
+            setCompletedItems(items.map(i => i.item_id));
         } catch (error) {
             console.error('Error loading progress:', error);
         } finally {
@@ -46,32 +53,52 @@ export const ProgressProvider = ({ children }) => {
         }
     };
 
-    const saveProgress = (courses, items) => {
+    const markCourseComplete = async (courseId) => {
+        if (!user) return;
+
         try {
-            // Use user email as key for separate progress per user
-            const userKey = user?.email || 'guest';
-            localStorage.setItem(`pulse_progress_courses_${userKey}`, JSON.stringify(courses));
-            localStorage.setItem(`pulse_progress_items_${userKey}`, JSON.stringify(items));
-            
-            // TODO: Save to Supabase if user is logged in
-            if (user) {
-                // await supabase.from('progress').upsert(...)
-            }
+            const { error } = await supabase
+                .from('course_progress')
+                .upsert({
+                    user_id: user.id,
+                    course_id: courseId,
+                    completed: true,
+                    completed_at: new Date().toISOString(),
+                }, {
+                    onConflict: 'user_id,course_id'
+                });
+
+            if (error) throw error;
+
+            setCompletedCourses([...new Set([...completedCourses, courseId])]);
         } catch (error) {
-            console.error('Error saving progress:', error);
+            console.error('Error marking course complete:', error);
         }
     };
 
-    const markCourseComplete = (courseId) => {
-        const updated = [...new Set([...completedCourses, courseId])];
-        setCompletedCourses(updated);
-        saveProgress(updated, completedItems);
-    };
+    const markItemComplete = async (itemId, courseId = '', unitId = '') => {
+        if (!user) return;
 
-    const markItemComplete = (itemId) => {
-        const updated = [...new Set([...completedItems, itemId])];
-        setCompletedItems(updated);
-        saveProgress(completedCourses, updated);
+        try {
+            const { error } = await supabase
+                .from('item_progress')
+                .upsert({
+                    user_id: user.id,
+                    item_id: itemId,
+                    course_id: courseId,
+                    unit_id: unitId,
+                    completed: true,
+                    completed_at: new Date().toISOString(),
+                }, {
+                    onConflict: 'user_id,item_id'
+                });
+
+            if (error) throw error;
+
+            setCompletedItems([...new Set([...completedItems, itemId])]);
+        } catch (error) {
+            console.error('Error marking item complete:', error);
+        }
     };
 
     const isItemCompleted = (itemId) => {
@@ -86,12 +113,20 @@ export const ProgressProvider = ({ children }) => {
         return allItemIds.filter(id => completedItems.includes(id)).length;
     };
 
-    const resetProgress = () => {
-        setCompletedCourses([]);
-        setCompletedItems([]);
-        const userKey = user?.email || 'guest';
-        localStorage.removeItem(`pulse_progress_courses_${userKey}`);
-        localStorage.removeItem(`pulse_progress_items_${userKey}`);
+    const resetProgress = async () => {
+        if (!user) return;
+
+        try {
+            // Delete all progress for user
+            await supabase.from('course_progress').delete().eq('user_id', user.id);
+            await supabase.from('item_progress').delete().eq('user_id', user.id);
+            await supabase.from('task_progress').delete().eq('user_id', user.id);
+
+            setCompletedCourses([]);
+            setCompletedItems([]);
+        } catch (error) {
+            console.error('Error resetting progress:', error);
+        }
     };
 
     const value = {
