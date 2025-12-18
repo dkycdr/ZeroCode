@@ -127,10 +127,59 @@ export default function LearningLayout() {
 </html>`;
     };
 
+    const compilePython = (pythonCode) => {
+        const escapedCode = pythonCode.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        return `<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+</head>
+<body>
+    <div id="output" style="font-family: monospace; padding: 10px;"></div>
+    <script>
+        async function runPython() {
+            try {
+                console.log('Loading Python...');
+                const pyodide = await loadPyodide();
+                pyodide.setStdout({
+                    batched: (text) => {
+                        console.log(text);
+                    }
+                });
+                pyodide.setStderr({
+                    batched: (text) => {
+                        console.error(text);
+                    }
+                });
+                const code = \`${escapedCode}\`;
+                await pyodide.runPythonAsync(code);
+            } catch (e) {
+                console.error(e.message);
+            }
+        }
+        runPython();
+    </script>
+</body>
+</html>`;
+    };
+
+    const isPythonCourse = () => {
+        return files.some(f => f.name.endsWith('.py'));
+    };
+
     const handleRun = () => {
         setIsRunning(true);
         setConsoleLogs([]);
-        setCompiledCode(compile());
+        
+        if (isPythonCourse()) {
+            const pythonFile = files.find(f => f.name.endsWith('.py'));
+            if (pythonFile) {
+                setCompiledCode(compilePython(pythonFile.content));
+            }
+        } else {
+            setCompiledCode(compile());
+        }
+        
         setTimeout(() => setIsRunning(false), 500);
     };
 

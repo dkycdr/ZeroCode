@@ -623,6 +623,285 @@ app.listen(PORT, () => {
 
         {
             id: 'cicd-unit-4',
+            title: 'Docker Compose & Orchestration',
+            description: 'Manage multi-container applications',
+            items: [
+                {
+                    id: 'cicd-4-1',
+                    type: CONTENT_TYPES.INFORMATIONAL,
+                    title: 'Docker Compose Deep Dive',
+                    duration: '10 min read',
+                    content: `
+# Docker Compose Deep Dive
+
+## Why Docker Compose?
+
+Real applications need multiple services:
+- Web server
+- Database
+- Cache (Redis)
+- Message queue
+
+Docker Compose manages all these with one command!
+
+## docker-compose.yml Structure
+
+\`\`\`yaml
+version: '3.8'
+
+services:
+  # Service definitions
+  
+volumes:
+  # Named volumes
+  
+networks:
+  # Custom networks
+\`\`\`
+
+## Service Configuration
+
+\`\`\`yaml
+services:
+  web:
+    build: .                    # Build from Dockerfile
+    # OR
+    image: nginx:latest         # Use existing image
+    
+    ports:
+      - "3000:3000"             # host:container
+    
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+    
+    env_file:
+      - .env                    # Load from file
+    
+    volumes:
+      - ./src:/app/src          # Bind mount
+      - node_modules:/app/node_modules  # Named volume
+    
+    depends_on:
+      - db
+      - redis
+    
+    restart: unless-stopped     # Restart policy
+    
+    networks:
+      - app-network
+\`\`\`
+
+## Common Commands
+
+\`\`\`bash
+# Start all services
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Rebuild images
+docker-compose up --build
+
+# Scale service
+docker-compose up --scale web=3
+\`\`\`
+                    `
+                },
+                {
+                    id: 'cicd-4-2',
+                    type: CONTENT_TYPES.LESSON,
+                    title: 'Full Stack Docker Setup',
+                    duration: '30 min',
+                    content: `
+# Full Stack Docker Setup
+
+## Complete Example: Node + Postgres + Redis
+
+\`\`\`yaml
+version: '3.8'
+
+services:
+  # Node.js API
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/mydb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+\`\`\`
+
+## Development vs Production
+
+\`\`\`yaml
+# docker-compose.override.yml (dev - auto-loaded)
+services:
+  api:
+    volumes:
+      - ./api:/app  # Hot reload
+    command: npm run dev
+    environment:
+      - DEBUG=true
+
+# docker-compose.prod.yml
+services:
+  api:
+    command: npm start
+    environment:
+      - NODE_ENV=production
+    deploy:
+      replicas: 3
+\`\`\`
+
+\`\`\`bash
+# Development (uses override automatically)
+docker-compose up
+
+# Production
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+\`\`\`
+
+---
+
+## Your Mission
+Create a full-stack Docker Compose setup.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Define api service with build context: build: ./api', completed: false, regex: /api:\s*\n\s*build:/ },
+                        { id: 2, description: 'Add database service using postgres image', completed: false, regex: /db:\s*\n\s*image:\s*postgres/ },
+                        { id: 3, description: 'Add depends_on to api service', completed: false, regex: /depends_on:\s*\n\s*-?\s*db/ },
+                        { id: 4, description: 'Create named volume for database: postgres_data', completed: false, regex: /volumes:\s*\n\s*postgres_data:/ },
+                        { id: 5, description: 'Add healthcheck to database service', completed: false, regex: /healthcheck:\s*\n\s*test:/ }
+                    ],
+                    files: [
+                        { name: 'docker-compose.yml', language: 'yaml', content: `version: '3.8'
+
+services:
+  # 1. API Service
+  api:
+    # Add build context
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/mydb
+    # Add depends_on
+
+  # 2. Database Service
+  db:
+    # Add postgres image
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Add healthcheck
+
+# 3. Define volumes
+volumes:
+  # Add postgres_data volume
+` },
+                        { name: 'api/Dockerfile', language: 'dockerfile', content: `FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]` },
+                        { name: 'api/server.js', language: 'javascript', content: `const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+    res.json({ message: 'API running in Docker!' });
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy' });
+});
+
+app.listen(3000, () => console.log('API on port 3000'));` }
+                    ]
+                },
+                {
+                    id: 'cicd-4-quiz',
+                    type: CONTENT_TYPES.QUIZ,
+                    title: 'Docker Compose Quiz',
+                    duration: '5 min',
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: 'What does depends_on do in Docker Compose?',
+                            options: ['Installs dependencies', 'Defines service startup order', 'Creates network connections', 'Shares volumes'],
+                            correctIndex: 1,
+                            explanation: 'depends_on controls the order in which services are started. The dependent service waits for its dependencies to start first.'
+                        },
+                        {
+                            id: 'q2',
+                            question: 'What is the purpose of named volumes?',
+                            options: ['Faster performance', 'Persist data between container restarts', 'Network isolation', 'Load balancing'],
+                            correctIndex: 1,
+                            explanation: 'Named volumes persist data even when containers are removed. They are managed by Docker and stored outside the container filesystem.'
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            id: 'cicd-unit-5',
             title: 'Deployment Strategies',
             description: 'Deploy applications to production',
             items: [
@@ -801,6 +1080,342 @@ CMD ["node", "server.js"]` },
                             options: ['Requires test files', 'Runs the job only after test job succeeds', 'Installs test dependencies', 'Creates test environment'],
                             correctIndex: 1,
                             explanation: 'The "needs" keyword creates a dependency - the job will only run after the specified job completes successfully.'
+                        }
+                    ]
+                }
+            ]
+        },
+
+        // ============================================
+        // UNIT 6: Final Project
+        // ============================================
+        {
+            id: 'cicd-unit-6',
+            title: 'Final Project: Complete CI/CD Pipeline',
+            description: 'Build a production-ready CI/CD pipeline',
+            items: [
+                {
+                    id: 'cicd-6-1',
+                    type: CONTENT_TYPES.PROJECT,
+                    title: 'Production CI/CD Pipeline',
+                    duration: '45 min',
+                    content: `
+# Final Project: Production CI/CD Pipeline
+
+## Project Overview
+
+Build a complete CI/CD pipeline that:
+1. Runs tests on every push
+2. Builds Docker image
+3. Pushes to container registry
+4. Deploys to production
+5. Sends notifications
+
+## Requirements
+
+### 1. Testing Stage
+- Run linting
+- Run unit tests
+- Run integration tests
+- Generate coverage report
+
+### 2. Build Stage
+- Build Docker image
+- Tag with commit SHA and 'latest'
+- Multi-platform build (amd64, arm64)
+
+### 3. Security Stage
+- Scan for vulnerabilities
+- Check for secrets in code
+- Audit dependencies
+
+### 4. Deploy Stage
+- Deploy to staging first
+- Run smoke tests
+- Deploy to production
+- Rollback on failure
+
+### 5. Notifications
+- Slack notification on success/failure
+- Update deployment status
+
+## Complete Workflow
+
+\`\`\`yaml
+name: Production Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: \${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Test
+        run: npm test -- --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+      
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    outputs:
+      image-tag: \${{ steps.meta.outputs.tags }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: \${{ env.REGISTRY }}
+          username: \${{ github.actor }}
+          password: \${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: \${{ env.REGISTRY }}/\${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: \${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging..."
+          # kubectl set image deployment/app app=\${{ needs.build.outputs.image-tag }}
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          curl -f https://staging.example.com/health
+
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+      
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment..."
+          curl -f https://example.com/health
+
+  notify:
+    needs: [deploy-production]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: \${{ job.status }}
+          fields: repo,message,commit,author
+        env:
+          SLACK_WEBHOOK_URL: \${{ secrets.SLACK_WEBHOOK }}
+\`\`\`
+
+---
+
+## Your Mission
+Create a production-ready CI/CD pipeline with all stages.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create test job with linting and testing steps', completed: false, regex: /test:\s*\n\s*runs-on:[\s\S]*npm\s+(run\s+)?lint/ },
+                        { id: 2, description: 'Create security job with vulnerability scanning', completed: false, regex: /security:\s*\n\s*runs-on:/ },
+                        { id: 3, description: 'Create build job that needs test and security', completed: false, regex: /build:\s*\n\s*needs:\s*\[.*test.*security.*\]/ },
+                        { id: 4, description: 'Create deploy-staging job with environment', completed: false, regex: /deploy-staging:\s*\n[\s\S]*environment:\s*staging/ },
+                        { id: 5, description: 'Create deploy-production job that needs staging', completed: false, regex: /deploy-production:\s*\n\s*needs:\s*deploy-staging/ },
+                        { id: 6, description: 'Add notification job that runs always', completed: false, regex: /notify:\s*\n[\s\S]*if:\s*always\(\)/ }
+                    ],
+                    files: [
+                        { name: '.github/workflows/production.yml', language: 'yaml', content: `name: Production Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: \${{ github.repository }}
+
+jobs:
+  # 1. Test Job - Run linting and tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Add Node.js setup
+      # Add npm ci
+      # Add lint step
+      # Add test step
+
+  # 2. Security Job - Scan for vulnerabilities
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Add security scanning
+
+  # 3. Build Job - Build and push Docker image
+  build:
+    # Add needs: [test, security]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Add Docker build steps
+
+  # 4. Deploy Staging
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    # Add environment: staging
+    steps:
+      - name: Deploy to staging
+        run: echo "Deploying to staging..."
+
+  # 5. Deploy Production
+  deploy-production:
+    # Add needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy to production
+        run: echo "Deploying to production..."
+
+  # 6. Notifications
+  notify:
+    needs: [deploy-production]
+    runs-on: ubuntu-latest
+    # Add if: always()
+    steps:
+      - name: Send notification
+        run: echo "Pipeline completed!"
+` },
+                        { name: 'Dockerfile', language: 'dockerfile', content: `FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+EXPOSE 3000
+CMD ["npm", "start"]` },
+                        { name: 'package.json', language: 'json', content: `{
+    "name": "production-app",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "node dist/server.js",
+        "dev": "nodemon src/server.js",
+        "build": "tsc",
+        "test": "jest --coverage",
+        "lint": "eslint src/"
+    }
+}` }
+                    ]
+                },
+                {
+                    id: 'cicd-6-quiz',
+                    type: CONTENT_TYPES.QUIZ,
+                    title: 'CI/CD Final Quiz',
+                    duration: '10 min',
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: 'What is the purpose of a staging environment?',
+                            options: ['To store code', 'To test changes before production', 'To backup data', 'To monitor logs'],
+                            correctIndex: 1,
+                            explanation: 'Staging is a pre-production environment that mirrors production, allowing you to test changes safely before deploying to real users.'
+                        },
+                        {
+                            id: 'q2',
+                            question: 'Why use "if: always()" in a notification job?',
+                            options: ['To run faster', 'To run even if previous jobs fail', 'To skip tests', 'To save resources'],
+                            correctIndex: 1,
+                            explanation: 'if: always() ensures the job runs regardless of whether previous jobs succeeded or failed, so you always get notified of the pipeline result.'
+                        },
+                        {
+                            id: 'q3',
+                            question: 'What is the benefit of multi-stage Docker builds?',
+                            options: ['Faster builds', 'Smaller final image size', 'Better security', 'All of the above'],
+                            correctIndex: 3,
+                            explanation: 'Multi-stage builds create smaller images (no build tools), are faster (better caching), and more secure (fewer attack surfaces).'
+                        },
+                        {
+                            id: 'q4',
+                            question: 'What does "environment: production" do in GitHub Actions?',
+                            options: ['Sets NODE_ENV', 'Enables environment protection rules', 'Creates a VM', 'Installs dependencies'],
+                            correctIndex: 1,
+                            explanation: 'Environment protection rules can require approvals, limit which branches can deploy, and provide environment-specific secrets.'
                         }
                     ]
                 }

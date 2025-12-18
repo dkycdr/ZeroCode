@@ -1599,6 +1599,834 @@ export default App;
                     ]
                 }
             ]
+        },
+
+        // ============================================
+        // UNIT 6: Final Project - Task Management App
+        // ============================================
+        {
+            id: 'ts-unit-6',
+            title: 'Final Project: Task Management App',
+            description: 'Build a complete type-safe task management application using all TypeScript concepts',
+            items: [
+                {
+                    id: 'ts-6-1',
+                    type: CONTENT_TYPES.INFORMATIONAL,
+                    title: 'Project Overview',
+                    duration: '10 min read',
+                    content: `
+# Final Project: Type-Safe Task Manager
+
+## What You'll Build
+
+A complete task management application with:
+- **Type-safe models** for tasks, users, and projects
+- **Generic utilities** for data manipulation
+- **Discriminated unions** for task status
+- **Utility types** for API responses
+- **Type guards** for runtime safety
+
+## Features
+
+| Feature | TypeScript Concepts |
+|---------|---------------------|
+| Task CRUD | Interfaces, Types |
+| User management | Generics, Utility Types |
+| Project organization | Discriminated Unions |
+| Filtering & sorting | Type Guards |
+| API layer | Generic Response Types |
+
+## Project Structure
+
+\`\`\`
+src/
+├── types/
+│   ├── task.ts      # Task interfaces
+│   ├── user.ts      # User interfaces
+│   ├── project.ts   # Project interfaces
+│   └── api.ts       # API response types
+├── utils/
+│   ├── validators.ts # Type guards
+│   └── helpers.ts    # Generic utilities
+├── services/
+│   └── taskService.ts # Business logic
+└── app.ts            # Main application
+\`\`\`
+
+## Skills Applied
+
+- Basic types & type inference
+- Interfaces & type aliases
+- Generics & constraints
+- Utility types (Partial, Pick, Omit)
+- Type guards & discriminated unions
+- TypeScript with classes
+
+> 🎯 This project combines everything you've learned into a real-world application!
+                    `
+                },
+                {
+                    id: 'ts-6-2',
+                    type: CONTENT_TYPES.LESSON,
+                    title: 'Part 1: Type Definitions',
+                    duration: '30 min',
+                    content: `
+# Part 1: Defining Types
+
+## Task Types
+
+\`\`\`typescript
+// Task priority levels
+type Priority = 'low' | 'medium' | 'high' | 'urgent';
+
+// Task status with discriminated union
+type TaskStatus = 
+    | { status: 'todo'; createdAt: Date }
+    | { status: 'in-progress'; startedAt: Date }
+    | { status: 'completed'; completedAt: Date }
+    | { status: 'cancelled'; cancelledAt: Date; reason: string };
+
+// Base task interface
+interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    priority: Priority;
+    dueDate?: Date;
+    tags: string[];
+    assigneeId?: string;
+    projectId: string;
+}
+
+// Full task with status
+type FullTask = Task & TaskStatus;
+\`\`\`
+
+## User Types
+
+\`\`\`typescript
+type UserRole = 'admin' | 'manager' | 'member' | 'viewer';
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    avatar?: string;
+    createdAt: Date;
+}
+
+// User with permissions
+interface UserWithPermissions extends User {
+    permissions: {
+        canCreate: boolean;
+        canEdit: boolean;
+        canDelete: boolean;
+        canAssign: boolean;
+    };
+}
+\`\`\`
+
+## Project Types
+
+\`\`\`typescript
+interface Project {
+    id: string;
+    name: string;
+    description: string;
+    ownerId: string;
+    memberIds: string[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// Project with computed stats
+interface ProjectWithStats extends Project {
+    stats: {
+        totalTasks: number;
+        completedTasks: number;
+        overdueTasks: number;
+    };
+}
+\`\`\`
+
+---
+
+## Your Mission
+Create the type definitions for the task manager.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create Priority type: type Priority = "low" | "medium" | "high" | "urgent"', completed: false, regex: /type\s+Priority\s*=\s*["']low["']\s*\|\s*["']medium["']\s*\|\s*["']high["']\s*\|\s*["']urgent["']/ },
+                        { id: 2, description: 'Create Task interface with id, title, priority, projectId', completed: false, regex: /interface\s+Task\s*\{[\s\S]*id\s*:\s*string[\s\S]*title\s*:\s*string[\s\S]*priority\s*:\s*Priority/ },
+                        { id: 3, description: 'Create User interface with id, name, email, role', completed: false, regex: /interface\s+User\s*\{[\s\S]*id\s*:\s*string[\s\S]*name\s*:\s*string[\s\S]*email\s*:\s*string/ },
+                        { id: 4, description: 'Create Project interface with id, name, ownerId, memberIds array', completed: false, regex: /interface\s+Project\s*\{[\s\S]*id\s*:\s*string[\s\S]*memberIds\s*:\s*string\[\]/ }
+                    ],
+                    files: [
+                        { name: 'types/task.ts', language: 'typescript', content: `// Task Type Definitions
+
+// 1. Create Priority type (union of: low, medium, high, urgent)
+
+
+// Task status options
+type TaskStatus = 'todo' | 'in-progress' | 'completed' | 'cancelled';
+
+// 2. Create Task interface
+interface Task {
+    // id: string
+    // title: string
+    // description?: string (optional)
+    // priority: Priority
+    // status: TaskStatus
+    // dueDate?: Date (optional)
+    // tags: string[]
+    // assigneeId?: string (optional)
+    // projectId: string
+}
+
+// Export types
+export { Priority, TaskStatus, Task };
+` },
+                        { name: 'types/user.ts', language: 'typescript', content: `// User Type Definitions
+
+type UserRole = 'admin' | 'manager' | 'member' | 'viewer';
+
+// 3. Create User interface
+interface User {
+    // id: string
+    // name: string
+    // email: string
+    // role: UserRole
+    // avatar?: string (optional)
+    // createdAt: Date
+}
+
+// Permissions type
+interface Permissions {
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canAssign: boolean;
+}
+
+// User with permissions
+type UserWithPermissions = User & { permissions: Permissions };
+
+export { UserRole, User, Permissions, UserWithPermissions };
+` },
+                        { name: 'types/project.ts', language: 'typescript', content: `// Project Type Definitions
+
+// 4. Create Project interface
+interface Project {
+    // id: string
+    // name: string
+    // description: string
+    // ownerId: string
+    // memberIds: string[]
+    // createdAt: Date
+    // updatedAt: Date
+}
+
+// Project statistics
+interface ProjectStats {
+    totalTasks: number;
+    completedTasks: number;
+    overdueTasks: number;
+    completionRate: number;
+}
+
+// Project with stats
+type ProjectWithStats = Project & { stats: ProjectStats };
+
+export { Project, ProjectStats, ProjectWithStats };
+` }
+                    ]
+                },
+                {
+                    id: 'ts-6-3',
+                    type: CONTENT_TYPES.LESSON,
+                    title: 'Part 2: Generic Utilities',
+                    duration: '30 min',
+                    content: `
+# Part 2: Generic Utilities
+
+## API Response Type
+
+\`\`\`typescript
+// Generic API response
+interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+    timestamp: Date;
+}
+
+// Paginated response
+interface PaginatedResponse<T> extends ApiResponse<T[]> {
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
+// Usage
+type TaskResponse = ApiResponse<Task>;
+type TaskListResponse = PaginatedResponse<Task>;
+\`\`\`
+
+## Generic CRUD Operations
+
+\`\`\`typescript
+// Generic repository interface
+interface Repository<T, CreateDTO, UpdateDTO> {
+    findAll(): Promise<T[]>;
+    findById(id: string): Promise<T | null>;
+    create(data: CreateDTO): Promise<T>;
+    update(id: string, data: UpdateDTO): Promise<T>;
+    delete(id: string): Promise<boolean>;
+}
+
+// Task DTOs using utility types
+type CreateTaskDTO = Omit<Task, 'id' | 'createdAt'>;
+type UpdateTaskDTO = Partial<Omit<Task, 'id'>>;
+\`\`\`
+
+## Generic Filter & Sort
+
+\`\`\`typescript
+// Generic filter function
+function filterBy<T, K extends keyof T>(
+    items: T[],
+    key: K,
+    value: T[K]
+): T[] {
+    return items.filter(item => item[key] === value);
+}
+
+// Generic sort function
+function sortBy<T, K extends keyof T>(
+    items: T[],
+    key: K,
+    order: 'asc' | 'desc' = 'asc'
+): T[] {
+    return [...items].sort((a, b) => {
+        if (a[key] < b[key]) return order === 'asc' ? -1 : 1;
+        if (a[key] > b[key]) return order === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+// Usage
+const highPriorityTasks = filterBy(tasks, 'priority', 'high');
+const sortedByTitle = sortBy(tasks, 'title', 'asc');
+\`\`\`
+
+---
+
+## Your Mission
+Create generic utilities for the task manager.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create ApiResponse<T> interface with success, data, message', completed: false, regex: /interface\s+ApiResponse\s*<\s*T\s*>\s*\{[\s\S]*success\s*:\s*boolean[\s\S]*data\s*:\s*T/ },
+                        { id: 2, description: 'Create CreateTaskDTO using Omit: type CreateTaskDTO = Omit<Task, "id">',  completed: false, regex: /type\s+CreateTaskDTO\s*=\s*Omit\s*<\s*Task\s*,/ },
+                        { id: 3, description: 'Create UpdateTaskDTO using Partial: type UpdateTaskDTO = Partial<Task>', completed: false, regex: /type\s+UpdateTaskDTO\s*=\s*Partial\s*</ },
+                        { id: 4, description: 'Create generic filterBy function: function filterBy<T, K extends keyof T>(...)', completed: false, regex: /function\s+filterBy\s*<\s*T\s*,\s*K\s+extends\s+keyof\s+T\s*>/ }
+                    ],
+                    files: [
+                        { name: 'types/api.ts', language: 'typescript', content: `// API Type Definitions
+import { Task } from './task';
+
+// 1. Create generic ApiResponse interface
+interface ApiResponse<T> {
+    // success: boolean
+    // data: T
+    // message?: string
+    // timestamp: Date
+}
+
+// Error response
+interface ApiError {
+    success: false;
+    error: {
+        code: string;
+        message: string;
+    };
+}
+
+// Paginated response
+interface PaginatedResponse<T> {
+    success: boolean;
+    data: T[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
+// 2. Create CreateTaskDTO (Task without id)
+// type CreateTaskDTO = Omit<Task, 'id'>;
+
+// 3. Create UpdateTaskDTO (Partial Task)
+// type UpdateTaskDTO = Partial<Task>;
+
+export { ApiResponse, ApiError, PaginatedResponse };
+` },
+                        { name: 'utils/helpers.ts', language: 'typescript', content: `// Generic Helper Functions
+
+// 4. Create generic filterBy function
+// function filterBy<T, K extends keyof T>(items: T[], key: K, value: T[K]): T[]
+function filterBy(items, key, value) {
+    return items.filter(item => item[key] === value);
+}
+
+// Generic sortBy function
+function sortBy<T, K extends keyof T>(
+    items: T[],
+    key: K,
+    order: 'asc' | 'desc' = 'asc'
+): T[] {
+    return [...items].sort((a, b) => {
+        if (a[key] < b[key]) return order === 'asc' ? -1 : 1;
+        if (a[key] > b[key]) return order === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+// Generic groupBy function
+function groupBy<T, K extends keyof T>(
+    items: T[],
+    key: K
+): Record<string, T[]> {
+    return items.reduce((groups, item) => {
+        const groupKey = String(item[key]);
+        groups[groupKey] = groups[groupKey] || [];
+        groups[groupKey].push(item);
+        return groups;
+    }, {} as Record<string, T[]>);
+}
+
+export { filterBy, sortBy, groupBy };
+` }
+                    ]
+                },
+                {
+                    id: 'ts-6-4',
+                    type: CONTENT_TYPES.LESSON,
+                    title: 'Part 3: Type Guards & Validation',
+                    duration: '25 min',
+                    content: `
+# Part 3: Type Guards & Validation
+
+## Task Status Type Guards
+
+\`\`\`typescript
+interface TodoTask extends Task {
+    status: 'todo';
+}
+
+interface InProgressTask extends Task {
+    status: 'in-progress';
+    startedAt: Date;
+}
+
+interface CompletedTask extends Task {
+    status: 'completed';
+    completedAt: Date;
+}
+
+type AnyTask = TodoTask | InProgressTask | CompletedTask;
+
+// Type guards
+function isTodo(task: AnyTask): task is TodoTask {
+    return task.status === 'todo';
+}
+
+function isInProgress(task: AnyTask): task is InProgressTask {
+    return task.status === 'in-progress';
+}
+
+function isCompleted(task: AnyTask): task is CompletedTask {
+    return task.status === 'completed';
+}
+\`\`\`
+
+## Using Type Guards
+
+\`\`\`typescript
+function getTaskDuration(task: AnyTask): string {
+    if (isCompleted(task)) {
+        // TypeScript knows task has completedAt
+        const duration = task.completedAt.getTime() - task.createdAt.getTime();
+        return \`Completed in \${Math.round(duration / 86400000)} days\`;
+    }
+    
+    if (isInProgress(task)) {
+        // TypeScript knows task has startedAt
+        const elapsed = Date.now() - task.startedAt.getTime();
+        return \`In progress for \${Math.round(elapsed / 86400000)} days\`;
+    }
+    
+    return 'Not started';
+}
+\`\`\`
+
+## Validation with Type Guards
+
+\`\`\`typescript
+interface ValidationResult {
+    valid: boolean;
+    errors: string[];
+}
+
+function validateTask(data: unknown): data is Task {
+    if (typeof data !== 'object' || data === null) return false;
+    
+    const task = data as Record<string, unknown>;
+    
+    return (
+        typeof task.id === 'string' &&
+        typeof task.title === 'string' &&
+        task.title.length > 0 &&
+        ['low', 'medium', 'high', 'urgent'].includes(task.priority as string)
+    );
+}
+
+// Usage
+function processTask(data: unknown) {
+    if (validateTask(data)) {
+        // TypeScript knows data is Task
+        console.log(data.title);
+    } else {
+        console.log('Invalid task data');
+    }
+}
+\`\`\`
+
+---
+
+## Your Mission
+Implement type guards for the task manager.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create isCompleted type guard: function isCompleted(task): task is CompletedTask', completed: false, regex: /function\s+isCompleted\s*\([^)]*\)\s*:\s*\w+\s+is\s+CompletedTask/ },
+                        { id: 2, description: 'Create isHighPriority type guard checking priority === "high" || "urgent"', completed: false, regex: /function\s+isHighPriority\s*\([^)]*\)\s*:\s*\w+\s+is/ },
+                        { id: 3, description: 'Create validateTask function that checks if data is Task', completed: false, regex: /function\s+validateTask\s*\([^)]*\)\s*:\s*\w+\s+is\s+Task/ },
+                        { id: 4, description: 'Use type guard in getTaskInfo function with if statement', completed: false, regex: /if\s*\(\s*isCompleted\s*\(\s*task\s*\)\s*\)/ }
+                    ],
+                    files: [
+                        { name: 'utils/validators.ts', language: 'typescript', content: `// Type Guards and Validators
+import { Task, Priority } from '../types/task';
+
+// Task with status variants
+interface TodoTask extends Task { status: 'todo'; }
+interface InProgressTask extends Task { status: 'in-progress'; startedAt: Date; }
+interface CompletedTask extends Task { status: 'completed'; completedAt: Date; }
+
+type AnyTask = TodoTask | InProgressTask | CompletedTask;
+
+// 1. Create isCompleted type guard
+function isCompleted(task: AnyTask) {
+    return task.status === 'completed';
+}
+
+// 2. Create isHighPriority type guard
+function isHighPriority(task: Task) {
+    return task.priority === 'high' || task.priority === 'urgent';
+}
+
+// 3. Create validateTask type guard
+function validateTask(data: unknown) {
+    if (typeof data !== 'object' || data === null) return false;
+    const task = data as Record<string, unknown>;
+    return typeof task.id === 'string' && typeof task.title === 'string';
+}
+
+// 4. Use type guards in this function
+function getTaskInfo(task: AnyTask): string {
+    // Use isCompleted type guard here
+    // if (isCompleted(task)) {
+    //     return \`Completed on \${task.completedAt}\`;
+    // }
+    return \`Status: \${task.status}\`;
+}
+
+export { isCompleted, isHighPriority, validateTask, getTaskInfo, AnyTask };
+` }
+                    ]
+                },
+                {
+                    id: 'ts-6-5',
+                    type: CONTENT_TYPES.LESSON,
+                    title: 'Part 4: Task Service Class',
+                    duration: '35 min',
+                    content: `
+# Part 4: Building the Task Service
+
+## Complete Task Service
+
+\`\`\`typescript
+import { Task, Priority } from '../types/task';
+import { ApiResponse } from '../types/api';
+
+type CreateTaskDTO = Omit<Task, 'id' | 'createdAt'>;
+type UpdateTaskDTO = Partial<Omit<Task, 'id'>>;
+
+class TaskService {
+    private tasks: Map<string, Task> = new Map();
+    
+    // Generate unique ID
+    private generateId(): string {
+        return 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // Create task
+    async create(data: CreateTaskDTO): Promise<ApiResponse<Task>> {
+        const task: Task = {
+            ...data,
+            id: this.generateId(),
+            createdAt: new Date()
+        };
+        
+        this.tasks.set(task.id, task);
+        
+        return {
+            success: true,
+            data: task,
+            message: 'Task created successfully',
+            timestamp: new Date()
+        };
+    }
+    
+    // Get all tasks with optional filters
+    async findAll(filters?: {
+        status?: Task['status'];
+        priority?: Priority;
+        projectId?: string;
+    }): Promise<ApiResponse<Task[]>> {
+        let tasks = Array.from(this.tasks.values());
+        
+        if (filters) {
+            if (filters.status) {
+                tasks = tasks.filter(t => t.status === filters.status);
+            }
+            if (filters.priority) {
+                tasks = tasks.filter(t => t.priority === filters.priority);
+            }
+            if (filters.projectId) {
+                tasks = tasks.filter(t => t.projectId === filters.projectId);
+            }
+        }
+        
+        return {
+            success: true,
+            data: tasks,
+            timestamp: new Date()
+        };
+    }
+    
+    // Update task
+    async update(id: string, data: UpdateTaskDTO): Promise<ApiResponse<Task>> {
+        const existing = this.tasks.get(id);
+        
+        if (!existing) {
+            throw new Error('Task not found');
+        }
+        
+        const updated: Task = { ...existing, ...data };
+        this.tasks.set(id, updated);
+        
+        return {
+            success: true,
+            data: updated,
+            message: 'Task updated successfully',
+            timestamp: new Date()
+        };
+    }
+    
+    // Delete task
+    async delete(id: string): Promise<ApiResponse<boolean>> {
+        const deleted = this.tasks.delete(id);
+        
+        return {
+            success: deleted,
+            data: deleted,
+            message: deleted ? 'Task deleted' : 'Task not found',
+            timestamp: new Date()
+        };
+    }
+}
+\`\`\`
+
+---
+
+## Your Mission
+Complete the TaskService class.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create TaskService class with private tasks: Map<string, Task>', completed: false, regex: /class\s+TaskService\s*\{[\s\S]*private\s+tasks\s*:\s*Map\s*<\s*string\s*,\s*Task\s*>/ },
+                        { id: 2, description: 'Implement create method: async create(data: CreateTaskDTO): Promise<ApiResponse<Task>>', completed: false, regex: /async\s+create\s*\(\s*data\s*:\s*CreateTaskDTO\s*\)\s*:\s*Promise\s*<\s*ApiResponse\s*<\s*Task\s*>\s*>/ },
+                        { id: 3, description: 'Implement findAll method with filters parameter', completed: false, regex: /async\s+findAll\s*\([^)]*filters/ },
+                        { id: 4, description: 'Implement update method: async update(id: string, data: UpdateTaskDTO)', completed: false, regex: /async\s+update\s*\(\s*id\s*:\s*string\s*,\s*data\s*:\s*UpdateTaskDTO\s*\)/ },
+                        { id: 5, description: 'Implement delete method returning Promise<ApiResponse<boolean>>', completed: false, regex: /async\s+delete\s*\(\s*id\s*:\s*string\s*\)\s*:\s*Promise\s*<\s*ApiResponse\s*<\s*boolean\s*>\s*>/ }
+                    ],
+                    files: [
+                        { name: 'services/taskService.ts', language: 'typescript', content: `// Task Service - Complete CRUD Operations
+import { Task, Priority } from '../types/task';
+
+// API Response type
+interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+    timestamp: Date;
+}
+
+// DTOs
+type CreateTaskDTO = Omit<Task, 'id' | 'createdAt'>;
+type UpdateTaskDTO = Partial<Omit<Task, 'id'>>;
+
+// Filter options
+interface TaskFilters {
+    status?: Task['status'];
+    priority?: Priority;
+    projectId?: string;
+}
+
+// 1. Create TaskService class
+class TaskService {
+    // private tasks: Map<string, Task> = new Map();
+    
+    private generateId(): string {
+        return 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    // 2. Implement create method
+    async create(data: CreateTaskDTO) {
+        // Create task with generated id and createdAt
+        // Add to map
+        // Return ApiResponse<Task>
+    }
+    
+    // 3. Implement findAll with filters
+    async findAll(filters?: TaskFilters) {
+        // Get all tasks from map
+        // Apply filters if provided
+        // Return ApiResponse<Task[]>
+    }
+    
+    // Find by ID
+    async findById(id: string): Promise<ApiResponse<Task | null>> {
+        const task = this.tasks.get(id) || null;
+        return {
+            success: !!task,
+            data: task,
+            timestamp: new Date()
+        };
+    }
+    
+    // 4. Implement update method
+    async update(id: string, data: UpdateTaskDTO) {
+        // Find existing task
+        // Merge with updates
+        // Save and return
+    }
+    
+    // 5. Implement delete method
+    async delete(id: string) {
+        // Delete from map
+        // Return success boolean
+    }
+}
+
+export { TaskService, CreateTaskDTO, UpdateTaskDTO, TaskFilters };
+` },
+                        { name: 'app.ts', language: 'typescript', content: `// Main Application
+import { TaskService } from './services/taskService';
+import { Task, Priority } from './types/task';
+
+async function main() {
+    const taskService = new TaskService();
+    
+    // Create tasks
+    const task1 = await taskService.create({
+        title: 'Learn TypeScript',
+        description: 'Complete the TypeScript course',
+        priority: 'high',
+        status: 'in-progress',
+        tags: ['learning', 'typescript'],
+        projectId: 'proj_1'
+    });
+    
+    console.log('Created:', task1.data);
+    
+    // Get all tasks
+    const allTasks = await taskService.findAll();
+    console.log('All tasks:', allTasks.data);
+    
+    // Filter by priority
+    const highPriority = await taskService.findAll({ priority: 'high' });
+    console.log('High priority:', highPriority.data);
+    
+    // Update task
+    if (task1.data) {
+        const updated = await taskService.update(task1.data.id, {
+            status: 'completed'
+        });
+        console.log('Updated:', updated.data);
+    }
+}
+
+main().catch(console.error);
+` }
+                    ]
+                },
+                {
+                    id: 'ts-6-quiz',
+                    type: CONTENT_TYPES.QUIZ,
+                    title: 'TypeScript Final Quiz',
+                    duration: '10 min',
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: 'What is the benefit of using discriminated unions for task status?',
+                            options: ['Faster code', 'Type-safe status handling with specific properties per status', 'Smaller bundle size', 'Better styling'],
+                            correctIndex: 1,
+                            explanation: 'Discriminated unions allow TypeScript to narrow types based on a common property, ensuring each status has its required properties.'
+                        },
+                        {
+                            id: 'q2',
+                            question: 'Why use Omit<Task, "id"> for CreateTaskDTO?',
+                            options: ['To make id optional', 'To exclude id since it is generated server-side', 'To rename id', 'To make id required'],
+                            correctIndex: 1,
+                            explanation: 'Omit removes properties from a type. CreateTaskDTO excludes id because it will be generated when creating the task.'
+                        },
+                        {
+                            id: 'q3',
+                            question: 'What does "task is CompletedTask" mean in a type guard?',
+                            options: ['Assignment', 'Comparison', 'Type predicate - narrows the type', 'Type casting'],
+                            correctIndex: 2,
+                            explanation: 'Type predicates tell TypeScript that if the function returns true, the parameter is of the specified type within that scope.'
+                        },
+                        {
+                            id: 'q4',
+                            question: 'Why use Map<string, Task> instead of Task[] for storage?',
+                            options: ['Maps are faster for everything', 'O(1) lookup by id vs O(n) array search', 'Maps use less memory', 'Arrays cannot store objects'],
+                            correctIndex: 1,
+                            explanation: 'Map provides O(1) constant time lookup by key, while finding an item in an array requires O(n) linear search.'
+                        },
+                        {
+                            id: 'q5',
+                            question: 'What TypeScript feature ensures filterBy works with any object type?',
+                            options: ['any type', 'Generics with keyof constraint', 'Type casting', 'Interface'],
+                            correctIndex: 1,
+                            explanation: 'Generics with "K extends keyof T" ensure the key parameter is a valid property of the object type T.'
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };

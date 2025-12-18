@@ -1457,6 +1457,269 @@ userSchema.index({ name: 'text' }); // Text search
                     ]
                 }
             ]
+        },
+
+        // ============================================
+        // UNIT 6: Final Project
+        // ============================================
+        {
+            id: 'mongo-unit-6',
+            title: 'Final Project: E-Commerce API',
+            description: 'Build a complete e-commerce backend with MongoDB',
+            items: [
+                {
+                    id: 'mongo-6-1',
+                    type: CONTENT_TYPES.PROJECT,
+                    title: 'E-Commerce Backend',
+                    duration: '60 min',
+                    content: `
+# Final Project: E-Commerce Backend
+
+## Project Overview
+
+Build a complete e-commerce API with:
+- User authentication
+- Product catalog
+- Shopping cart
+- Order management
+- Reviews system
+
+## Data Models
+
+### User Model
+\`\`\`javascript
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    addresses: [{
+        street: String,
+        city: String,
+        zipCode: String,
+        isDefault: Boolean
+    }],
+    createdAt: { type: Date, default: Date.now }
+});
+\`\`\`
+
+### Product Model
+\`\`\`javascript
+const productSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: String,
+    price: { type: Number, required: true, min: 0 },
+    category: { type: String, required: true },
+    stock: { type: Number, default: 0 },
+    images: [String],
+    ratings: {
+        average: { type: Number, default: 0 },
+        count: { type: Number, default: 0 }
+    },
+    createdAt: { type: Date, default: Date.now }
+});
+\`\`\`
+
+### Order Model
+\`\`\`javascript
+const orderSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    items: [{
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+        quantity: Number,
+        price: Number
+    }],
+    total: Number,
+    status: {
+        type: String,
+        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        default: 'pending'
+    },
+    shippingAddress: {
+        street: String,
+        city: String,
+        zipCode: String
+    },
+    createdAt: { type: Date, default: Date.now }
+});
+\`\`\`
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/auth/register | Register user |
+| POST | /api/auth/login | Login user |
+| GET | /api/products | Get all products |
+| GET | /api/products/:id | Get single product |
+| POST | /api/products | Create product (admin) |
+| POST | /api/orders | Create order |
+| GET | /api/orders/my | Get user's orders |
+| PUT | /api/orders/:id/status | Update order status |
+
+---
+
+## Your Mission
+Build the complete e-commerce API.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create User model with addresses array', completed: false, regex: /addresses\s*:\s*\[\s*\{/ },
+                        { id: 2, description: 'Create Product model with ratings object', completed: false, regex: /ratings\s*:\s*\{[^}]*average/ },
+                        { id: 3, description: 'Create Order model with items array referencing Product', completed: false, regex: /items\s*:\s*\[\s*\{[^}]*product\s*:\s*\{[^}]*ref\s*:\s*["']Product["']/ },
+                        { id: 4, description: 'Add pre-save middleware to hash password', completed: false, regex: /userSchema\.pre\s*\(\s*["']save["']/ },
+                        { id: 5, description: 'Create aggregation to get sales by category', completed: false, regex: /\$group\s*:\s*\{[^}]*_id\s*:\s*["']\$category["']/ }
+                    ],
+                    files: [
+                        { name: 'models/User.js', language: 'javascript', content: `const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    // Add addresses array
+    addresses: [
+        // street, city, zipCode, isDefault
+    ],
+    createdAt: { type: Date, default: Date.now }
+});
+
+// Add pre-save middleware to hash password
+userSchema.pre('save', async function(next) {
+    // Hash password if modified
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+};
+
+module.exports = mongoose.model('User', userSchema);` },
+                        { name: 'models/Product.js', language: 'javascript', content: `const mongoose = require('mongoose');
+
+const productSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    description: String,
+    price: { type: Number, required: true, min: 0 },
+    category: { type: String, required: true },
+    stock: { type: Number, default: 0 },
+    images: [String],
+    // Add ratings object with average and count
+    ratings: {
+        // average: Number, default 0
+        // count: Number, default 0
+    },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// Index for search
+productSchema.index({ name: 'text', description: 'text' });
+productSchema.index({ category: 1, price: 1 });
+
+module.exports = mongoose.model('Product', productSchema);` },
+                        { name: 'models/Order.js', language: 'javascript', content: `const mongoose = require('mongoose');
+
+const orderSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // Add items array with product reference, quantity, price
+    items: [
+        // product: ObjectId ref Product
+        // quantity: Number
+        // price: Number
+    ],
+    total: Number,
+    status: {
+        type: String,
+        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        default: 'pending'
+    },
+    shippingAddress: {
+        street: String,
+        city: String,
+        zipCode: String
+    },
+    createdAt: { type: Date, default: Date.now }
+});
+
+// Pre-save to calculate total
+orderSchema.pre('save', function(next) {
+    this.total = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    next();
+});
+
+module.exports = mongoose.model('Order', orderSchema);` },
+                        { name: 'controllers/analyticsController.js', language: 'javascript', content: `const Order = require('../models/Order');
+
+// Get sales by category
+exports.getSalesByCategory = async (req, res) => {
+    try {
+        const sales = await Order.aggregate([
+            { $unwind: '$items' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.product',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            // Add $group stage to group by category
+            // {
+            //     $group: {
+            //         _id: '$productInfo.category',
+            //         totalSales: { $sum: { $multiply: ['$items.quantity', '$items.price'] } },
+            //         totalOrders: { $sum: 1 }
+            //     }
+            // },
+            { $sort: { totalSales: -1 } }
+        ]);
+        
+        res.json({ success: true, data: sales });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};` }
+                    ]
+                },
+                {
+                    id: 'mongo-6-quiz',
+                    type: CONTENT_TYPES.QUIZ,
+                    title: 'MongoDB Final Quiz',
+                    duration: '10 min',
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: 'What is the best way to store user addresses in MongoDB?',
+                            options: ['Separate collection', 'Embedded array in user document', 'JSON string', 'Separate database'],
+                            correctIndex: 1,
+                            explanation: 'Addresses are typically embedded in the user document since they are always accessed with the user and there are usually only a few per user.'
+                        },
+                        {
+                            id: 'q2',
+                            question: 'How do you ensure unique emails in Mongoose?',
+                            options: ['{ email: { unique: true } }', '{ email: { distinct: true } }', '{ email: { single: true } }', '{ email: { one: true } }'],
+                            correctIndex: 0,
+                            explanation: 'The unique: true option creates a unique index on the field, preventing duplicate values.'
+                        },
+                        {
+                            id: 'q3',
+                            question: 'What aggregation stage would you use to join collections?',
+                            options: ['$join', '$lookup', '$merge', '$combine'],
+                            correctIndex: 1,
+                            explanation: '$lookup performs a left outer join to another collection in the same database.'
+                        },
+                        {
+                            id: 'q4',
+                            question: 'When should you use references instead of embedding?',
+                            options: ['Always', 'When data is small', 'When data is accessed independently or changes frequently', 'Never'],
+                            correctIndex: 2,
+                            explanation: 'References are better when related data is accessed independently, changes frequently, or when there are many related documents.'
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };

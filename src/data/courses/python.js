@@ -155,25 +155,23 @@ Create Python variables and use print statements.
                         { id: 4, description: 'In main.py, create list: courses = ["HTML", "CSS", "Python"]', completed: false, regex: /\w+\s*=\s*\[/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `# Python Basics Practice
+                        { name: 'main.py', language: 'python', content: `// Python Basics Practice
 
-# 1. Print "Hello, ZeroCode!"
-
-
-# 2. Create variables for student info
+// 1. Print Hello ZeroCode
 
 
-# 3. Use f-string to print formatted text
+// 2. Create variables
 
 
-# 4. Create a list of courses
+// 3. Use f-string
 
 
-# 5. Print the list
+// 4. Create a list
 
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+
+// 5. Print the list
+
+` }
                     ]
                 },
                 {
@@ -314,25 +312,22 @@ Create a grade calculator with loops and conditionals.
                         { id: 4, description: 'In main.py, create list comprehension: squares = [x**2 for x in range(5)]', completed: false, regex: /\[[^\]]+for\s+\w+\s+in\s+[^\]]+\]/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `# Grade Calculator
+                        { name: 'main.py', language: 'python', content: `// Grade Calculator
 
-# List of grades
 grades = [85, 92, 78, 65, 88]
 
-# 1. Calculate average
+// 1. Calculate average
 
 
-# 2. Determine letter grade
+// 2. Determine letter grade (if/elif/else)
 
 
-# 3. Count grades above 80
+// 3. Loop example
 
 
-# 4. Print results
+// 4. List comprehension
 
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+` }
                     ]
                 },
                 {
@@ -429,25 +424,20 @@ Create utility functions for student data.
                         { id: 4, description: 'In main.py, call function: print(calculate_gpa([3.5, 3.8, 4.0]))', completed: false, regex: /print\s*\([^)]*\w+\s*\(/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `# Student Utility Functions
+                        { name: 'main.py', language: 'python', content: `// Student Utility Functions
 
-# 1. Create calculate_gpa function
-
-
-# 2. Create get_letter_grade function
+// 1. Create calculate_gpa function
 
 
-# 3. Create format_student_info function
+// 2. Create get_letter_grade function
 
 
-# Test data
+// 3. Test data
 grades = [3.5, 3.8, 4.0, 3.2]
 
-# Call functions and print results
+// 4. Call functions and print results
 
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+` }
                     ]
                 },
                 {
@@ -704,27 +694,23 @@ Build a student database with dictionaries.
                         { id: 4, description: 'In main.py, create list of dicts: students = [{"name": "Alice"}, {"name": "Bob"}]', completed: false, regex: /\[\s*\{[^}]+\}[^]]*\]/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `# Student Database
+                        { name: 'main.py', language: 'python', content: `// Student Database
 
-# 1. Create a list of student dictionaries
+// 1. Create a list of student dictionaries
 students = []
 
-# 2. Add at least 3 students with name, id, major, gpa
+// 2. Add students with name, id, major, gpa
 
 
-# 3. Function to find student by ID
-def find_student(student_id):
-    pass
+// 3. Create find_student function
 
-# 4. Function to get students by major
-def get_by_major(major):
-    pass
 
-# 5. Print all students with their info
+// 4. Loop through dictionary using .items()
 
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+
+// 5. Print results
+
+` }
                     ]
                 },
                 {
@@ -991,38 +977,20 @@ Create a course management system with classes.
                         { id: 4, description: 'In main.py, create object: alice = Student("Alice", "001") to instantiate class', completed: false, regex: /\w+\s*=\s*\w+\s*\(/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `# Course Management System
+                        { name: 'main.py', language: 'python', content: `// Course Management System
 
-# 1. Create Course class
-class Course:
-    def __init__(self, code, name, credits):
-        pass
-    
-    def __str__(self):
-        pass
-
-# 2. Create Student class
-class Student:
-    def __init__(self, name, student_id):
-        pass
-    
-    def enroll(self, course):
-        pass
-    
-    def get_total_credits(self):
-        pass
-    
-    def __str__(self):
-        pass
-
-# 3. Create instances and test
+// 1. Create Course class with __init__
 
 
-# 4. Print results
+// 2. Create Student class with __init__, enroll, get_info methods
 
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+
+// 3. Create instances and test
+
+
+// 4. Print results
+
+` }
                     ]
                 },
                 {
@@ -1115,43 +1083,27 @@ Create a Python program that reads student data and generates statistics.
                         { id: 5, description: 'Use f-string for formatted output', completed: false, regex: /f["'][^"']*\{[^}]+\}/ }
                     ],
                     starterFiles: [
-                        { name: 'main.py', language: 'python', content: `# Student Data Analyzer
+                        { name: 'main.py', language: 'python', content: `// Student Data Analyzer
 
-# Sample data
+// Sample data
 students = [
     {"name": "Alice", "id": "001", "grades": [85, 90, 88, 92]},
     {"name": "Bob", "id": "002", "grades": [78, 82, 75, 80]},
     {"name": "Charlie", "id": "003", "grades": [92, 95, 90, 94]},
 ]
 
-# 1. Function to calculate GPA (0-4 scale)
-def calculate_gpa(grades):
-    # Convert 0-100 to 0-4 scale
-    pass
+// 1. Create calculate_gpa function
 
-# 2. Function to get letter grade
-def get_letter_grade(gpa):
-    pass
 
-# 3. Function to find top N students
-def find_top_students(students, n=3):
-    pass
+// 2. Create get_letter_grade function
 
-# 4. Function to generate report
-def generate_report(students):
-    pass
 
-# Main program
-if __name__ == "__main__":
-    print("=" * 50)
-    print("STUDENT PERFORMANCE REPORT")
-    print("=" * 50)
-    
-    # Generate and print report
-    generate_report(students)
-` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
+// 3. Create generate_report function
+
+
+// 4. Call generate_report
+
+` }
                     ]
                 },
                 {

@@ -1217,6 +1217,309 @@ module.exports = {
                     ]
                 }
             ]
+        },
+
+        // ============================================
+        // UNIT 7: Final Project
+        // ============================================
+        {
+            id: 'nextjs-unit-7',
+            title: 'Final Project: Full-Stack Blog',
+            description: 'Build a complete blog application with Next.js',
+            items: [
+                {
+                    id: 'nextjs-7-1',
+                    type: CONTENT_TYPES.PROJECT,
+                    title: 'Full-Stack Blog Application',
+                    duration: '60 min',
+                    content: `
+# Final Project: Full-Stack Blog
+
+## Project Overview
+
+Build a complete blog application with:
+- Server-side rendering for SEO
+- Dynamic routes for posts
+- API routes for CRUD operations
+- Authentication
+- Markdown support
+- Comments system
+
+## Features
+
+### Pages
+- Home page with post list
+- Individual post pages (SSG)
+- Admin dashboard
+- Create/Edit post page
+
+### API Routes
+- GET /api/posts - List all posts
+- GET /api/posts/[slug] - Get single post
+- POST /api/posts - Create post (auth required)
+- PUT /api/posts/[slug] - Update post (auth required)
+- DELETE /api/posts/[slug] - Delete post (auth required)
+
+## Project Structure
+
+\`\`\`
+app/
+├── page.tsx              # Home (list posts)
+├── posts/
+│   └── [slug]/
+│       └── page.tsx      # Single post (SSG)
+├── admin/
+│   ├── page.tsx          # Dashboard
+│   └── posts/
+│       ├── new/page.tsx  # Create post
+│       └── [slug]/page.tsx # Edit post
+├── api/
+│   └── posts/
+│       ├── route.ts      # GET all, POST new
+│       └── [slug]/
+│           └── route.ts  # GET, PUT, DELETE single
+└── layout.tsx
+\`\`\`
+
+## Data Model
+
+\`\`\`typescript
+interface Post {
+    id: string;
+    slug: string;
+    title: string;
+    content: string;
+    excerpt: string;
+    author: string;
+    publishedAt: Date;
+    updatedAt: Date;
+    tags: string[];
+    published: boolean;
+}
+\`\`\`
+
+---
+
+## Your Mission
+Build the complete blog application.
+                    `,
+                    tasks: [
+                        { id: 1, description: 'Create home page that fetches and displays posts', completed: false, regex: /async\s+function\s+getPosts/ },
+                        { id: 2, description: 'Create dynamic post page with generateStaticParams', completed: false, regex: /export\s+async\s+function\s+generateStaticParams/ },
+                        { id: 3, description: 'Create API route for posts: GET and POST handlers', completed: false, regex: /export\s+async\s+function\s+GET[\s\S]*export\s+async\s+function\s+POST/ },
+                        { id: 4, description: 'Create API route for single post: GET, PUT, DELETE', completed: false, regex: /export\s+async\s+function\s+DELETE/ },
+                        { id: 5, description: 'Add middleware for admin route protection', completed: false, regex: /matcher.*admin/ }
+                    ],
+                    files: [
+                        { name: 'app/page.tsx', language: 'typescript', content: `// Home Page - List all posts
+
+async function getPosts() {
+    // Fetch posts from API or database
+    const res = await fetch('http://localhost:3000/api/posts', {
+        next: { revalidate: 60 }
+    });
+    return res.json();
+}
+
+export default async function Home() {
+    const posts = await getPosts();
+    
+    return (
+        <main className="max-w-4xl mx-auto p-8">
+            <h1 className="text-4xl font-bold mb-8">Blog</h1>
+            
+            <div className="space-y-6">
+                {posts.map((post: any) => (
+                    <article key={post.id} className="border-b pb-6">
+                        <a href={\`/posts/\${post.slug}\`}>
+                            <h2 className="text-2xl font-semibold hover:text-blue-500">
+                                {post.title}
+                            </h2>
+                        </a>
+                        <p className="text-gray-600 mt-2">{post.excerpt}</p>
+                        <div className="text-sm text-gray-400 mt-2">
+                            {new Date(post.publishedAt).toLocaleDateString()}
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </main>
+    );
+}
+` },
+                        { name: 'app/posts/[slug]/page.tsx', language: 'typescript', content: `// Single Post Page with SSG
+
+async function getPost(slug: string) {
+    const res = await fetch(\`http://localhost:3000/api/posts/\${slug}\`);
+    if (!res.ok) return null;
+    return res.json();
+}
+
+// Generate static pages for all posts
+export async function generateStaticParams() {
+    const res = await fetch('http://localhost:3000/api/posts');
+    const posts = await res.json();
+    
+    return posts.map((post: any) => ({
+        slug: post.slug,
+    }));
+}
+
+export default async function PostPage({
+    params,
+}: {
+    params: { slug: string }
+}) {
+    const post = await getPost(params.slug);
+    
+    if (!post) {
+        return <div>Post not found</div>;
+    }
+    
+    return (
+        <main className="max-w-3xl mx-auto p-8">
+            <article>
+                <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+                <div className="text-gray-500 mb-8">
+                    By {post.author} • {new Date(post.publishedAt).toLocaleDateString()}
+                </div>
+                <div className="prose lg:prose-xl">
+                    {post.content}
+                </div>
+            </article>
+        </main>
+    );
+}
+` },
+                        { name: 'app/api/posts/route.ts', language: 'typescript', content: `import { NextResponse } from 'next/server';
+
+// In-memory posts (replace with database)
+let posts = [
+    {
+        id: '1',
+        slug: 'hello-world',
+        title: 'Hello World',
+        content: 'This is my first blog post!',
+        excerpt: 'Welcome to my blog',
+        author: 'Admin',
+        publishedAt: new Date().toISOString(),
+        tags: ['intro'],
+        published: true
+    }
+];
+
+// GET all posts
+export async function GET() {
+    const publishedPosts = posts.filter(p => p.published);
+    return NextResponse.json(publishedPosts);
+}
+
+// POST create new post
+export async function POST(request: Request) {
+    const body = await request.json();
+    
+    const newPost = {
+        id: Date.now().toString(),
+        slug: body.title.toLowerCase().replace(/\\s+/g, '-'),
+        ...body,
+        publishedAt: new Date().toISOString(),
+        published: false
+    };
+    
+    posts.push(newPost);
+    return NextResponse.json(newPost, { status: 201 });
+}
+` },
+                        { name: 'app/api/posts/[slug]/route.ts', language: 'typescript', content: `import { NextResponse } from 'next/server';
+
+// GET single post
+export async function GET(
+    request: Request,
+    { params }: { params: { slug: string } }
+) {
+    // Find post by slug
+    // Return 404 if not found
+    return NextResponse.json({ slug: params.slug });
+}
+
+// PUT update post
+export async function PUT(
+    request: Request,
+    { params }: { params: { slug: string } }
+) {
+    const body = await request.json();
+    // Update post
+    return NextResponse.json({ message: 'Updated' });
+}
+
+// DELETE post
+export async function DELETE(
+    request: Request,
+    { params }: { params: { slug: string } }
+) {
+    // Delete post
+    return new NextResponse(null, { status: 204 });
+}
+` },
+                        { name: 'middleware.ts', language: 'typescript', content: `import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+    const token = request.cookies.get('auth-token');
+    
+    // Protect admin routes
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        if (!token) {
+            return NextResponse.redirect(new URL('/login', request.url));
+        }
+    }
+    
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: ['/admin/:path*']
+};
+` }
+                    ]
+                },
+                {
+                    id: 'nextjs-7-quiz',
+                    type: CONTENT_TYPES.QUIZ,
+                    title: 'Next.js Final Quiz',
+                    duration: '10 min',
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: 'What is generateStaticParams used for?',
+                            options: ['Generating API routes', 'Pre-rendering dynamic routes at build time', 'Creating middleware', 'Validating parameters'],
+                            correctIndex: 1,
+                            explanation: 'generateStaticParams is used to statically generate dynamic routes at build time, similar to getStaticPaths in Pages Router.'
+                        },
+                        {
+                            id: 'q2',
+                            question: 'How do you make a page dynamic (not cached)?',
+                            options: ['export const dynamic = "force-dynamic"', 'export const cache = false', 'export const ssr = true', 'export const static = false'],
+                            correctIndex: 0,
+                            explanation: 'export const dynamic = "force-dynamic" forces the page to be rendered on every request.'
+                        },
+                        {
+                            id: 'q3',
+                            question: 'What is the benefit of Server Components?',
+                            options: ['Faster client-side rendering', 'Smaller JavaScript bundle, better SEO', 'More interactivity', 'Easier state management'],
+                            correctIndex: 1,
+                            explanation: 'Server Components reduce the JavaScript sent to the client and enable better SEO since content is rendered on the server.'
+                        },
+                        {
+                            id: 'q4',
+                            question: 'When should you use "use client" directive?',
+                            options: ['Always', 'For components that need interactivity (useState, useEffect, event handlers)', 'For API routes', 'For layouts'],
+                            correctIndex: 1,
+                            explanation: 'Use "use client" when you need React hooks, browser APIs, or event handlers that require client-side JavaScript.'
+                        }
+                    ]
+                }
+            ]
         }
     ]
 };
