@@ -1,16 +1,127 @@
-# React + Vite
+# ZeroCode
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Learn to code from zero. A modern web development learning platform with interactive courses, hands-on projects, and a supportive community.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **16 Courses** - From HTML basics to CI/CD, covering the full web development stack
+- **Interactive Learning** - Code editor with live preview, quizzes, and projects
+- **Progress Tracking** - Track your learning journey across all courses
+- **Subscription Tiers** - Free demo, Beginner, Intermediate, Advanced, and Fullstack packages
+- **Community Forum** - Ask questions, share knowledge, connect with learners
+- **Resource Library** - Curated docs, tools, tutorials, and cheatsheets
+- **Admin Dashboard** - Manage users and subscriptions
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 18, Vite, Tailwind CSS
+- **Database**: Neon PostgreSQL (serverless)
+- **Auth**: Custom auth with bcrypt
+- **Deployment**: Vercel / GitHub Pages
 
-## Expanding the ESLint configuration
+## Courses
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Beginner (New Recruit)
+- HTML5 Fundamentals
+- CSS3 Styling
+- JavaScript Basics
+- Git & GitHub
+- Tailwind CSS
+
+### Intermediate (Systems Engineer)
+- DOM Manipulation
+- Modern JavaScript (ES6+)
+- React.js Fundamentals
+- PHP Backend
+- MySQL Database
+- Python Fundamentals
+
+### Advanced (Lead Architect)
+- TypeScript
+- Node.js & Express
+- MongoDB
+- Next.js
+- CI/CD & DevOps
+
+## Subscription Pricing
+
+| Tier | Price | Access |
+|------|-------|--------|
+| Free | Rp 0 | HTML, CSS, JS Basics (demo) |
+| Beginner | Rp 50,000 | All beginner courses |
+| Intermediate | Rp 75,000 | Beginner + Intermediate |
+| Advanced | Rp 80,000 | All courses |
+| Fullstack | Rp 164,000 | All courses (20% discount) |
+
+## Setup
+
+### Prerequisites
+- Node.js 18+
+- Neon PostgreSQL account
+
+### Installation
+
+```bash
+# Clone repo
+git clone https://github.com/dkycdr/ZeroCode.git
+cd ZeroCode
+
+# Install dependencies
+npm install
+
+# Setup environment
+cp .env.example .env
+# Add your Neon database URL to .env
+
+# Run database schema
+# Copy neon-schema.sql content to Neon SQL Editor and run
+
+# Start dev server
+npm run dev
+```
+
+### Environment Variables
+
+```
+VITE_NEON_DATABASE_URL=postgresql://...
+```
+
+## Admin Access
+
+1. Register a normal account
+2. Go to Profile → Click "Admin Access" link
+3. Enter secret code: `ZEROCODE2024`
+4. Or click ZeroCode logo 5 times quickly
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable UI components
+├── contexts/       # React contexts (Auth, Progress)
+├── data/
+│   └── courses/    # Course content files
+├── lib/            # Database connection
+├── pages/          # Page components
+└── utils/          # Helper functions
+```
+
+## Deployment
+
+### Vercel
+1. Connect GitHub repo to Vercel
+2. Add `VITE_NEON_DATABASE_URL` to environment variables
+3. Deploy
+
+### GitHub Pages
+Push to main branch - GitHub Actions will auto-deploy
+
+## Team
+
+- **Lead Developer** - Building the platform
+- **Documentation** - Course content and docs
+- **Admin & Support** - User management and support
+
+## License
+
+MIT
