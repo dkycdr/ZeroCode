@@ -47,7 +47,7 @@ export default function InstructionPane({ lesson }) {
                                         "text-sm leading-relaxed break-words transition-colors",
                                         task.completed ? "text-gray-500 line-through decoration-gray-600" : "text-gray-300"
                                     )}>
-                                        {task.description}
+                                        {task.text || task.description}
                                     </span>
                                 </li>
                             ))}

@@ -10,9 +10,10 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
     // Sync state back to parent (for validation)
     useEffect(() => {
         if (onStateChange) {
-            onStateChange(gitState);
+            // Pass both git internal state AND terminal history for validation
+            onStateChange({ ...gitState, history });
         }
-    }, [gitState, onStateChange]);
+    }, [gitState, history, onStateChange]);
 
     // Auto-scroll logic
     useEffect(() => {
