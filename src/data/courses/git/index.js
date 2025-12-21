@@ -3,6 +3,7 @@ import { unit2BasicCommands } from './unit-2-basic-commands';
 import { unit3Github } from './unit-3-github';
 import { unit4Project } from './unit-4-project';
 import { unit5BranchingMerging } from './unit-5-branching-merging';
+import { unit5Remote } from './unit-5-remote';
 import { unit6Collaboration } from './unit-6-collaboration';
 import { unit7RebaseCherrypick } from './unit-7-rebase-cherrypick';
 import { unit8StashClean } from './unit-8-stash-clean';
