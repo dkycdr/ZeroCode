@@ -16,15 +16,16 @@ export const gitCourse = {
     icon: 'git',
     difficulty: 'Beginner',
     duration: '20 hours',
-    unit1Introduction,
-    unit2BasicCommands,
-    unit3Github,
-    unit5BranchingMerging,
-    unit5Remote,
-    unit6Collaboration,
-    unit7RebaseCherrypick,
-    unit8StashClean,
-    unit9HooksAutomation,
-    unit10AdvancedWorkflows
+    units: [
+        unit1Introduction,
+        unit2BasicCommands,
+        unit3Github,
+        unit5BranchingMerging,
+        unit5Remote,
+        unit6Collaboration,
+        unit7RebaseCherrypick,
+        unit8StashClean,
+        unit9HooksAutomation,
+        unit10AdvancedWorkflows
     ]
 };
