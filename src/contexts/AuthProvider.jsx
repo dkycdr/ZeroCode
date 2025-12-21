@@ -7,8 +7,8 @@ const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
 
-// Admin secret code - change this to your own secret!
-const ADMIN_SECRET_CODE = 'ZEROCODE2024';
+// Admin secret code - managed via environment variables
+const ADMIN_SECRET_CODE = import.meta.env.VITE_ADMIN_SECRET_CODE;
 
 // Subscription tier access levels
 export const SUBSCRIPTION_TIERS = {
@@ -234,7 +234,7 @@ export const AuthProvider = ({ children }) => {
             const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
-            
+
             const googleUser = JSON.parse(jsonPayload);
             const { email, name, sub: googleId, picture } = googleUser;
 
@@ -262,7 +262,7 @@ export const AuthProvider = ({ children }) => {
                 await sendVerificationEmail(email, verificationCode);
             } else {
                 dbUser = result[0];
-                
+
                 // If not verified, send new verification code
                 if (!dbUser.is_email_verified) {
                     const verificationCode = generateVerificationCode();
