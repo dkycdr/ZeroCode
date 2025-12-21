@@ -19,6 +19,12 @@ export const gitCourse = {
     unit1Introduction,
     unit2BasicCommands,
     unit3Github,
-    unit5BranchingMerging // Using Unit 5 content as "Unit 4: Branching"
+    unit5BranchingMerging,
+    unit5Remote,
+    unit6Collaboration,
+    unit7RebaseCherrypick,
+    unit8StashClean,
+    unit9HooksAutomation,
+    unit10AdvancedWorkflows
     ]
 };
