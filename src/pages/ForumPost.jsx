@@ -5,18 +5,18 @@ import { useAuth } from '../contexts/AuthProvider';
 import { useProgress } from '../contexts/ProgressProvider';
 import { getOverallProgress } from '../data/curriculumStructure';
 import { sql } from '../lib/neon';
-import { 
+import {
     ArrowLeft, ThumbsUp, MessageCircle, Clock, User, Send, Trash2
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const CATEGORIES = [
-    { id: 'general', label: 'General', color: 'bg-blue-500/20 text-blue-400' },
-    { id: 'html-css', label: 'HTML & CSS', color: 'bg-orange-500/20 text-orange-400' },
-    { id: 'javascript', label: 'JavaScript', color: 'bg-yellow-500/20 text-yellow-400' },
-    { id: 'react', label: 'React', color: 'bg-cyan-500/20 text-cyan-400' },
-    { id: 'backend', label: 'Backend', color: 'bg-green-500/20 text-green-400' },
-    { id: 'help', label: 'Help & Support', color: 'bg-red-500/20 text-red-400' },
+    { id: 'general', label: 'General', color: 'text-blue-400 border-blue-400/30' },
+    { id: 'html-css', label: 'HTML & CSS', color: 'text-orange-400 border-orange-400/30' },
+    { id: 'javascript', label: 'JavaScript', color: 'text-yellow-400 border-yellow-400/30' },
+    { id: 'react', label: 'React', color: 'text-cyan-400 border-cyan-400/30' },
+    { id: 'backend', label: 'Backend', color: 'text-green-400 border-green-400/30' },
+    { id: 'help', label: 'Help & Support', color: 'text-red-400 border-red-400/30' },
 ];
 
 export default function ForumPost() {
@@ -98,11 +98,13 @@ export default function ForumPost() {
             const existing = await sql`
                 SELECT id FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}
             `;
-            
+
             if (existing.length > 0) {
+                // Unlike
                 await sql`DELETE FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}`;
                 await sql`UPDATE forum_posts SET likes = likes - 1 WHERE id = ${postId}`;
             } else {
+                // Like
                 await sql`INSERT INTO forum_likes (post_id, user_id) VALUES (${postId}, ${user.id})`;
                 await sql`UPDATE forum_posts SET likes = likes + 1 WHERE id = ${postId}`;
             }
@@ -114,7 +116,7 @@ export default function ForumPost() {
 
     const handleDeletePost = async () => {
         if (!confirm('Are you sure you want to delete this post?')) return;
-        
+
         try {
             await sql`DELETE FROM forum_replies WHERE post_id = ${postId}`;
             await sql`DELETE FROM forum_likes WHERE post_id = ${postId}`;
@@ -127,7 +129,7 @@ export default function ForumPost() {
 
     const handleDeleteReply = async (replyId) => {
         if (!confirm('Delete this reply?')) return;
-        
+
         try {
             await sql`DELETE FROM forum_replies WHERE id = ${replyId}`;
             loadReplies();
@@ -138,20 +140,20 @@ export default function ForumPost() {
 
     const formatDate = (date) => {
         const d = new Date(date);
-        return d.toLocaleDateString('en-US', { 
-            year: 'numeric', month: 'short', day: 'numeric', 
-            hour: '2-digit', minute: '2-digit' 
+        return d.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
     };
 
     const getCategoryStyle = (categoryId) => {
-        return CATEGORIES.find(c => c.id === categoryId)?.color || 'bg-white/10 text-white';
+        return CATEGORIES.find(c => c.id === categoryId)?.color || 'text-white border-white';
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]"></div>
             </div>
         );
     }
@@ -161,58 +163,64 @@ export default function ForumPost() {
     const canDelete = isAdmin || post.user_id === user.id;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a]">
+        <div className="min-h-screen bg-[var(--bg-primary)] font-sans">
             <Header progress={progress.percentage} />
 
-            <main className="min-h-[calc(100vh-56px)] overflow-y-auto">
-                <div className="max-w-3xl mx-auto px-6 py-8">
+            <main className="min-h-[calc(100vh-56px)] overflow-y-auto pt-20 pb-20">
+                <div className="max-w-4xl mx-auto px-6">
                     {/* Back */}
                     <button
                         onClick={() => navigate('/community')}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+                        className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors text-xs font-mono font-bold uppercase tracking-wider group"
                     >
-                        <ArrowLeft size={18} />
-                        Back to Forum
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Feed
                     </button>
 
                     {/* Post */}
-                    <div className="bg-[#111111] rounded-xl border border-white/10 p-6 mb-6">
-                        <div className="flex items-center gap-2 mb-4">
+                    <div className="card-cyber p-8 mb-8 animate-fade-in-up">
+                        <div className="flex items-center gap-2 mb-6">
                             <span className={clsx(
-                                "px-2 py-0.5 rounded text-xs font-medium",
+                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-transparent",
                                 getCategoryStyle(post.category)
                             )}>
                                 {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
                             </span>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-white mb-4">{post.title}</h1>
-                        
-                        <p className="text-gray-300 whitespace-pre-wrap mb-6">{post.content}</p>
+                        <h1 className="text-3xl font-bold text-white mb-6 leading-tight">{post.title}</h1>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                                <div className="flex items-center gap-1.5">
-                                    <User size={14} />
-                                    <span>{post.author_name || post.author_email?.split('@')[0]}</span>
+                        <div className="prose prose-invert max-w-none mb-8 text-gray-300 leading-relaxed font-light">
+                            {post.content.split('\n').map((paragraph, idx) => (
+                                <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-6 border-t border-[var(--border-subtle)]">
+                            <div className="flex items-center gap-6 text-xs text-gray-500 font-mono tracking-tight">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center text-[var(--accent-primary)]">
+                                        <User size={12} />
+                                    </div>
+                                    <span className="text-gray-400 font-bold">{post.author_name || post.author_email?.split('@')[0]}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <Clock size={14} />
+                                    <Clock size={12} />
                                     <span>{formatDate(post.created_at)}</span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-6">
                                 <button
                                     onClick={handleLike}
-                                    className="flex items-center gap-1.5 text-gray-500 hover:text-white transition-colors"
+                                    className="flex items-center gap-2 text-gray-500 hover:text-[var(--accent-primary)] transition-colors group"
                                 >
-                                    <ThumbsUp size={16} />
-                                    <span>{post.likes || 0}</span>
+                                    <ThumbsUp size={16} className="group-hover:scale-110 transition-transform" />
+                                    <span className="font-mono text-sm">{post.likes || 0}</span>
                                 </button>
                                 {canDelete && (
                                     <button
                                         onClick={handleDeletePost}
-                                        className="text-red-400 hover:text-red-300 transition-colors"
+                                        className="text-gray-600 hover:text-red-400 transition-colors"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -222,29 +230,38 @@ export default function ForumPost() {
                     </div>
 
                     {/* Replies */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <MessageCircle size={18} />
-                            {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
+                    <div className="mb-8">
+                        <h2 className="text-sm font-bold text-gray-400 mb-6 flex items-center gap-2 uppercase tracking-wider">
+                            <MessageCircle size={16} />
+                            Transmission Log ({replies.length})
                         </h2>
 
-                        <div className="space-y-3">
-                            {replies.map(reply => (
-                                <div key={reply.id} className="bg-[#111111] rounded-xl border border-white/10 p-4">
-                                    <p className="text-gray-300 whitespace-pre-wrap mb-3">{reply.content}</p>
-                                    <div className="flex items-center justify-between text-sm text-gray-500">
-                                        <div className="flex items-center gap-3">
-                                            <span>{reply.author_name || reply.author_email?.split('@')[0]}</span>
-                                            <span>{formatDate(reply.created_at)}</span>
+                        <div className="space-y-4">
+                            {replies.map((reply, index) => (
+                                <div
+                                    key={reply.id}
+                                    className="bg-[var(--bg-panel)] rounded-xl border border-[var(--border-subtle)] p-6 animate-fade-in-up"
+                                    style={{ animationDelay: `${index * 0.05}ms` }}
+                                >
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-6 h-6 rounded-full bg-[#111] border border-[var(--border-subtle)] flex items-center justify-center text-gray-500">
+                                                    <User size={12} />
+                                                </div>
+                                                <span className="text-sm font-bold text-white">{reply.author_name || reply.author_email?.split('@')[0]}</span>
+                                                <span className="text-xs text-gray-600 font-mono">{formatDate(reply.created_at)}</span>
+                                            </div>
+                                            {(isAdmin || reply.user_id === user.id) && (
+                                                <button
+                                                    onClick={() => handleDeleteReply(reply.id)}
+                                                    className="text-gray-600 hover:text-red-400 transition-colors"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
                                         </div>
-                                        {(isAdmin || reply.user_id === user.id) && (
-                                            <button
-                                                onClick={() => handleDeleteReply(reply.id)}
-                                                className="text-red-400 hover:text-red-300 transition-colors"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
+                                        <p className="text-gray-300 leading-relaxed text-sm pl-9">{reply.content}</p>
                                     </div>
                                 </div>
                             ))}
@@ -252,23 +269,24 @@ export default function ForumPost() {
                     </div>
 
                     {/* Reply Form */}
-                    <form onSubmit={handleReply} className="bg-[#111111] rounded-xl border border-white/10 p-4">
+                    <form onSubmit={handleReply} className="card-cyber p-6 sticky bottom-6 z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-[#0a0a0a]/90 backdrop-blur-md">
                         <textarea
                             value={replyContent}
                             onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder="Write a reply..."
-                            rows={3}
-                            className="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-white/20 resize-none mb-3"
+                            placeholder="Add your transmission..."
+                            rows={2}
+                            className="w-full px-4 py-3 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[var(--accent-primary)] resize-none mb-4 font-normal"
                             required
                         />
-                        <div className="flex justify-end">
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs text-gray-600 font-mono">SECURE CHANNEL OPEN</span>
                             <button
                                 type="submit"
                                 disabled={submitting || !replyContent.trim()}
-                                className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-[0_0_15px_var(--accent-glow)]"
                             >
-                                <Send size={16} />
-                                {submitting ? 'Posting...' : 'Reply'}
+                                <Send size={14} />
+                                {submitting ? 'Sending...' : 'Transmit'}
                             </button>
                         </div>
                     </form>

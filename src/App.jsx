@@ -17,6 +17,9 @@ import Library from './pages/Library';
 import Forum from './pages/Forum';
 import ForumPost from './pages/ForumPost';
 import Leaderboard from './pages/Leaderboard';
+import AccessPlans from './pages/AccessPlans';
+import Features from './pages/Features';
+import Changelog from './pages/Changelog';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -45,96 +48,106 @@ function App() {
         <Router>
             <AuthProvider>
                 <ProgressProvider>
-                <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/login" element={
-                        <PublicRoute>
-                            <Login />
-                        </PublicRoute>
-                    } />
-                    <Route path="/register" element={
-                        <PublicRoute>
-                            <Register />
-                        </PublicRoute>
-                    } />
-                    <Route path="/verify-email" element={<EmailVerification />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/login" element={
+                            <PublicRoute>
+                                <Login />
+                            </PublicRoute>
+                        } />
+                        <Route path="/register" element={
+                            <PublicRoute>
+                                <Register />
+                            </PublicRoute>
+                        } />
+                        <Route path="/verify-email" element={<EmailVerification />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/plans" element={<AccessPlans />} />
+                        <Route path="/features" element={<Features />} />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin/access" element={
-                        <ProtectedRoute>
-                            <AdminAccess />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/admin" element={
-                        <AdminRoute>
-                            <AdminDashboard />
-                        </AdminRoute>
-                    } />
+                        {/* Admin Routes */}
+                        <Route path="/admin/access" element={
+                            <ProtectedRoute>
+                                <AdminAccess />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/admin" element={
+                            <AdminRoute>
+                                <AdminDashboard />
+                            </AdminRoute>
+                        } />
 
-                    {/* Course Syllabus - shows all units/lessons */}
-                    <Route path="/course/:courseId" element={
-                        <ProtectedRoute>
-                            <CourseSyllabus />
-                        </ProtectedRoute>
-                    } />
+                        {/* Course Syllabus - shows all units/lessons */}
+                        <Route path="/course/:courseId" element={
+                            <ProtectedRoute>
+                                <CourseSyllabus />
+                            </ProtectedRoute>
+                        } />
 
-                    {/* Learning Environment - specific lesson/quiz/project */}
-                    <Route path="/learn/:courseId/:itemId" element={
-                        <ProtectedRoute>
-                            <LearningLayout />
-                        </ProtectedRoute>
-                    } />
+                        {/* Learning Environment - specific lesson/quiz/project */}
+                        <Route path="/learn/:courseId/:itemId" element={
+                            <ProtectedRoute>
+                                <LearningLayout />
+                            </ProtectedRoute>
+                        } />
 
-                    {/* Legacy route - redirect to syllabus */}
-                    <Route path="/learn/:courseId" element={
-                        <ProtectedRoute>
-                            <CourseSyllabus />
-                        </ProtectedRoute>
-                    } />
+                        {/* Legacy route - redirect to syllabus */}
+                        <Route path="/learn/:courseId" element={
+                            <ProtectedRoute>
+                                <CourseSyllabus />
+                            </ProtectedRoute>
+                        } />
 
-                    <Route path="/profile" element={
-                        <ProtectedRoute>
-                            <Profile />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
-                    } />
+                        <Route path="/profile" element={
+                            <ProtectedRoute>
+                                <Profile />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard" element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        } />
 
-                    {/* Library */}
-                    <Route path="/resources" element={
-                        <ProtectedRoute>
-                            <Library />
-                        </ProtectedRoute>
-                    } />
+                        {/* Library */}
+                        <Route path="/resources" element={
+                            <ProtectedRoute>
+                                <Library />
+                            </ProtectedRoute>
+                        } />
 
-                    {/* Forum */}
-                    <Route path="/community" element={
-                        <ProtectedRoute>
-                            <Forum />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/forum/:postId" element={
-                        <ProtectedRoute>
-                            <ForumPost />
-                        </ProtectedRoute>
-                    } />
+                        {/* Forum */}
+                        <Route path="/community" element={
+                            <ProtectedRoute>
+                                <Forum />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/forum/:postId" element={
+                            <ProtectedRoute>
+                                <ForumPost />
+                            </ProtectedRoute>
+                        } />
 
-                    {/* Leaderboard */}
-                    <Route path="/leaderboard" element={
-                        <ProtectedRoute>
-                            <Leaderboard />
-                        </ProtectedRoute>
-                    } />
-                    
-                    {/* Catch all */}
-                    <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
+
+                        {/* Changelog */}
+                        <Route path="/updates" element={
+                            <ProtectedRoute>
+                                <Changelog />
+                            </ProtectedRoute>
+                        } />
+
+                        {/* Leaderboard */}
+                        <Route path="/leaderboard" element={
+                            <ProtectedRoute>
+                                <Leaderboard />
+                            </ProtectedRoute>
+                        } />
+
+                        {/* Catch all */}
+                        <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
                 </ProgressProvider>
             </AuthProvider>
         </Router>

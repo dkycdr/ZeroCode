@@ -1,0 +1,1762 @@
+import { CONTENT_TYPES } from '../../curriculumStructure';
+
+export const unit10PWA = {
+    id: 'html5-unit-10',
+    title: 'Progressive Web Apps (PWA) - Building Modern Web Applications',
+    description: 'Master Progressive Web Apps: service workers, offline functionality, app manifests, installable web apps, and modern web capabilities',
+    items: [
+        {
+            id: 'html5-10-1',
+            type: CONTENT_TYPES.INFORMATIONAL,
+            title: 'Understanding Progressive Web Apps - The Complete Guide',
+            duration: '30 min read',
+            content: `
+# Understanding Progressive Web Apps - The Complete Guide
+
+## What are Progressive Web Apps (PWAs)?
+
+**Progressive Web Apps** are web applications that use modern web capabilities to deliver an app-like experience to users. They work like regular websites but can be installed on devices and work offline!
+
+### Real-World Analogy: The Swiss Army Knife of Web Apps
+
+Think of PWAs like a Swiss Army knife:
+
+**Traditional Websites:**
+- Like a single tool (just a knife)
+- Only works online
+- Can't be installed
+- Limited capabilities
+- Always need internet connection
+
+**Progressive Web Apps:**
+- Like a Swiss Army knife (multiple tools in one)
+- Works online AND offline
+- Can be installed on home screen
+- Access device features (camera, notifications, etc.)
+- Fast and reliable
+- Feels like a native app
+
+**Real Examples:**
+- **Twitter Lite**: Install on phone, works offline, push notifications
+- **Starbucks**: Order coffee offline, syncs when online
+- **Pinterest**: 60% increase in engagement with PWA
+- **Uber**: Works on slow networks, loads in 3 seconds
+
+### Why PWAs Matter
+
+**The Problem with Traditional Web Apps:**
+
+
+\`\`\`
+User opens website
+    ↓
+No internet? → ❌ Dinosaur game (Chrome)
+Slow internet? → ⏳ Waiting... waiting...
+Want to revisit? → 🔍 Must find URL again
+Want notifications? → ❌ Not possible
+Want on home screen? → ❌ Just bookmark
+\`\`\`
+
+**The Solution with PWAs:**
+
+\`\`\`
+User opens PWA
+    ↓
+No internet? → ✅ Works offline!
+Slow internet? → ✅ Cached, loads instantly
+Want to revisit? → ✅ Icon on home screen
+Want notifications? → ✅ Push notifications
+Want app experience? → ✅ Full screen, no browser UI
+\`\`\`
+
+**Benefits:**
+
+**For Users:**
+- ✅ Works offline or on slow networks
+- ✅ Install on home screen (no app store)
+- ✅ Fast loading (cached resources)
+- ✅ Push notifications
+- ✅ Feels like native app
+- ✅ Always up-to-date (no manual updates)
+- ✅ Less storage than native apps
+
+**For Developers:**
+- ✅ One codebase (not separate iOS/Android apps)
+- ✅ No app store approval process
+- ✅ Easier to maintain
+- ✅ Instant updates (no waiting for users to update)
+- ✅ Better SEO (still a website)
+- ✅ Lower development cost
+
+**For Business:**
+- ✅ Higher engagement (Twitter: 65% increase)
+- ✅ Better conversion (AliExpress: 104% increase)
+- ✅ Lower bounce rate (Pinterest: 40% decrease)
+- ✅ More page views (Forbes: 43% increase)
+
+## Core PWA Features
+
+### 1. Installable
+
+Users can add your PWA to their home screen without going through an app store.
+
+**How it looks:**
+
+\`\`\`
+Browser shows "Install" button
+    ↓
+User clicks "Install"
+    ↓
+Icon appears on home screen
+    ↓
+Opens like a native app (no browser UI)
+\`\`\`
+
+**Requirements:**
+- Web App Manifest (tells browser about your app)
+- HTTPS (security requirement)
+- Service Worker (enables offline functionality)
+
+### 2. Offline Functionality
+
+Your app works even without internet connection.
+
+**How it works:**
+
+\`\`\`
+First Visit (Online):
+User visits website
+    ↓
+Service Worker installs
+    ↓
+Caches important files (HTML, CSS, JS, images)
+    ↓
+App ready for offline use
+
+Later Visit (Offline):
+User opens app (no internet)
+    ↓
+Service Worker serves cached files
+    ↓
+App works! ✅
+\`\`\`
+
+**What can work offline:**
+- ✅ UI and layout
+- ✅ Previously viewed content
+- ✅ Cached data
+- ✅ Basic functionality
+
+**What needs internet:**
+- ❌ New data from server
+- ❌ Real-time updates
+- ❌ API calls (unless cached)
+
+### 3. Fast Loading
+
+PWAs load instantly, even on slow networks.
+
+**Traditional Website:**
+\`\`\`
+User visits site
+    ↓
+Download HTML (1 second)
+    ↓
+Download CSS (1 second)
+    ↓
+Download JS (2 seconds)
+    ↓
+Download images (3 seconds)
+    ↓
+Total: 7 seconds ⏳
+\`\`\`
+
+**PWA:**
+\`\`\`
+User visits site
+    ↓
+Load from cache (0.1 seconds)
+    ↓
+Update in background
+    ↓
+Total: 0.1 seconds ⚡
+\`\`\`
+
+### 4. App-Like Experience
+
+PWAs feel like native apps:
+
+**Features:**
+- Full screen (no browser address bar)
+- Smooth animations
+- Gesture navigation
+- Native-like interactions
+- Splash screen on launch
+- Works in app switcher
+
+### 5. Push Notifications
+
+Send notifications to users even when app is closed.
+
+**Use Cases:**
+- New message received
+- Order status update
+- Breaking news
+- Reminder notifications
+- Social media updates
+
+### 6. Background Sync
+
+Sync data in the background when connection is restored.
+
+**Example:**
+\`\`\`
+User writes email (offline)
+    ↓
+Clicks "Send"
+    ↓
+Email queued for sending
+    ↓
+Connection restored
+    ↓
+Background sync sends email automatically ✅
+\`\`\`
+
+## PWA Core Technologies
+
+### 1. Web App Manifest
+
+A JSON file that describes your app.
+
+**manifest.json:**
+\`\`\`json
+{
+  "name": "My Awesome App",
+  "short_name": "MyApp",
+  "description": "An awesome progressive web app",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+\`\`\`
+
+**What each field means:**
+
+**name**: Full name of your app
+- Shows in install prompt
+- Shows on splash screen
+- Example: "Twitter Lite"
+
+**short_name**: Short name (12 characters max)
+- Shows under home screen icon
+- Example: "Twitter"
+
+**description**: What your app does
+- Shows in app info
+- Example: "Social media platform"
+
+**start_url**: Where app opens
+- Usually "/" (home page)
+- Can be specific page: "/dashboard"
+
+**display**: How app displays
+- \`standalone\`: Full screen, no browser UI (recommended)
+- \`fullscreen\`: Completely full screen
+- \`minimal-ui\`: Minimal browser UI
+- \`browser\`: Regular browser
+
+**background_color**: Splash screen background
+- Shows while app loads
+- Example: "#ffffff" (white)
+
+**theme_color**: Browser theme color
+- Colors address bar (on Android)
+- Example: "#2196F3" (blue)
+
+**icons**: App icons
+- Need multiple sizes
+- 192x192 for home screen
+- 512x512 for splash screen
+
+### 2. Service Workers
+
+JavaScript that runs in the background, separate from your web page.
+
+**What Service Workers Do:**
+
+\`\`\`
+Service Worker (Background)
+    ↓
+Intercepts network requests
+    ↓
+Can serve from cache (offline)
+    ↓
+Can fetch from network (online)
+    ↓
+Can sync data in background
+    ↓
+Can show notifications
+\`\`\`
+
+**Service Worker Lifecycle:**
+
+\`\`\`
+1. REGISTER
+   User visits site
+   → Register service worker
+   
+2. INSTALL
+   Service worker downloads
+   → Install event fires
+   → Cache important files
+   
+3. ACTIVATE
+   Service worker activates
+   → Activate event fires
+   → Clean up old caches
+   
+4. FETCH
+   User requests resource
+   → Fetch event fires
+   → Serve from cache or network
+\`\`\`
+
+**Basic Service Worker:**
+
+\`\`\`javascript
+// service-worker.js
+
+// Install event - cache files
+self.addEventListener('install', (event) => {
+    console.log('Service Worker installing...');
+    
+    event.waitUntil(
+        caches.open('my-cache-v1').then((cache) => {
+            return cache.addAll([
+                '/',
+                '/index.html',
+                '/styles.css',
+                '/script.js',
+                '/logo.png'
+            ]);
+        })
+    );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker activating...');
+    
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== 'my-cache-v1') {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+});
+
+// Fetch event - serve from cache or network
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            // Return cached version or fetch from network
+            return response || fetch(event.request);
+        })
+    );
+});
+\`\`\`
+
+**How it works:**
+
+**Install:**
+1. Service worker downloads
+2. Opens cache storage
+3. Adds important files to cache
+4. Now ready for offline use
+
+**Activate:**
+1. Service worker becomes active
+2. Deletes old caches (from previous versions)
+3. Keeps only current cache
+
+**Fetch:**
+1. User requests a file
+2. Service worker intercepts request
+3. Checks if file is in cache
+4. Returns cached file OR fetches from network
+
+### 3. HTTPS Requirement
+
+PWAs MUST use HTTPS (secure connection).
+
+**Why HTTPS is Required:**
+
+**Security:**
+- Service workers are powerful
+- Can intercept ALL network requests
+- Can modify responses
+- HTTPS prevents man-in-the-middle attacks
+
+**Trust:**
+- Users trust secure sites
+- Browser shows padlock icon
+- Required for sensitive features
+
+**Features:**
+- Many PWA features require HTTPS:
+  - Service Workers
+  - Push Notifications
+  - Geolocation
+  - Camera access
+
+**How to get HTTPS:**
+- Use hosting with free SSL (Netlify, Vercel, GitHub Pages)
+- Use Let's Encrypt (free SSL certificates)
+- Use Cloudflare (free SSL proxy)
+
+## PWA Caching Strategies
+
+Different strategies for different needs:
+
+### Strategy 1: Cache First
+
+**When to use:** Static assets that rarely change (CSS, JS, images)
+
+**How it works:**
+\`\`\`
+Request comes in
+    ↓
+Check cache first
+    ↓
+Found in cache? → Return cached version ✅
+Not in cache? → Fetch from network → Cache it → Return
+\`\`\`
+
+**Code:**
+\`\`\`javascript
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+                return cachedResponse;  // Return from cache
+            }
+            return fetch(event.request);  // Fetch from network
+        })
+    );
+});
+\`\`\`
+
+**Pros:**
+- ✅ Super fast (no network delay)
+- ✅ Works offline
+- ✅ Saves bandwidth
+
+**Cons:**
+- ❌ May serve outdated content
+- ❌ Need to update cache manually
+
+### Strategy 2: Network First
+
+**When to use:** Dynamic content that changes often (API data, news feeds)
+
+**How it works:**
+\`\`\`
+Request comes in
+    ↓
+Try network first
+    ↓
+Network success? → Return fresh data → Update cache
+Network fails? → Return cached version (fallback)
+\`\`\`
+
+**Code:**
+\`\`\`javascript
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request)
+            .then((response) => {
+                // Clone response (can only use once)
+                const responseClone = response.clone();
+                
+                // Update cache with fresh data
+                caches.open('dynamic-cache').then((cache) => {
+                    cache.put(event.request, responseClone);
+                });
+                
+                return response;
+            })
+            .catch(() => {
+                // Network failed, return cached version
+                return caches.match(event.request);
+            })
+    );
+});
+\`\`\`
+
+**Pros:**
+- ✅ Always fresh data (when online)
+- ✅ Falls back to cache (when offline)
+- ✅ Best of both worlds
+
+**Cons:**
+- ❌ Slower (network delay)
+- ❌ Requires internet for fresh data
+
+### Strategy 3: Stale While Revalidate
+
+**When to use:** Content that can be slightly outdated (profile pictures, avatars)
+
+**How it works:**
+\`\`\`
+Request comes in
+    ↓
+Return cached version immediately (fast!)
+    ↓
+Fetch fresh version in background
+    ↓
+Update cache for next time
+\`\`\`
+
+**Code:**
+\`\`\`javascript
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.open('my-cache').then((cache) => {
+            return cache.match(event.request).then((cachedResponse) => {
+                // Fetch fresh version in background
+                const fetchPromise = fetch(event.request).then((networkResponse) => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                });
+                
+                // Return cached version immediately
+                return cachedResponse || fetchPromise;
+            });
+        })
+    );
+});
+\`\`\`
+
+**Pros:**
+- ✅ Fast (returns cache immediately)
+- ✅ Updates in background
+- ✅ Good user experience
+
+**Cons:**
+- ❌ May show outdated content briefly
+- ❌ Uses bandwidth in background
+
+### Strategy 4: Cache Only
+
+**When to use:** App shell (core UI that never changes)
+
+**How it works:**
+\`\`\`
+Request comes in
+    ↓
+Return from cache only
+    ↓
+Never goes to network
+\`\`\`
+
+**Code:**
+\`\`\`javascript
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request)
+    );
+});
+\`\`\`
+
+**Pros:**
+- ✅ Extremely fast
+- ✅ Works offline
+- ✅ No network usage
+
+**Cons:**
+- ❌ Never updates
+- ❌ Must be cached during install
+
+### Strategy 5: Network Only
+
+**When to use:** Always need fresh data (payment processing, real-time data)
+
+**How it works:**
+\`\`\`
+Request comes in
+    ↓
+Always fetch from network
+    ↓
+Never use cache
+\`\`\`
+
+**Code:**
+\`\`\`javascript
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request)
+    );
+});
+\`\`\`
+
+**Pros:**
+- ✅ Always fresh data
+- ✅ No cache management
+
+**Cons:**
+- ❌ Doesn't work offline
+- ❌ Slow on poor connections
+
+## PWA Best Practices
+
+### ✅ DO:
+
+**1. Start with App Shell Architecture**
+\`\`\`
+App Shell (cached):
+- HTML structure
+- CSS styles
+- JavaScript code
+- Core UI elements
+
+Dynamic Content (fetched):
+- User data
+- Posts/articles
+- Real-time updates
+\`\`\`
+
+**2. Provide Offline Fallback**
+\`\`\`javascript
+// Show custom offline page
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match('/offline.html');
+        })
+    );
+});
+\`\`\`
+
+**3. Update Service Worker Properly**
+\`\`\`javascript
+// Change cache version to force update
+const CACHE_VERSION = 'v2';  // Changed from 'v1'
+
+self.addEventListener('install', (event) => {
+    // Skip waiting to activate immediately
+    self.skipWaiting();
+});
+\`\`\`
+
+**4. Test Offline Functionality**
+- Use Chrome DevTools → Application → Service Workers
+- Check "Offline" checkbox
+- Test your app
+
+**5. Optimize Cache Size**
+- Don't cache everything
+- Cache only essential files
+- Set cache expiration
+- Clean up old caches
+
+### ❌ DON'T:
+
+**1. Don't cache user-specific data**
+\`\`\`javascript
+// ❌ Bad - caches personal data
+cache.addAll(['/user/profile', '/user/settings']);
+
+// ✅ Good - cache only public resources
+cache.addAll(['/styles.css', '/script.js']);
+\`\`\`
+
+**2. Don't forget to update cache version**
+\`\`\`javascript
+// ❌ Bad - same version, won't update
+const CACHE_VERSION = 'v1';
+
+// ✅ Good - new version, will update
+const CACHE_VERSION = 'v2';
+\`\`\`
+
+**3. Don't block on service worker**
+\`\`\`javascript
+// ❌ Bad - blocks page load
+navigator.serviceWorker.register('/sw.js').then(() => {
+    // Wait for registration...
+});
+
+// ✅ Good - register asynchronously
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+    });
+}
+\`\`\`
+
+## PWA Checklist
+
+To make your web app a PWA, you need:
+
+**Required:**
+- ✅ HTTPS (secure connection)
+- ✅ Web App Manifest (manifest.json)
+- ✅ Service Worker (sw.js)
+- ✅ Icons (192x192 and 512x512)
+- ✅ Responsive design (works on all devices)
+
+**Recommended:**
+- ✅ Offline fallback page
+- ✅ Fast loading (< 3 seconds)
+- ✅ Works on slow networks
+- ✅ Cross-browser compatible
+- ✅ Accessible (ARIA labels, keyboard navigation)
+
+**Optional (Enhanced):**
+- ✅ Push notifications
+- ✅ Background sync
+- ✅ Add to home screen prompt
+- ✅ Splash screen
+- ✅ App shortcuts
+
+## Real-World PWA Examples
+
+### Twitter Lite
+**Results:**
+- 65% increase in pages per session
+- 75% increase in Tweets sent
+- 20% decrease in bounce rate
+- Loads in < 3 seconds on slow networks
+
+**Key Features:**
+- Works offline
+- Push notifications
+- Installable
+- 1MB total size (vs 23MB native app)
+
+### Starbucks
+**Results:**
+- 2x daily active users
+- Orders placed on desktop comparable to mobile
+
+**Key Features:**
+- Browse menu offline
+- Customize orders offline
+- Syncs when online
+- Add to home screen
+
+### Pinterest
+**Results:**
+- 60% increase in engagement
+- 44% increase in ad revenue
+- 40% decrease in bounce rate
+
+**Key Features:**
+- Fast loading
+- Works on slow networks
+- Installable
+- Push notifications
+
+## Key Takeaways
+
+- ✅ PWAs combine best of web and native apps
+- ✅ Work offline with service workers
+- ✅ Installable without app store
+- ✅ Fast loading with caching
+- ✅ App-like experience
+- ✅ Require HTTPS
+- ✅ Use Web App Manifest
+- ✅ Multiple caching strategies
+- ✅ Better engagement and conversion
+- ✅ One codebase for all platforms
+
+## What's Next?
+
+In the next lesson, you'll build a complete PWA with offline functionality, installability, and caching strategies!
+
+Now you understand Progressive Web Apps! 📱
+            `
+        },
+        {
+            id: 'html5-10-2',
+            type: CONTENT_TYPES.LESSON,
+            title: 'Building Your First Progressive Web App',
+            duration: '45 min',
+            content: `
+# Building Your First Progressive Web App
+
+Learn to build a complete PWA that works offline and can be installed!
+
+## What You'll Build
+
+A Task Manager PWA featuring:
+- Offline functionality
+- Install to home screen
+- Fast loading with caching
+- App-like experience
+
+## Key Concepts
+
+### What is a PWA?
+Progressive Web Apps combine the best of web and mobile apps:
+- **Reliable** - Works offline
+- **Fast** - Loads instantly
+- **Engaging** - Feels like a native app
+
+### Core Requirements
+1. **HTTPS** - Secure connection
+2. **Web App Manifest** - App metadata
+3. **Service Worker** - Offline functionality
+
+### Web App Manifest
+The manifest.json file tells the browser about your app:
+\`\`\`json
+{
+  "name": "Task Manager",
+  "short_name": "Tasks",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2196F3",
+  "icons": [...]
+}
+\`\`\`
+
+### Service Worker Basics
+Service workers run in the background and handle caching:
+\`\`\`javascript
+// Register service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
+\`\`\`
+
+### Caching Strategy
+Cache files for offline access:
+\`\`\`javascript
+// In service worker
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => response || fetch(event.request))
+    );
+});
+\`\`\`
+
+### Install Prompt
+Let users install your app:
+\`\`\`javascript
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    // Show install button
+});
+\`\`\`
+
+## Your Tasks
+
+Follow the tasks below to build your PWA step by step!
+            `,
+    deferredPrompt = null;
+    
+    // Hide install button
+    installBtn.style.display = 'none';
+});
+
+// Handle app installed
+window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    deferredPrompt = null;
+});
+
+// Task Manager Logic
+const taskInput = document.getElementById('taskInput');
+const addBtn = document.getElementById('addBtn');
+const taskList = document.getElementById('taskList');
+const statusDiv = document.getElementById('status');
+
+// Load tasks from localStorage
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+// Render tasks
+function renderTasks() {
+    taskList.innerHTML = '';
+    
+    if (tasks.length === 0) {
+        taskList.innerHTML = '<p class="empty">No tasks yet. Add one above!</p>';
+        return;
+    }
+    
+    tasks.forEach((task, index) => {
+        const taskEl = document.createElement('div');
+        taskEl.className = \`task \${task.completed ? 'completed' : ''}\`;
+        taskEl.innerHTML = \`
+            <input type="checkbox" \${task.completed ? 'checked' : ''} 
+                   onchange="toggleTask(\${index})">
+            <span>\${task.text}</span>
+            <button onclick="deleteTask(\${index})">Delete</button>
+        \`;
+        taskList.appendChild(taskEl);
+    });
+}
+
+// Add task
+function addTask() {
+    const text = taskInput.value.trim();
+    
+    if (text === '') {
+        alert('Please enter a task');
+        return;
+    }
+    
+    tasks.push({
+        text: text,
+        completed: false,
+        createdAt: new Date().toISOString()
+    });
+    
+    saveTasks();
+    renderTasks();
+    taskInput.value = '';
+}
+
+// Toggle task completion
+function toggleTask(index) {
+    tasks[index].completed = !tasks[index].completed;
+    saveTasks();
+    renderTasks();
+}
+
+// Delete task
+function deleteTask(index) {
+    tasks.splice(index, 1);
+    saveTasks();
+    renderTasks();
+}
+
+// Save tasks to localStorage
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Event listeners
+addBtn.addEventListener('click', addTask);
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        addTask();
+    }
+});
+
+// Make functions global for onclick handlers
+window.toggleTask = toggleTask;
+window.deleteTask = deleteTask;
+
+// Initial render
+renderTasks();
+
+// Online/Offline status
+function updateOnlineStatus() {
+    if (navigator.onLine) {
+        statusDiv.innerHTML = '<span class="online">🟢 Online</span>';
+    } else {
+        statusDiv.innerHTML = '<span class="offline">🔴 Offline</span>';
+    }
+}
+
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+\`\`\`
+
+**Understanding the Code:**
+
+**Service Worker Registration:**
+\`\`\`javascript
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js');
+    });
+}
+\`\`\`
+- Checks if browser supports service workers
+- Registers after page load (doesn't block rendering)
+- Returns a promise
+
+**Install Prompt Handling:**
+\`\`\`javascript
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+});
+\`\`\`
+- Browser fires \`beforeinstallprompt\` when app is installable
+- We prevent default (hide browser's prompt)
+- Save event to trigger later
+- Show our custom install button
+
+**Custom Install Button:**
+\`\`\`javascript
+installBtn.addEventListener('click', async () => {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+});
+\`\`\`
+- Shows install prompt when user clicks button
+- Waits for user's choice
+- Cleans up after
+
+**Task Manager Logic:**
+- Stores tasks in localStorage (persists data)
+- Renders tasks dynamically
+- Handles add/toggle/delete operations
+- Works offline (no server needed)
+
+**Online/Offline Status:**
+\`\`\`javascript
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+\`\`\`
+- Listens for online/offline events
+- Updates UI to show connection status
+- Helps users understand app state
+
+## Step 5: Add Styles
+
+Create \`styles.css\`:
+
+\`\`\`css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+header {
+    background: #2196F3;
+    color: white;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-size: 28px;
+}
+
+.install-btn {
+    background: white;
+    color: #2196F3;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.install-btn:hover {
+    transform: scale(1.05);
+}
+
+main {
+    padding: 30px;
+}
+
+.add-task {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+#taskInput {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+#taskInput:focus {
+    outline: none;
+    border-color: #2196F3;
+}
+
+#addBtn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#addBtn:hover {
+    background: #1976D2;
+}
+
+.tasks {
+    min-height: 200px;
+}
+
+.task {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+.task:hover {
+    background: #eeeeee;
+}
+
+.task.completed span {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+.task input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.task span {
+    flex: 1;
+    font-size: 16px;
+}
+
+.task button {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.task button:hover {
+    background: #d32f2f;
+}
+
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+    font-size: 18px;
+}
+
+.status {
+    margin-top: 30px;
+    text-align: center;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+.online {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.offline {
+    color: #f44336;
+    font-weight: bold;
+}
+\`\`\`
+
+## Step 6: Create Offline Fallback Page
+
+Create \`offline.html\`:
+
+\`\`\`html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Task Manager</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .offline-message {
+            max-width: 500px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-message">
+        <h1>🔌 You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Don't worry, your tasks are still saved!</p>
+        <button onclick="window.location.reload()">Try Again</button>
+    </div>
+</body>
+</html>
+\`\`\`
+
+## Step 7: Testing Your PWA
+
+### Test in Chrome DevTools:
+
+**1. Open DevTools (F12)**
+
+**2. Go to Application tab**
+
+**3. Check Service Workers:**
+- Should see your service worker registered
+- Status should be "activated and running"
+
+**4. Check Manifest:**
+- Should see all manifest properties
+- Icons should be displayed
+
+**5. Test Offline:**
+- Check "Offline" checkbox in Service Workers section
+- Reload page
+- App should still work!
+
+**6. Test Cache:**
+- Go to Cache Storage
+- Should see your cache with files
+
+**7. Test Install:**
+- Click install button in address bar
+- Or use your custom install button
+
+### Test on Mobile:
+
+**Android (Chrome):**
+1. Visit your PWA on mobile
+2. Chrome shows "Add to Home screen" banner
+3. Tap to install
+4. Icon appears on home screen
+5. Opens like native app
+
+**iOS (Safari):**
+1. Visit your PWA on mobile
+2. Tap Share button
+3. Tap "Add to Home Screen"
+4. Icon appears on home screen
+5. Opens like native app (limited features)
+
+## Common Issues and Solutions
+
+### Issue 1: Service Worker Not Registering
+
+**Problem:**
+\`\`\`
+Service Worker registration failed
+\`\`\`
+
+**Solutions:**
+- ✅ Make sure you're using HTTPS (or localhost)
+- ✅ Check service worker file path is correct
+- ✅ Check for JavaScript errors in console
+- ✅ Make sure service worker file is in root directory
+
+### Issue 2: Install Prompt Not Showing
+
+**Problem:**
+Install button doesn't appear
+
+**Solutions:**
+- ✅ Make sure manifest.json is linked correctly
+- ✅ Check manifest has all required fields
+- ✅ Make sure you have icons (192x192 and 512x512)
+- ✅ Service worker must be registered
+- ✅ Must be on HTTPS
+- ✅ User must engage with page (click, scroll, etc.)
+
+### Issue 3: App Not Working Offline
+
+**Problem:**
+App shows error when offline
+
+**Solutions:**
+- ✅ Check service worker is caching files correctly
+- ✅ Make sure all file paths are correct
+- ✅ Check cache name matches in install and fetch events
+- ✅ Test with DevTools offline mode first
+
+### Issue 4: Updates Not Showing
+
+**Problem:**
+Made changes but users see old version
+
+**Solutions:**
+- ✅ Change cache version name (v1 → v2)
+- ✅ Call \`skipWaiting()\` in install event
+- ✅ Call \`clients.claim()\` in activate event
+- ✅ Clear cache in DevTools for testing
+
+## Your Mission
+
+Build the complete Task Manager PWA:
+1. Create all HTML, CSS, and JavaScript files
+2. Create manifest.json with proper configuration
+3. Create service worker with caching
+4. Register service worker in app.js
+5. Test offline functionality
+6. Test install functionality
+7. Add at least 3 tasks and verify they persist
+
+Now you can build Progressive Web Apps! 📱✨
+            `,
+            tasks: [
+                {
+                    id: 1,
+                    description: 'Add manifest link to HTML head',
+                    completed: false,
+                    regex: /<link\s+rel="manifest"\s+href="[^"]+"/i
+                },
+                {
+                    id: 2,
+                    description: 'Add theme-color meta tag',
+                    completed: false,
+                    regex: /<meta\s+name="theme-color"\s+content="[^"]+"/i
+                },
+                {
+                    id: 3,
+                    description: 'Register service worker in app.js',
+                    completed: false,
+                    regex: /navigator\.serviceWorker\.register/i
+                },
+                {
+                    id: 4,
+                    description: 'Handle beforeinstallprompt event',
+                    completed: false,
+                    regex: /beforeinstallprompt/i
+                }
+            ],
+            files: [
+                {
+                    name: 'index.html',
+                    language: 'html',
+                    content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager PWA</title>
+    
+    <!-- Task 1: Add manifest link here -->
+    <!-- Example: <link rel="manifest" href="manifest.json"> -->
+    
+    <!-- Task 2: Add theme-color meta tag -->
+    <!-- Example: <meta name="theme-color" content="#2196F3"> -->
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>📝 Task Manager</h1>
+            <button id="installBtn" style="display: none;">Install App</button>
+        </header>
+        
+        <main>
+            <div class="add-task">
+                <input type="text" id="taskInput" placeholder="Add a task...">
+                <button id="addBtn">Add</button>
+            </div>
+            
+            <ul id="taskList"></ul>
+            
+            <div class="status">
+                <span id="statusText">🟢 Online</span>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>`
+                },
+                {
+                    name: 'manifest.json',
+                    language: 'json',
+                    content: `{
+  "name": "Task Manager",
+  "short_name": "Tasks",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2196F3",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}`
+                },
+                {
+                    name: 'app.js',
+                    language: 'javascript',
+                    content: `// Task 3: Register service worker
+// Example:
+// if ('serviceWorker' in navigator) {
+//     navigator.serviceWorker.register('/sw.js');
+// }
+
+
+// Task 4: Handle install prompt
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// Add beforeinstallprompt event listener here
+
+
+// Task manager functionality
+const taskInput = document.getElementById('taskInput');
+const addBtn = document.getElementById('addBtn');
+const taskList = document.getElementById('taskList');
+
+addBtn.addEventListener('click', () => {
+    const task = taskInput.value.trim();
+    if (task) {
+        const li = document.createElement('li');
+        li.textContent = task;
+        taskList.appendChild(li);
+        taskInput.value = '';
+    }
+});
+
+// Online/offline status
+window.addEventListener('online', () => {
+    document.getElementById('statusText').textContent = '🟢 Online';
+});
+
+window.addEventListener('offline', () => {
+    document.getElementById('statusText').textContent = '🔴 Offline';
+});`
+                },
+                {
+                    name: 'sw.js',
+                    language: 'javascript',
+                    content: `// Service Worker
+const CACHE_NAME = 'task-manager-v1';
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/style.css',
+    '/app.js'
+];
+
+// Install - cache files
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+    );
+});
+
+// Fetch - serve from cache
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => response || fetch(event.request))
+    );
+});`
+                },
+                {
+                    name: 'style.css',
+                    language: 'css',
+                    content: `/* CSS is ready - focus on PWA features! */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+header {
+    background: #2196F3;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+#installBtn {
+    background: white;
+    color: #2196F3;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+main {
+    padding: 20px;
+}
+
+.add-task {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#taskInput {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+#addBtn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#taskList {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+#taskList li {
+    padding: 12px;
+    background: #f5f5f5;
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+.status {
+    text-align: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    font-weight: bold;
+}`
+                }
+            ]
+        },
+        {
+            id: 'html5-10-3',
+            type: CONTENT_TYPES.QUIZ,
+            title: 'PWA Knowledge Check',
+            duration: '5 min',
+            questions: [
+                {
+                    id: 'pwa-q1',
+                    question: 'What are the THREE core requirements for a Progressive Web App?',
+                    options: [
+                        'HTTPS, Web App Manifest, Service Worker',
+                        'HTML, CSS, JavaScript',
+                        'Database, API, Authentication',
+                        'React, Vue, Angular'
+                    ],
+                    correctAnswer: 0,
+                    explanation: 'PWAs require HTTPS (security), Web App Manifest (installability), and Service Worker (offline functionality). These three technologies enable the core PWA features.'
+                },
+                {
+                    id: 'pwa-q2',
+                    question: 'What is the purpose of a Service Worker?',
+                    options: [
+                        'To style the application',
+                        'To run JavaScript in the background and intercept network requests',
+                        'To create HTML elements',
+                        'To manage database connections'
+                    ],
+                    correctAnswer: 1,
+                    explanation: 'Service Workers run in the background, separate from the web page, and can intercept network requests. This enables offline functionality, caching, and background sync.'
+                },
+                {
+                    id: 'pwa-q3',
+                    question: 'In the Web App Manifest, what does "display": "standalone" do?',
+                    options: [
+                        'Makes the app load faster',
+                        'Makes the app work offline',
+                        'Makes the app open without browser UI (like a native app)',
+                        'Makes the app use less memory'
+                    ],
+                    correctAnswer: 2,
+                    explanation: '"display": "standalone" makes the PWA open in full screen without browser UI (no address bar, no browser buttons), giving it a native app-like experience.'
+                },
+                {
+                    id: 'pwa-q4',
+                    question: 'Which caching strategy returns cached content immediately while updating the cache in the background?',
+                    options: [
+                        'Cache First',
+                        'Network First',
+                        'Stale While Revalidate',
+                        'Cache Only'
+                    ],
+                    correctAnswer: 2,
+                    explanation: 'Stale While Revalidate returns cached content immediately (fast!), then fetches fresh content in the background and updates the cache for next time.'
+                },
+                {
+                    id: 'pwa-q5',
+                    question: 'What event is fired when the browser determines your PWA is installable?',
+                    options: [
+                        'install',
+                        'beforeinstallprompt',
+                        'appinstalled',
+                        'serviceWorkerReady'
+                    ],
+                    correctAnswer: 1,
+                    explanation: 'The "beforeinstallprompt" event fires when the browser determines your PWA meets the installability criteria. You can prevent the default and show your own custom install UI.'
+                },
+                {
+                    id: 'pwa-q6',
+                    question: 'In a Service Worker, what does event.waitUntil() do?',
+                    options: [
+                        'Waits for user input',
+                        'Extends the event lifetime until the promise resolves',
+                        'Pauses the application',
+                        'Waits for network connection'
+                    ],
+                    correctAnswer: 1,
+                    explanation: 'event.waitUntil() extends the event lifetime until the promise resolves. This ensures async operations (like caching files) complete before the event finishes.'
+                },
+                {
+                    id: 'pwa-q7',
+                    question: 'Why is HTTPS required for PWAs?',
+                    options: [
+                        'To make the app faster',
+                        'To reduce server costs',
+                        'For security - Service Workers are powerful and need secure context',
+                        'To improve SEO'
+                    ],
+                    correctAnswer: 2,
+                    explanation: 'HTTPS is required because Service Workers are very powerful (can intercept ALL network requests). HTTPS ensures no one can inject malicious code through man-in-the-middle attacks.'
+                },
+                {
+                    id: 'pwa-q8',
+                    question: 'What is the minimum icon size required for PWA home screen installation?',
+                    options: [
+                        '48x48 pixels',
+                        '96x96 pixels',
+                        '192x192 pixels',
+                        '512x512 pixels'
+                    ],
+                    correctAnswer: 2,
+                    explanation: 'The minimum icon size for home screen installation is 192x192 pixels. You should also provide 512x512 for the splash screen. Multiple sizes ensure good display on all devices.'
+                },
+                {
+                    id: 'pwa-q9',
+                    question: 'Which Service Worker event is best for cleaning up old caches?',
+                    options: [
+                        'install',
+                        'activate',
+                        'fetch',
+                        'message'
+                    ],
+                    correctAnswer: 1,
+                    explanation: 'The "activate" event is the best place to clean up old caches. It fires after the new Service Worker is installed and ready to take control, making it safe to delete old versions.'
+                },
+                {
+                    id: 'pwa-q10',
+                    question: 'What does self.skipWaiting() do in a Service Worker?',
+                    options: [
+                        'Skips the installation process',
+                        'Activates the new Service Worker immediately without waiting',
+                        'Deletes all caches',
+                        'Unregisters the Service Worker'
+                    ],
+                    correctAnswer: 1,
+                    explanation: 'self.skipWaiting() forces the new Service Worker to activate immediately, without waiting for all tabs using the old Service Worker to close. This ensures users get updates faster.'
+                }
+            ]
+        }
+    ]
+};

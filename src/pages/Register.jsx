@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthProvider';
-import { User, Mail, Lock, Eye, EyeOff, UserPlus, Code2, Sparkles, Rocket, BookOpen, Zap } from 'lucide-react';
+import {
+    RiUser3Fill, RiMailFill, RiLockPasswordFill, RiEyeFill,
+    RiEyeOffFill, RiUserAddFill, RiArrowLeftLine, RiFlashlightFill
+} from 'react-icons/ri';
+import { VscCode } from 'react-icons/vsc';
 
 export default function Register() {
     const navigate = useNavigate();
     const { register } = useAuth();
-    
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -63,261 +67,185 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen flex bg-[#0a0a0a]">
-            {/* Left Side - Hero */}
-            <motion.div 
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                className="hidden lg:flex flex-1 bg-[#111111] p-12 items-center justify-center relative border-r border-white/10 overflow-y-auto"
-            >
-                {/* Content */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.7 }}
-                    className="relative z-10 text-white max-w-xl"
+        <div className="min-h-screen bg-[var(--bg-primary)] font-sans flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_100%)]"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-[var(--accent-primary)]/10 blur-[120px] rounded-full mix-blend-screen"></div>
+            </div>
+
+            {/* Back Button */}
+            <div className="absolute top-6 left-6 z-20">
+                <button
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
                 >
-                    <h2 className="text-5xl font-bold mb-6 leading-tight">
-                        Join
-                        <br />
-                        ZeroCode
-                    </h2>
-                    <p className="text-lg text-gray-400 mb-10 leading-relaxed">
-                        Start learning web development from absolute zero. No experience needed, just bring your curiosity.
-                    </p>
-                    
-                    {/* Benefits */}
-                    <div className="space-y-4">
-                        {[
-                            { icon: Code2, text: 'Learn at your own pace' },
-                            { icon: BookOpen, text: 'Beginner-friendly content' },
-                            { icon: Sparkles, text: 'Interactive exercises' },
-                            { icon: Rocket, text: 'Build real projects' }
-                        ].map((benefit, index) => (
-                            <motion.div 
-                                key={index}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
-                                className="flex items-center gap-4"
-                            >
-                                <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                                    <benefit.icon size={20} className="text-white" strokeWidth={2} />
-                                </div>
-                                <span className="text-base text-gray-300">{benefit.text}</span>
-                            </motion.div>
-                        ))}
-                    </div>
+                    <RiArrowLeftLine size={16} />
+                    Return to Base
+                </button>
+            </div>
 
-                    {/* Quote */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1, duration: 0.5 }}
-                        className="mt-12 p-6 bg-white/5 border border-white/10 rounded-lg"
-                    >
-                        <p className="text-base italic text-gray-300 mb-3">
-                            "The best time to start was yesterday. The second best time is now."
-                        </p>
-                        <p className="text-sm text-gray-500">- Every successful developer</p>
-                    </motion.div>
-                </motion.div>
-            </motion.div>
-
-            {/* Right Side - Form */}
-            <motion.div 
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                className="flex-1 flex items-center justify-center p-8 overflow-y-auto"
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-full max-w-xl relative z-10"
             >
-                <div className="w-full max-w-md">
-                    {/* Logo & Title */}
-                    <motion.div 
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-center mb-10"
-                    >
-                        {/* Logo */}
+                <div className="card-cyber p-8 md:p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-[#0a0a0a]/80 backdrop-blur-xl max-h-[85vh] overflow-y-auto custom-scrollbar">
+                    <div className="text-center mb-10">
                         <div className="inline-flex items-center justify-center mb-6">
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                                <Code2 className="w-10 h-10 text-white" strokeWidth={2} />
+                            <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 flex items-center justify-center text-[var(--accent-primary)] shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                                <VscCode className="w-8 h-8" sx={{ strokeWidth: 0.5 }} />
                             </div>
                         </div>
-                        
-                        {/* Brand Name */}
-                        <h1 className="text-4xl font-bold text-white mb-2">
-                            Create Account
-                        </h1>
-                        <p className="text-gray-400 text-base">Start learning with a free account</p>
-                    </motion.div>
+                        <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Initialize Protocol</h1>
+                        <p className="text-gray-400 text-sm">Create your identity to access the system</p>
+                    </div>
 
-                    {/* Error Message */}
                     {error && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg"
+                            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3"
                         >
-                            <p className="text-red-400 text-sm">{error}</p>
+                            <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+                            <p className="text-red-400 text-sm font-medium">{error}</p>
                         </motion.div>
                     )}
 
-                    {/* Form */}
-                    <motion.form 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.5 }}
-                        onSubmit={handleSubmit} 
-                        className="space-y-5"
-                    >
-                        {/* Full Name */}
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Full Name
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                Operative Name
                             </label>
                             <div className="relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gray-300 transition-colors" size={20} />
+                                <RiUser3Fill className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" size={18} />
                                 <input
                                     type="text"
                                     value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/20 focus:bg-white/10 focus:outline-none transition-all text-white placeholder-gray-500"
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl focus:border-[var(--accent-primary)] focus:bg-[var(--bg-primary)] focus:outline-none transition-all text-white placeholder-gray-600"
                                     placeholder="John Doe"
                                     required
                                 />
                             </div>
                         </div>
 
-                        {/* Email */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Email
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                Email Frequency
                             </label>
                             <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gray-300 transition-colors" size={20} />
+                                <RiMailFill className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" size={18} />
                                 <input
                                     type="email"
                                     value={formData.email}
-                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/20 focus:bg-white/10 focus:outline-none transition-all text-white placeholder-gray-500"
-                                    placeholder="your.email@example.com"
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full pl-11 pr-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl focus:border-[var(--accent-primary)] focus:bg-[var(--bg-primary)] focus:outline-none transition-all text-white placeholder-gray-600"
+                                    placeholder="operative@zerocode.dev"
                                     required
                                 />
                             </div>
                         </div>
 
-                        {/* Password */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Password
-                            </label>
-                            <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gray-300 transition-colors" size={20} />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                                    className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/20 focus:bg-white/10 focus:outline-none transition-all text-white placeholder-gray-500"
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Passkey
+                                </label>
+                                <div className="relative group">
+                                    <RiLockPasswordFill className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" size={18} />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        className="w-full pl-11 pr-10 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl focus:border-[var(--accent-primary)] focus:bg-[var(--bg-primary)] focus:outline-none transition-all text-white placeholder-gray-600"
+                                        placeholder="Min 6 chars"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <RiEyeOffFill size={18} /> : <RiEyeFill size={18} />}
+                                    </button>
+                                </div>
                             </div>
-                            <p className="mt-2 text-xs text-gray-500">Minimum 6 characters</p>
-                        </div>
-
-                        {/* Confirm Password */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Confirm Password
-                            </label>
-                            <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gray-300 transition-colors" size={20} />
-                                <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                                    className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/20 focus:bg-white/10 focus:outline-none transition-all text-white placeholder-gray-500"
-                                    placeholder="••••••••"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
-                                >
-                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Verify Passkey
+                                </label>
+                                <div className="relative group">
+                                    <RiLockPasswordFill className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" size={18} />
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={formData.confirmPassword}
+                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                        className="w-full pl-11 pr-10 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl focus:border-[var(--accent-primary)] focus:bg-[var(--bg-primary)] focus:outline-none transition-all text-white placeholder-gray-600"
+                                        placeholder="Repeat key"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                                    >
+                                        {showConfirmPassword ? <RiEyeOffFill size={18} /> : <RiEyeFill size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Terms */}
-                        <div className="flex items-start gap-3 pt-2">
-                            <input 
-                                type="checkbox" 
+                        <div className="flex items-start gap-3">
+                            <input
+                                type="checkbox"
                                 required
-                                className="w-5 h-5 mt-0.5 rounded border-gray-600 bg-white/5 text-white focus:ring-white/20 focus:ring-2" 
+                                className="w-4 h-4 mt-0.5 rounded border-gray-600 bg-[var(--bg-panel)] text-[var(--accent-primary)] focus:ring-offset-0 focus:ring-0"
                             />
-                            <label className="text-sm text-gray-400">
-                                I agree to the <Link to="/terms" className="text-white hover:underline">Terms of Service</Link> and <Link to="/privacy" className="text-white hover:underline">Privacy Policy</Link>
+                            <label className="text-xs text-gray-400">
+                                I verify that I accept the <Link to="/terms" className="text-white hover:underline decoration-[var(--accent-primary)]">Terms of Service</Link> and <Link to="/privacy" className="text-white hover:underline decoration-[var(--accent-primary)]">Privacy Policy</Link>.
                             </label>
                         </div>
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-white text-black rounded-xl font-bold uppercase tracking-wider hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                                    Creating account...
+                                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                                    Registering...
                                 </>
                             ) : (
                                 <>
-                                    <UserPlus size={20} />
-                                    Create Free Account
+                                    <RiUserAddFill size={18} />
+                                    Create Identity
                                 </>
                             )}
                         </button>
+                    </form>
 
-                        {/* Benefits reminder */}
-                        <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Zap size={16} className="text-white" />
-                                <span className="text-sm font-semibold text-white">Free account includes:</span>
-                            </div>
-                            <ul className="text-xs text-gray-400 space-y-1 ml-6">
-                                <li>• 3 demo courses (HTML, CSS, JS)</li>
-                                <li>• Interactive coding environment</li>
-                                <li>• Track your progress</li>
-                                <li>• Upgrade anytime for full access</li>
-                            </ul>
+                    {/* Benefits reminder */}
+                    <div className="mt-8 p-4 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl">
+                        <div className="flex items-center gap-2 mb-3">
+                            <RiFlashlightFill size={16} className="text-[var(--accent-primary)]" />
+                            <span className="text-sm font-bold text-white uppercase tracking-wider">Free Access Level</span>
                         </div>
-                    </motion.form>
+                        <ul className="text-xs text-gray-400 space-y-2 ml-1 font-mono">
+                            <li className="flex items-center gap-2"><div className="w-1 h-1 bg-gray-500 rounded-full"></div>3 demo modules (HTML, CSS, JS)</li>
+                            <li className="flex items-center gap-2"><div className="w-1 h-1 bg-gray-500 rounded-full"></div>Browser-based IDE access</li>
+                            <li className="flex items-center gap-2"><div className="w-1 h-1 bg-gray-500 rounded-full"></div>Real-time progression tracking</li>
+                        </ul>
+                    </div>
 
-                    {/* Login Link */}
-                    <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                        className="mt-8 text-center text-gray-400"
-                    >
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-white hover:underline transition-all">
-                            Sign in →
+                    <p className="mt-8 text-center text-gray-500 text-sm">
+                        Already an operative?{' '}
+                        <Link to="/login" className="text-[var(--accent-primary)] hover:text-white transition-colors font-bold">
+                            Authenticate →
                         </Link>
-                    </motion.p>
+                    </p>
                 </div>
             </motion.div>
         </div>

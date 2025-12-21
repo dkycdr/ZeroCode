@@ -145,20 +145,8 @@ Refactor old JavaScript code to use let and const.
 </body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
-                        { name: 'script.js', language: 'javascript', content: `// Refactor this code to use let and const
+                        { name: 'script.js', language: 'javascript', content: `// Refactor this code to use let and const Loop counter should use let
 
-var PI = 3.14159;
-var counter = 0;
-var name = "ZeroCode";
-
-// Loop counter should use let
-for (var i = 0; i < 5; i++) {
-    counter++;
-}
-
-console.log("PI:", PI);
-console.log("Counter:", counter);
-console.log("Name:", name);
 ` }
                     ]
                 },
@@ -272,26 +260,8 @@ Convert traditional functions to arrow functions.
 <body><h1>Check Console (F12)</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Convert these to arrow functions
+                        { name: 'script.js', language: 'javascript', content: `// Convert these to arrow functions Convert these callbacks to arrow functions
 
-function square(x) {
-    return x * x;
-}
-
-function greet(name) {
-    return "Hello, " + name + "!";
-}
-
-const numbers = [5, 10, 15, 20, 25];
-
-// Convert these callbacks to arrow functions
-const doubled = numbers.map(function(n) { return n * 2; });
-const big = numbers.filter(function(n) { return n > 10; });
-
-console.log("Square of 5:", square(5));
-console.log("Greeting:", greet("ZeroCode"));
-console.log("Doubled:", doubled);
-console.log("Big numbers:", big);
 ` }
                     ]
                 },
@@ -431,25 +401,8 @@ Refactor string concatenation to template literals.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Convert to template literals
+                        { name: 'script.js', language: 'javascript', content: `// Convert to template literals Create multi-line HTML using template literal
 
-const name = "ZeroCode";
-const age = 2;
-
-const greeting = "Hello, " + name + "!";
-const info = name + " is " + age + " years old.";
-
-const a = 10;
-const b = 20;
-const calculation = "Sum: " + (a + b);
-
-// Create multi-line HTML using template literal
-const html = "<div>" + "<h1>Welcome</h1>" + "</div>";
-
-console.log(greeting);
-console.log(info);
-console.log(calculation);
-console.log(html);
 ` }
                     ]
                 },
@@ -582,34 +535,8 @@ Use destructuring to extract data.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Practice Destructuring
+                        { name: 'script.js', language: 'javascript', content: `// Practice Destructuring Destructure the array Destructure the object Destructure with rename (name -> userName) Destructure nested object to get city
 
-const colors = ['red', 'green', 'blue'];
-// Destructure the array
-const first = colors[0]; // Change this line
-
-const user = { name: 'John', age: 25, email: 'john@test.com' };
-// Destructure the object
-const name = user.name; // Change this line
-const age = user.age;
-
-// Destructure with rename (name -> userName)
-const userName = user.name; // Change this line
-
-const person = {
-    name: 'Jane',
-    address: {
-        city: 'New York',
-        zip: '10001'
-    }
-};
-// Destructure nested object to get city
-const city = person.address.city; // Change this line
-
-console.log("Colors:", first);
-console.log("User:", name, age);
-console.log("Renamed:", userName);
-console.log("City:", city);
 ` }
                     ]
                 },
@@ -752,30 +679,8 @@ Use spread operator to manipulate arrays and objects.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Practice Spread Operator
+                        { name: 'script.js', language: 'javascript', content: `// Practice Spread Operator Copy array using spread Merge arrays using spread Copy object using spread Merge objects using spread
 
-const original = [1, 2, 3];
-// Copy array using spread
-const copy = original; // Fix this
-
-const arr1 = [1, 2, 3];
-const arr2 = [4, 5, 6];
-// Merge arrays using spread
-const merged = arr1.concat(arr2); // Fix this
-
-const user = { name: 'John', age: 25 };
-// Copy object using spread
-const userCopy = user; // Fix this
-
-const defaults = { theme: 'dark', lang: 'en' };
-const custom = { theme: 'light' };
-// Merge objects using spread
-const settings = Object.assign({}, defaults, custom); // Fix this
-
-console.log("Copy:", copy);
-console.log("Merged:", merged);
-console.log("User Copy:", userCopy);
-console.log("Settings:", settings);
 ` }
                     ]
                 },
@@ -871,31 +776,8 @@ Use rest parameters in functions and destructuring.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Practice Rest Parameters
+                        { name: 'script.js', language: 'javascript', content: `// Practice Rest Parameters Add rest parameter to collect all numbers Use rest to get first and remaining Use rest to separate name from other properties Create function that takes prefix and any number of messages
 
-// Add rest parameter to collect all numbers
-function sum(a, b) {
-    return a + b;
-}
-
-const numbers = [1, 2, 3, 4, 5];
-// Use rest to get first and remaining
-const first = numbers[0];
-const rest = numbers.slice(1);
-
-const user = { name: 'John', age: 25, email: 'john@test.com' };
-// Use rest to separate name from other properties
-const name = user.name;
-
-// Create function that takes prefix and any number of messages
-function log(message) {
-    console.log(message);
-}
-
-console.log("Sum:", sum(1, 2, 3, 4, 5));
-console.log("First:", first, "Rest:", rest);
-console.log("Name:", name);
-log("[INFO]", "Server started", "Port 3000");
 ` }
                     ]
                 },
@@ -1115,28 +997,8 @@ Create and use Promises.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Practice Promises
+                        { name: 'script.js', language: 'javascript', content: `// Practice Promises Create a Promise that resolves after 1 second Use .then() and .catch() Add .then() to log the result Add .catch() to handle errors Simulate API calls Use Promise.all to get both Promise.all([...]).then(...)
 
-// Create a Promise that resolves after 1 second
-const delayedHello = // Create Promise here
-
-// Use .then() and .catch()
-delayedHello
-    // Add .then() to log the result
-    // Add .catch() to handle errors
-
-// Simulate API calls
-const getUser = () => new Promise(resolve => 
-    setTimeout(() => resolve({ id: 1, name: 'John' }), 500)
-);
-const getOrders = () => new Promise(resolve => 
-    setTimeout(() => resolve(['Order 1', 'Order 2']), 500)
-);
-
-// Use Promise.all to get both
-// Promise.all([...]).then(...)
-
-console.log("Promises created!");
 ` }
                     ]
                 },
@@ -1269,31 +1131,8 @@ Convert Promise chains to async/await.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Convert to async/await
+                        { name: 'script.js', language: 'javascript', content: `// Convert to async/await Convert this Promise chain to async/await Rewrite as async function with try/catch async function fetchUser() { try { return data console.error(error)
 
-// Convert this Promise chain to async/await
-function fetchUser() {
-    return fetch('https://jsonplaceholder.typicode.com/users/1')
-        .then(response => response.json())
-        .then(data => {
-            console.log('User:', data.name);
-            return data;
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-// Rewrite as async function with try/catch
-// async function fetchUser() {
-//     try {
-//         const response = await fetch(...)
-//         const data = await response.json()
-//         return data
-//     } catch (error) {
-//         console.error(error)
-//     }
-// }
-
-fetchUser();
 ` }
                     ]
                 },
@@ -1609,21 +1448,8 @@ Create classes with inheritance.
 <body><h1>Check Console</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `` },
-                        { name: 'script.js', language: 'javascript', content: `// Create ES6 Classes
+                        { name: 'script.js', language: 'javascript', content: `// Create ES6 Classes Create Product class with constructor(name, price) Add getInfo() method Create DigitalProduct class that extends Product Add downloadUrl property Override getInfo() to include download link Test your classes
 
-// Create Product class with constructor(name, price)
-// Add getInfo() method
-
-// Create DigitalProduct class that extends Product
-// Add downloadUrl property
-// Override getInfo() to include download link
-
-// Test your classes
-const laptop = new Product('Laptop', 999);
-console.log(laptop.getInfo());
-
-const ebook = new DigitalProduct('JavaScript Guide', 29, 'https://example.com/book');
-console.log(ebook.getInfo());
 ` }
                     ]
                 },

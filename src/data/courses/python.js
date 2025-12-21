@@ -155,21 +155,21 @@ Create Python variables and use print statements.
                         { id: 4, description: 'In main.py, create list: courses = ["HTML", "CSS", "Python"]', completed: false, regex: /\w+\s*=\s*\[/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `// Python Basics Practice
+                        { name: 'main.py', language: 'python', content: `# Python Basics Practice
 
-// 1. Print Hello ZeroCode
-
-
-// 2. Create variables
+# 1. Print Hello ZeroCode
 
 
-// 3. Use f-string
+# 2. Create variables
 
 
-// 4. Create a list
+# 3. Use f-string
 
 
-// 5. Print the list
+# 4. Create a list
+
+
+# 5. Print the list
 
 ` }
                     ]
@@ -312,20 +312,11 @@ Create a grade calculator with loops and conditionals.
                         { id: 4, description: 'In main.py, create list comprehension: squares = [x**2 for x in range(5)]', completed: false, regex: /\[[^\]]+for\s+\w+\s+in\s+[^\]]+\]/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `// Grade Calculator
-
-grades = [85, 92, 78, 65, 88]
-
-// 1. Calculate average
-
-
-// 2. Determine letter grade (if/elif/else)
-
-
-// 3. Loop example
-
-
-// 4. List comprehension
+                        { name: 'main.py', language: 'python', content: `# Grade Calculator
+# 1. Calculate average
+# 2. Determine letter grade (if/elif/else)
+# 3. Loop example
+# 4. List comprehension
 
 ` }
                     ]
@@ -424,18 +415,11 @@ Create utility functions for student data.
                         { id: 4, description: 'In main.py, call function: print(calculate_gpa([3.5, 3.8, 4.0]))', completed: false, regex: /print\s*\([^)]*\w+\s*\(/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `// Student Utility Functions
-
-// 1. Create calculate_gpa function
-
-
-// 2. Create get_letter_grade function
-
-
-// 3. Test data
-grades = [3.5, 3.8, 4.0, 3.2]
-
-// 4. Call functions and print results
+                        { name: 'main.py', language: 'python', content: `# Student Utility Functions
+# 1. Create calculate_gpa function
+# 2. Create get_letter_grade function
+# 3. Test data
+# 4. Call functions and print results
 
 ` }
                     ]
@@ -694,21 +678,12 @@ Build a student database with dictionaries.
                         { id: 4, description: 'In main.py, create list of dicts: students = [{"name": "Alice"}, {"name": "Bob"}]', completed: false, regex: /\[\s*\{[^}]+\}[^]]*\]/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `// Student Database
-
-// 1. Create a list of student dictionaries
-students = []
-
-// 2. Add students with name, id, major, gpa
-
-
-// 3. Create find_student function
-
-
-// 4. Loop through dictionary using .items()
-
-
-// 5. Print results
+                        { name: 'main.py', language: 'python', content: `# Student Database
+# 1. Create a list of student dictionaries
+# 2. Add students with name, id, major, gpa
+# 3. Create find_student function
+# 4. Loop through dictionary using .items()
+# 5. Print results
 
 ` }
                     ]
@@ -977,18 +952,18 @@ Create a course management system with classes.
                         { id: 4, description: 'In main.py, create object: alice = Student("Alice", "001") to instantiate class', completed: false, regex: /\w+\s*=\s*\w+\s*\(/ }
                     ],
                     files: [
-                        { name: 'main.py', language: 'python', content: `// Course Management System
+                        { name: 'main.py', language: 'python', content: `# Course Management System
 
-// 1. Create Course class with __init__
-
-
-// 2. Create Student class with __init__, enroll, get_info methods
+# 1. Create Course class with __init__
 
 
-// 3. Create instances and test
+# 2. Create Student class with __init__, enroll, get_info methods
 
 
-// 4. Print results
+# 3. Create instances and test
+
+
+# 4. Print results
 
 ` }
                     ]
@@ -1082,26 +1057,12 @@ Create a Python program that reads student data and generates statistics.
                         { id: 4, description: 'Calculate average with sum() and len()', completed: false, regex: /sum\s*\([^)]+\)\s*\/\s*len\s*\(/ },
                         { id: 5, description: 'Use f-string for formatted output', completed: false, regex: /f["'][^"']*\{[^}]+\}/ }
                     ],
-                    starterFiles: [
-                        { name: 'main.py', language: 'python', content: `// Student Data Analyzer
-
-// Sample data
-students = [
-    {"name": "Alice", "id": "001", "grades": [85, 90, 88, 92]},
-    {"name": "Bob", "id": "002", "grades": [78, 82, 75, 80]},
-    {"name": "Charlie", "id": "003", "grades": [92, 95, 90, 94]},
-]
-
-// 1. Create calculate_gpa function
-
-
-// 2. Create get_letter_grade function
-
-
-// 3. Create generate_report function
-
-
-// 4. Call generate_report
+                    files: [
+                        { name: 'main.py', language: 'python', content: `# Student Data Analyzer Sample data
+# 1. Create calculate_gpa function
+# 2. Create get_letter_grade function
+# 3. Create generate_report function
+# 4. Call generate_report
 
 ` }
                     ]

@@ -16,15 +16,15 @@ In professional software development, **every** project uses Git. This isn't a "
 ### The Problem: Collaborative Chaos
 You're building your Final Year Project with 3 teammates:
 
-**Week 1**: You write a perfect authentication system (500 lines of code)  
-**Week 2**: Your teammate "improves" it → Everything breaks  
-**Week 3**: You can't remember what changed  
+**Week 1**: You write a perfect authentication system (500 lines of code)
+**Week 2**: Your teammate "improves" it → Everything breaks
+**Week 3**: You can't remember what changed
 **Week 4**: Panic. All-nighter. Tears.
 
 ### The Solution: Time Machine for Code
 \`\`\`bash
 git log                    # See EVERY change ever made
-git diff HEAD~5            # Compare current vs 5 commits ago  
+git diff HEAD~5            # Compare current vs 5 commits ago
 git checkout abc123        # Time travel to working version
 git blame auth.js          # Find who broke it (with evidence!)
 \`\`\`
@@ -243,7 +243,7 @@ Practice the exact workflow used by professional development teams.
     <script>
         const terminal = document.getElementById('terminal');
         let gitInit = false, staged = [], commits = [], branch = 'main';
-        
+
         function addPrompt() {
             const div = document.createElement('div');
             div.className = 'prompt';
@@ -256,14 +256,14 @@ Practice the exact workflow used by professional development teams.
             });
             terminal.scrollTop = terminal.scrollHeight;
         }
-        
+
         function out(txt, cls = 'output') {
             const div = document.createElement('div');
             div.className = cls;
             div.textContent = txt;
             terminal.appendChild(div);
         }
-        
+
         function exec(cmd) {
             if (!cmd) { addPrompt(); return; }
             if (cmd === 'help') {
@@ -279,7 +279,7 @@ Practice the exact workflow used by professional development teams.
                     else { out('Changes to be committed:', 'success'); staged.forEach(f => out(\`  new file: \${f}\`, 'success')); }
                 }
             } else if (cmd.includes('echo') && cmd.includes('>')) {
-                const match = cmd.match(/>\s*(\S+)/);
+                const match = cmd.match(/>\s*([^\s]+)/);
                 if (match) out(\`Created \${match[1]}\`, 'success');
             } else if (cmd.startsWith('git add')) {
                 if (!gitInit) out('fatal: not a git repository', 'error');

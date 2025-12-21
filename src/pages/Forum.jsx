@@ -5,20 +5,20 @@ import { useAuth } from '../contexts/AuthProvider';
 import { useProgress } from '../contexts/ProgressProvider';
 import { getOverallProgress } from '../data/curriculumStructure';
 import { sql } from '../lib/neon';
-import { 
-    MessageSquare, Plus, Search, ThumbsUp, MessageCircle, 
+import {
+    MessageSquare, Plus, Search, ThumbsUp, MessageCircle,
     Clock, User, X, Send, ChevronRight, Tag
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const CATEGORIES = [
-    { id: 'all', label: 'All Topics', color: 'bg-white/10 text-white' },
-    { id: 'general', label: 'General', color: 'bg-blue-500/20 text-blue-400' },
-    { id: 'html-css', label: 'HTML & CSS', color: 'bg-orange-500/20 text-orange-400' },
-    { id: 'javascript', label: 'JavaScript', color: 'bg-yellow-500/20 text-yellow-400' },
-    { id: 'react', label: 'React', color: 'bg-cyan-500/20 text-cyan-400' },
-    { id: 'backend', label: 'Backend', color: 'bg-green-500/20 text-green-400' },
-    { id: 'help', label: 'Help & Support', color: 'bg-red-500/20 text-red-400' },
+    { id: 'all', label: 'All Topics', color: 'text-white border-white' },
+    { id: 'general', label: 'General', color: 'text-blue-400 border-blue-400/30' },
+    { id: 'html-css', label: 'HTML & CSS', color: 'text-orange-400 border-orange-400/30' },
+    { id: 'javascript', label: 'JavaScript', color: 'text-yellow-400 border-yellow-400/30' },
+    { id: 'react', label: 'React', color: 'text-cyan-400 border-cyan-400/30' },
+    { id: 'backend', label: 'Backend', color: 'text-green-400 border-green-400/30' },
+    { id: 'help', label: 'Help & Support', color: 'text-red-400 border-red-400/30' },
 ];
 
 export default function Forum() {
@@ -86,7 +86,7 @@ export default function Forum() {
             const existing = await sql`
                 SELECT id FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}
             `;
-            
+
             if (existing.length > 0) {
                 // Unlike
                 await sql`DELETE FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}`;
@@ -105,7 +105,7 @@ export default function Forum() {
     const filteredPosts = posts.filter(post => {
         const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
         const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            post.content.toLowerCase().includes(searchQuery.toLowerCase());
+            post.content.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
@@ -125,66 +125,66 @@ export default function Forum() {
     };
 
     const getCategoryStyle = (categoryId) => {
-        return CATEGORIES.find(c => c.id === categoryId)?.color || 'bg-white/10 text-white';
+        return CATEGORIES.find(c => c.id === categoryId)?.color || 'text-white border-white';
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading forum...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
+                    <p className="text-gray-400 font-mono text-sm">INITIALIZING LINK...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a]">
+        <div className="min-h-screen bg-[var(--bg-primary)] font-sans">
             <Header progress={progress.percentage} />
 
-            <main className="min-h-[calc(100vh-56px)] overflow-y-auto">
-                <div className="max-w-4xl mx-auto px-6 py-12">
+            <main className="min-h-[calc(100vh-56px)] overflow-y-auto pt-20 pb-20">
+                <div className="max-w-5xl mx-auto px-6">
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 animate-fade-in-up">
                         <div>
-                            <h1 className="text-4xl font-bold text-white mb-3">Forum</h1>
-                            <p className="text-gray-400 text-lg">Ask questions, share knowledge, connect with others</p>
+                            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Community Feed</h1>
+                            <p className="text-gray-400">Connect, discuss, and solve problems together.</p>
                         </div>
                         <button
                             onClick={() => setShowNewPost(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                            className="flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] text-white rounded-lg font-bold uppercase tracking-wider hover:bg-blue-600 transition-all shadow-[0_0_15px_var(--accent-glow)] whitespace-nowrap"
                         >
                             <Plus size={18} />
-                            New Post
+                            Create Post
                         </button>
                     </div>
 
                     {/* Search & Filter */}
-                    <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                        <div className="relative flex-1">
-                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <div className="flex flex-col sm:flex-row gap-6 mb-8">
+                        <div className="relative flex-1 group">
+                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Search posts..."
+                                placeholder="Search discussions..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-[#111111] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
+                                className="w-full pl-11 pr-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--bg-panel)] transition-all"
                             />
                         </div>
                     </div>
 
                     {/* Categories */}
-                    <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+                    <div className="flex gap-2 mb-8 overflow-x-auto pb-2 custom-scrollbar">
                         {CATEGORIES.map(cat => (
                             <button
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.id)}
                                 className={clsx(
-                                    "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                                    "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all whitespace-nowrap border",
                                     selectedCategory === cat.id
-                                        ? "bg-white text-black"
-                                        : "bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10"
+                                        ? "bg-white text-black border-white shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                                        : "bg-transparent text-gray-400 border-[var(--border-subtle)] hover:border-gray-400 hover:text-gray-300"
                                 )}
                             >
                                 {cat.label}
@@ -193,26 +193,27 @@ export default function Forum() {
                     </div>
 
                     {/* Posts List */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {filteredPosts.length === 0 ? (
-                            <div className="text-center py-12 bg-[#111111] rounded-xl border border-white/10">
-                                <MessageSquare size={48} className="text-gray-600 mx-auto mb-4" />
-                                <p className="text-gray-400 mb-2">No posts yet</p>
-                                <p className="text-gray-500 text-sm">Be the first to start a discussion!</p>
+                            <div className="text-center py-20 bg-[var(--bg-panel)] rounded-xl border border-[var(--border-subtle)] border-dashed">
+                                <MessageSquare size={48} className="text-gray-600 mx-auto mb-4 opacity-50" />
+                                <p className="text-gray-400 font-medium text-lg">No active signals</p>
+                                <p className="text-gray-600 text-sm mt-1">Be the first to transmit a message</p>
                             </div>
                         ) : (
-                            filteredPosts.map(post => (
+                            filteredPosts.map((post, index) => (
                                 <div
                                     key={post.id}
                                     onClick={() => navigate(`/forum/${post.id}`)}
-                                    className="bg-[#111111] rounded-xl border border-white/10 p-5 hover:bg-[#161616] hover:border-white/20 transition-all cursor-pointer"
+                                    className="group card-cyber p-6 cursor-pointer animate-fade-in-up"
+                                    style={{ animationDelay: `${index * 0.05}ms` }}
                                 >
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex-1">
+                                    <div className="flex items-start gap-5">
+                                        <div className="flex-1 min-w-0">
                                             {/* Category Badge */}
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-3">
                                                 <span className={clsx(
-                                                    "px-2 py-0.5 rounded text-xs font-medium",
+                                                    "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-transparent",
                                                     getCategoryStyle(post.category)
                                                 )}>
                                                     {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
@@ -220,35 +221,39 @@ export default function Forum() {
                                             </div>
 
                                             {/* Title */}
-                                            <h3 className="text-lg font-semibold text-white mb-2">{post.title}</h3>
-                                            
+                                            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[var(--accent-primary)] transition-colors truncate">{post.title}</h3>
+
                                             {/* Preview */}
-                                            <p className="text-gray-500 text-sm line-clamp-2 mb-4">{post.content}</p>
+                                            <p className="text-gray-400 text-sm line-clamp-2 mb-5 font-normal leading-relaxed">{post.content}</p>
 
                                             {/* Meta */}
-                                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                                                <div className="flex items-center gap-1.5">
-                                                    <User size={14} />
-                                                    <span>{post.author_name || post.author_email?.split('@')[0]}</span>
+                                            <div className="flex items-center gap-6 text-xs text-gray-500 font-mono tracking-tight">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-5 h-5 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center text-[var(--accent-primary)]">
+                                                        <User size={10} />
+                                                    </div>
+                                                    <span className="text-gray-400">{post.author_name || post.author_email?.split('@')[0]}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <Clock size={14} />
+                                                    <Clock size={12} />
                                                     <span>{formatDate(post.created_at)}</span>
                                                 </div>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                                                    className="flex items-center gap-1.5 hover:text-white transition-colors"
+                                                    className="flex items-center gap-1.5 hover:text-[var(--accent-primary)] transition-colors"
                                                 >
-                                                    <ThumbsUp size={14} />
+                                                    <ThumbsUp size={12} />
                                                     <span>{post.likes || 0}</span>
                                                 </button>
                                                 <div className="flex items-center gap-1.5">
-                                                    <MessageCircle size={14} />
-                                                    <span>{post.reply_count || 0}</span>
+                                                    <MessageCircle size={12} />
+                                                    <span>{post.reply_count || 0} replies</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <ChevronRight size={20} className="text-gray-600" />
+                                        <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] border border-[var(--border-subtle)] flex items-center justify-center text-gray-600 group-hover:text-white group-hover:border-[var(--accent-primary)] transition-all">
+                                            <ChevronRight size={16} />
+                                        </div>
                                     </div>
                                 </div>
                             ))
@@ -259,21 +264,24 @@ export default function Forum() {
 
             {/* New Post Modal */}
             {showNewPost && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#111111] rounded-xl border border-white/10 w-full max-w-lg">
-                        <div className="flex items-center justify-between p-4 border-b border-white/10">
-                            <h2 className="text-lg font-semibold text-white">Create New Post</h2>
-                            <button onClick={() => setShowNewPost(false)} className="text-gray-500 hover:text-white">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#0a0a0a] rounded-xl border border-[var(--border-subtle)] w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-fade-in-up">
+                        <div className="flex items-center justify-between p-6 border-b border-[var(--border-subtle)]">
+                            <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                                <MessageSquare size={18} className="text-[var(--accent-primary)]" />
+                                Initiate Transmission
+                            </h2>
+                            <button onClick={() => setShowNewPost(false)} className="text-gray-500 hover:text-white transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleCreatePost} className="p-4 space-y-4">
+                        <form onSubmit={handleCreatePost} className="p-6 space-y-5">
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Category</label>
+                                <label className="block text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Frequency Channel</label>
                                 <select
                                     value={newPost.category}
                                     onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/20"
+                                    className="w-full px-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg text-white focus:outline-none focus:border-[var(--accent-primary)]"
                                 >
                                     {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -281,24 +289,24 @@ export default function Forum() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Title</label>
+                                <label className="block text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Subject</label>
                                 <input
                                     type="text"
                                     value={newPost.title}
                                     onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                                    placeholder="What's your question or topic?"
-                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-white/20"
+                                    placeholder="Enter topic..."
+                                    className="w-full px-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[var(--accent-primary)]"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm text-gray-400 mb-2">Content</label>
+                                <label className="block text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Message Content</label>
                                 <textarea
                                     value={newPost.content}
                                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                                    placeholder="Describe your question or share your thoughts..."
+                                    placeholder="Type your message..."
                                     rows={5}
-                                    className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-white/20 resize-none"
+                                    className="w-full px-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[var(--accent-primary)] resize-none"
                                     required
                                 />
                             </div>
@@ -306,19 +314,19 @@ export default function Forum() {
                                 <button
                                     type="button"
                                     onClick={() => setShowNewPost(false)}
-                                    className="flex-1 px-4 py-2.5 bg-white/5 text-gray-400 rounded-lg hover:bg-white/10 transition-colors"
+                                    className="flex-1 px-4 py-3 bg-transparent text-gray-400 rounded-lg hover:text-white border border-transparent hover:border-[var(--border-subtle)] transition-all font-bold uppercase tracking-wider text-xs"
                                 >
-                                    Cancel
+                                    Abort
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent-primary)] text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-600 transition-all shadow-[0_0_15px_var(--accent-glow)] disabled:opacity-50 disabled:shadow-none"
                                 >
-                                    {submitting ? 'Posting...' : (
+                                    {submitting ? 'Transmitting...' : (
                                         <>
-                                            <Send size={16} />
-                                            Post
+                                            <Send size={14} />
+                                            Transmit
                                         </>
                                     )}
                                 </button>

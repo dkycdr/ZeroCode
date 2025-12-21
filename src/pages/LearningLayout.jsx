@@ -4,6 +4,7 @@ import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from 'reac
 import InstructionPane from '../components/InstructionPane';
 import EditorComponent from '../components/EditorComponent';
 import PreviewPane from '../components/PreviewPane';
+import Terminal from '../components/Terminal/Terminal'; // Import Terminal
 import QuizPane from '../components/QuizPane';
 import InformationalPane from '../components/InformationalPane';
 import Header from '../components/Header';
@@ -21,6 +22,7 @@ export default function LearningLayout() {
     const [item, setItem] = useState(null);
     const [activeFile, setActiveFile] = useState('index.html');
     const [files, setFiles] = useState([]);
+    const [folders, setFolders] = useState(['src']); // Default folder
     const [compiledCode, setCompiledCode] = useState('');
     const [consoleLogs, setConsoleLogs] = useState([]);
     const [isConsoleOpen, setIsConsoleOpen] = useState(false);
@@ -28,6 +30,9 @@ export default function LearningLayout() {
     const [isChecking, setIsChecking] = useState(false);
     const [progress, setProgress] = useState(0);
     const [tasks, setTasks] = useState([]);
+
+    // Terminal State for Git Course
+    const [virtualGitState, setVirtualGitState] = useState(null);
 
     useEffect(() => {
         const currentItem = getItem(courseId, itemId);
@@ -74,10 +79,9 @@ export default function LearningLayout() {
 
     if (!item) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-[#0a0a0a] text-white">
+            <div className="h-screen w-full flex items-center justify-center bg-[var(--bg-primary)] text-white">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading ZeroCode Environment...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
                 </div>
             </div>
         );
@@ -86,9 +90,9 @@ export default function LearningLayout() {
     // Render Quiz
     if (item.type === CONTENT_TYPES.QUIZ) {
         return (
-            <div className="h-screen w-full flex flex-col bg-[#0a0a0a] fixed inset-0">
+            <div className="h-screen w-full flex flex-col bg-[var(--bg-primary)] fixed inset-0 font-sans">
                 <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden pt-16">
                     <QuizPane quiz={item} onComplete={handleNext} />
                 </div>
             </div>
@@ -98,9 +102,9 @@ export default function LearningLayout() {
     // Render Informational
     if (item.type === CONTENT_TYPES.INFORMATIONAL) {
         return (
-            <div className="h-screen w-full flex flex-col bg-[#0a0a0a] fixed inset-0">
+            <div className="h-screen w-full flex flex-col bg-[var(--bg-primary)] fixed inset-0 font-sans">
                 <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden pt-16">
                     <InformationalPane item={item} onComplete={handleNext} />
                 </div>
             </div>
@@ -108,23 +112,82 @@ export default function LearningLayout() {
     }
 
     const compile = () => {
-        const html = files.find(f => f.name === 'index.html')?.content || '';
-        const css = files.find(f => f.name === 'style.css')?.content || '';
-        const js = files.find(f => f.name === 'script.js')?.content || '';
+        let html = files.find(f => f.name === 'index.html')?.content || '';
+        const cssFiles = files.filter(f => f.name.endsWith('.css'));
+        const jsFiles = files.filter(f => f.name.endsWith('.js'));
 
-        return `<!DOCTYPE html>
-<html>
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>${css}</style>
-</head>
-<body>
-    ${html}
-    <script>
-        try { ${js} } catch(e) { console.error(e); }
-    </script>
-</body>
-</html>`;
+        const css = cssFiles.map(f => f.content).join('\n');
+        const js = jsFiles.map(f => f.content).join('\n');
+
+        // Console override script to inject
+        const consoleOverride = `<script>
+(function() {
+    const originalLog = console.log;
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    
+    console.log = function(...args) {
+        originalLog.apply(console, args);
+        window.parent.postMessage({ 
+            type: 'CONSOLE', 
+            level: 'log', 
+            payload: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))
+        }, '*');
+    };
+    
+    console.error = function(...args) {
+        originalError.apply(console, args);
+        window.parent.postMessage({ 
+            type: 'CONSOLE', 
+            level: 'error', 
+            payload: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))
+        }, '*');
+    };
+    
+    console.warn = function(...args) {
+        originalWarn.apply(console, args);
+        window.parent.postMessage({ 
+            type: 'CONSOLE', 
+            level: 'warn', 
+            payload: args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))
+        }, '*');
+    };
+})();
+</script>`;
+
+        // Inject Console Override
+        if (html.includes('</head>')) {
+            html = html.replace('</head>', consoleOverride + '</head>');
+        } else if (html.includes('<head>')) {
+            // If only open head exists (rare, usually balanced)
+            html = html.replace('<head>', '<head>' + consoleOverride);
+        } else {
+            // No head tag, prepend to start
+            html = consoleOverride + html;
+        }
+
+        // Inject CSS
+        if (css) {
+            if (html.includes('</head>')) {
+                html = html.replace('</head>', `<style>${css}</style></head>`);
+            } else {
+                // If no head, append style to console override (start of file)
+                html = html + `<style>${css}</style>`;
+            }
+        }
+
+        // Inject JS
+        if (js) {
+            const scriptTag = `<script>try { ${js} } catch(e) { console.error('❌ Error: ' + e.message); }</script>`;
+            if (html.includes('</body>')) {
+                html = html.replace('</body>', scriptTag + '</body>');
+            } else {
+                // If no body, just append to end
+                html = html + scriptTag;
+            }
+        }
+
+        return html;
     };
 
     const compilePython = (pythonCode) => {
@@ -139,22 +202,42 @@ export default function LearningLayout() {
     <script>
         async function runPython() {
             try {
-                console.log('Loading Python...');
+                window.parent.postMessage({ type: 'CONSOLE', level: 'log', payload: ['Loading Python...'] }, '*');
                 const pyodide = await loadPyodide();
+                
                 pyodide.setStdout({
                     batched: (text) => {
-                        console.log(text);
+                        window.parent.postMessage({ type: 'CONSOLE', level: 'log', payload: [text] }, '*');
                     }
                 });
+                
                 pyodide.setStderr({
                     batched: (text) => {
-                        console.error(text);
+                        window.parent.postMessage({ type: 'CONSOLE', level: 'error', payload: [text] }, '*');
                     }
                 });
+                
                 const code = \`${escapedCode}\`;
                 await pyodide.runPythonAsync(code);
+                window.parent.postMessage({ type: 'CONSOLE', level: 'log', payload: ['✓ Code executed successfully'] }, '*');
             } catch (e) {
-                console.error(e.message);
+                const errorMsg = e.message || String(e);
+                const lines = errorMsg.trim().split('\\n');
+                let errorLine = lines[lines.length - 1] || errorMsg;
+                const execLineMatch = errorMsg.match(/File "<exec>", line (\\d+)/);
+                const lineNum = execLineMatch ? execLineMatch[1] : null;
+                errorLine = errorLine.trim();
+                
+                if (lineNum) {
+                    window.parent.postMessage({ type: 'CONSOLE', level: 'error', payload: [\`❌ Error on line \${lineNum}:\`] }, '*');
+                } else {
+                    window.parent.postMessage({ type: 'CONSOLE', level: 'error', payload: ['❌ Error:'] }, '*');
+                }
+                window.parent.postMessage({ type: 'CONSOLE', level: 'error', payload: [errorLine] }, '*');
+                
+                if (errorMsg.includes('SyntaxError')) {
+                    window.parent.postMessage({ type: 'CONSOLE', level: 'warn', payload: ['💡 Check your syntax: colons, quotes, parentheses'] }, '*');
+                }
             }
         }
         runPython();
@@ -176,7 +259,7 @@ export default function LearningLayout() {
         const css = files.find(f => f.name === 'style.css')?.content || '';
         const tsCode = files.find(f => f.name === 'script.ts')?.content || '';
         const escapedCode = tsCode.replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        
+
         return `<!DOCTYPE html>
 <html>
 <head>
@@ -201,28 +284,98 @@ export default function LearningLayout() {
 </html>`;
     };
 
+    const handleExecuteCode = (code) => {
+        setConsoleLogs([]);
+        const safeLog = (level, args) => {
+            const processedArgs = args.map(arg => {
+                try {
+                    if (typeof arg === 'object' && arg !== null) {
+                        return JSON.stringify(arg, null, 2);
+                    }
+                    return String(arg);
+                } catch (e) {
+                    return '[Circular Object]';
+                }
+            });
+
+            setConsoleLogs(prev => [...prev, {
+                level,
+                message: processedArgs.join(' '),
+                timestamp: new Date().toLocaleTimeString()
+            }]);
+        };
+
+        const customConsole = {
+            log: (...args) => safeLog('log', args),
+            error: (...args) => safeLog('error', args),
+            warn: (...args) => safeLog('warn', args),
+            info: (...args) => safeLog('log', args),
+            table: (...args) => safeLog('log', args),
+            clear: () => setConsoleLogs([])
+        };
+
+        try {
+            const sandbox = new Function('console', `
+                "use strict";
+                try {
+                    ${code}
+                } catch (err) {
+                    console.error(err.name + ": " + err.message);
+                }
+            `);
+            sandbox(customConsole);
+            safeLog('log', ['✓ Execution finished']);
+        } catch (err) {
+            safeLog('error', [err.name + ": " + err.message]);
+        }
+    };
+
     const handleRun = () => {
         setIsRunning(true);
         setConsoleLogs([]);
-        
+
         if (isPythonCourse()) {
             const pythonFile = files.find(f => f.name.endsWith('.py'));
-            if (pythonFile) {
-                setCompiledCode(compilePython(pythonFile.content));
-            }
+            if (pythonFile) setCompiledCode(compilePython(pythonFile.content));
         } else if (isTypeScriptCourse()) {
             setCompiledCode(compileTypeScript());
         } else {
-            setCompiledCode(compile());
+            const hasHTML = files.some(f => f.name === 'index.html');
+            if (!hasHTML) {
+                const jsCode = files.find(f => f.name.endsWith('.js'))?.content || '';
+                handleExecuteCode(jsCode);
+            } else {
+                setCompiledCode(compile());
+            }
         }
-        
         setTimeout(() => setIsRunning(false), 500);
     };
 
     const handleCheck = () => {
         setIsChecking(true);
-        const allContent = files.map(f => f.content).join('\n');
-        const results = evaluateCode(allContent, tasks);
+
+        let results;
+        if (courseId === 'git') {
+            // Specialized Git Validation
+            results = tasks.map(task => {
+                try {
+                    // Tasks usually are regex strings in this platform
+                    // For Git, we might need a custom validator function or just check properties
+                    // But for now, let's assume the 'regex' in the task can also match against the gitState JSON string
+                    // This is a hacky way to use regex on an object, but efficient for quick prototyping
+                    const stateString = JSON.stringify(virtualGitState);
+                    const regex = new RegExp(task.regex);
+                    return regex.test(stateString);
+                } catch (e) {
+                    return false;
+                }
+            });
+        } else {
+            // Standard Code Validation
+            const allContent = files.map(f => f.content).join('\n');
+            results = evaluateCode(allContent, tasks);
+        }
+
         const updatedTasks = tasks.map((task, index) => ({
             ...task,
             completed: results[index]
@@ -244,7 +397,7 @@ export default function LearningLayout() {
     };
 
     const handleCodeChange = (fileName, newContent) => {
-        setFiles(prev => prev.map(f => 
+        setFiles(prev => prev.map(f =>
             f.name === fileName ? { ...f, content: newContent } : f
         ));
     };
@@ -256,38 +409,52 @@ export default function LearningLayout() {
     };
 
     return (
-        <div className="h-screen w-full grid grid-rows-[auto_1fr_auto] overflow-hidden bg-[#0a0a0a] fixed inset-0">
+        <div className="h-screen w-full grid grid-rows-[auto_1fr_auto] overflow-hidden bg-[var(--bg-primary)] fixed inset-0 font-sans">
             <Header progress={progress} />
 
-            <div className="min-h-0 w-full relative">
+            <div className="min-h-0 w-full relative pt-16">
                 <PanelGroup direction="horizontal" className="h-full w-full">
-                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col">
+                    {/* Left Panel: Instructions */}
+                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[var(--bg-panel)] border-r border-[var(--border-subtle)]">
                         <InstructionPane lesson={lessonData} />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1 bg-[#0a0a0a] hover:bg-white/20 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
-                        <div className="h-8 w-0.5 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
-                    </PanelResizeHandle>
+                    <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
 
-                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col">
+                    {/* Middle Panel: Editor */}
+                    {/* Middle Panel: Editor */}
+                    {/* Middle Panel: Editor */}
+                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-[#0a0a0a]">
                         <EditorComponent
                             files={files}
+                            setFiles={setFiles}     // Allow Editor to modify files
+                            folders={folders}       // Pass folders
+                            setFolders={setFolders} // Allow Editor to modify folders
                             activeFile={activeFile}
                             onFileChange={setActiveFile}
                             onCodeChange={handleCodeChange}
                         />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1 bg-[#0a0a0a] hover:bg-white/20 transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10">
-                        <div className="h-8 w-0.5 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
-                    </PanelResizeHandle>
+                    <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
 
-                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col">
-                        <PreviewPane
-                            compiledCode={compiledCode}
-                            isConsoleOpen={isConsoleOpen}
-                            consoleLogs={consoleLogs}
-                        />
+                    {/* Right Panel: Preview/Terminal */}
+                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-[#0a0a0a]">
+                        {courseId === 'git' ? (
+                            <Terminal
+                                files={files}
+                                setFiles={setFiles}
+                                folders={folders}
+                                setFolders={setFolders}
+                                onStateChange={setVirtualGitState}
+                            />
+                        ) : (
+                            <PreviewPane
+                                compiledCode={compiledCode}
+                                isConsoleOpen={isConsoleOpen}
+                                consoleLogs={consoleLogs}
+                            />
+                        )}
                     </Panel>
                 </PanelGroup>
             </div>

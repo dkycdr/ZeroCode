@@ -144,13 +144,8 @@ Create your first React component!
 h1 { color: #0a192f; margin: 0 0 10px 0; }
 p { color: #666; margin: 0; }` },
                         { name: 'script.js', language: 'javascript', content: `// Create your first React component!
+// 1. Create a Greeting function component Render it (don't modify this)
 
-// 1. Create a Greeting function component
-
-
-// Render it (don't modify this)
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Greeting />);
 ` }
                     ]
                 },
@@ -354,22 +349,9 @@ Create a reusable StudentCard component with props.
 .student-card p { color: #666; margin: 0; }
 .student-card .major { color: #800000; font-weight: 600; }` },
                         { name: 'script.js', language: 'javascript', content: `// Create a reusable StudentCard component
-
 // 1. Create StudentCard with name and major props
-
-
 // 2. Render multiple cards with different data
-function App() {
-    return (
-        <>
-            {/* Use StudentCard here with different props */}
-            
-        </>
-    );
-}
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
 ` }
                     ]
                 },
@@ -548,31 +530,10 @@ Build a counter with increment, decrement, and reset.
 .counter button:first-of-type { background: #ff4444; color: white; }
 .counter button:last-of-type { background: #44ff44; color: #333; }
 .counter button:nth-of-type(2) { background: #ddd; color: #333; }` },
-                        { name: 'script.js', language: 'javascript', content: `const { useState } = React;
+                        { name: 'script.js', language: 'javascript', content: `// Build your counter component!
+// 1. Create count state
+// 2. Create handler functions
 
-// Build your counter component!
-function Counter() {
-    // 1. Create count state
-    
-    
-    // 2. Create handler functions
-    
-    
-    return (
-        <div className="counter">
-            {/* 3. Display count */}
-            <h1>0</h1>
-            
-            {/* 4. Add buttons with onClick */}
-            <button>-</button>
-            <button>Reset</button>
-            <button>+</button>
-        </div>
-    );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Counter />);
 ` }
                     ]
                 },
@@ -678,40 +639,9 @@ Build a login form with controlled inputs.
 .login-form input:focus { border-color: #0a192f; outline: none; }
 .login-form button { width: 100%; padding: 14px; background: #800000; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
 .login-form button:hover { background: #600000; }` },
-                        { name: 'script.js', language: 'javascript', content: `const { useState } = React;
+                        { name: 'script.js', language: 'javascript', content: `// 1. Create state for email and password
+// 2. Handle form submission
 
-function LoginForm() {
-    // 1. Create state for email and password
-    
-    
-    // 2. Handle form submission
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Login:', { /* email, password */ });
-    };
-    
-    return (
-        <form className="login-form" onSubmit={handleSubmit}>
-            <h2>🔐 ZeroCode Login</h2>
-            
-            {/* 3. Add controlled inputs */}
-            <input
-                type="email"
-                placeholder="Email"
-            />
-            
-            <input
-                type="password"
-                placeholder="Password"
-            />
-            
-            <button type="submit">Sign In</button>
-        </form>
-    );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<LoginForm />);
 ` }
                     ]
                 },
@@ -907,33 +837,10 @@ Fetch and display a list of posts from an API.
 .post h3 { color: #0a192f; margin: 0 0 10px 0; }
 .post p { color: #666; margin: 0; line-height: 1.6; }
 .loading { text-align: center; color: #666; font-size: 1.2rem; }` },
-                        { name: 'script.js', language: 'javascript', content: `const { useState, useEffect } = React;
+                        { name: 'script.js', language: 'javascript', content: `// 1. Create state for posts and loading
+// 2. Fetch data on mount Fetch from: https://jsonplaceholder.typicode.com/posts?_limit=5
+// 3. Show loading state
 
-function Posts() {
-    // 1. Create state for posts and loading
-    
-    
-    // 2. Fetch data on mount
-    useEffect(() => {
-        // Fetch from: https://jsonplaceholder.typicode.com/posts?_limit=5
-        
-    }, []);
-    
-    // 3. Show loading state
-    
-    
-    return (
-        <div className="posts">
-            <h1>📝 Latest Posts</h1>
-            
-            {/* 4. Map over posts */}
-            
-        </div>
-    );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<Posts />);
 ` }
                     ]
                 },
@@ -1034,41 +941,10 @@ Build a fully functional Todo application that demonstrates your React skills.
 .todo-item span { flex: 1; }
 .todo-item button { background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
 .todo-footer { display: flex; justify-content: space-between; margin-top: 20px; color: #666; font-size: 14px; }` },
-                        { name: 'script.js', language: 'javascript', content: `const { useState } = React;
+                        { name: 'script.js', language: 'javascript', content: `// Your code here!
+// 1. Create state for todos and input
+// 2. Create handler functions
 
-function TodoApp() {
-    // Your code here!
-    // 1. Create state for todos and input
-    
-    
-    // 2. Create handler functions
-    
-    
-    return (
-        <div className="todo-app">
-            <h1>✅ ZeroCode Todo</h1>
-            
-            {/* Input section */}
-            <div className="todo-input">
-                <input placeholder="What needs to be done?" />
-                <button>Add</button>
-            </div>
-            
-            {/* Todo list */}
-            <ul className="todo-list">
-                {/* Map over todos here */}
-            </ul>
-            
-            {/* Footer */}
-            <div className="todo-footer">
-                <span>0 items left</span>
-            </div>
-        </div>
-    );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<TodoApp />);
 ` }
                     ]
                 },

@@ -5,18 +5,23 @@ import { useProgress } from '../contexts/ProgressProvider';
 import { getCourseProgress } from '../data/courses/index';
 import { courses } from '../data/curriculumStructure';
 import Header from '../components/Header';
-import { BookOpen, Trophy, Award, TrendingUp, Edit2, LogOut, Save, X, Crown, MessageCircle, Phone, Shield } from 'lucide-react';
+import {
+    RiBookOpenLine, RiTrophyLine, RiAwardLine, RiFundsLine,
+    RiEdit2Line, RiLogoutBoxRLine, RiSave3Line, RiCloseLine,
+    RiVipCrownFill, RiMessage2Line, RiPhoneLine, RiShieldKeyholeLine,
+    RiUser3Line
+} from 'react-icons/ri';
 import clsx from 'clsx';
 
 const WHATSAPP_NUMBER = '6283875727384';
 
 const TIER_BADGES = {
-    free: { label: 'Free', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30', desc: '3 demo courses' },
-    beginner: { label: 'Beginner', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', desc: '5 courses' },
-    intermediate: { label: 'Intermediate', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30', desc: '11 courses' },
-    advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-400 border-red-500/30', desc: 'All 16 courses' },
-    fullstack: { label: 'Fullstack', color: 'bg-green-500/20 text-green-400 border-green-500/30', desc: 'All 16 courses' },
-    admin: { label: 'Admin', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', desc: 'Full access' }
+    free: { label: 'Free', color: 'bg-gray-500/10 text-gray-400 border-gray-500/20', desc: '3 demo courses' },
+    beginner: { label: 'Beginner', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', desc: '5 courses' },
+    intermediate: { label: 'Intermediate', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', desc: '11 courses' },
+    advanced: { label: 'Advanced', color: 'bg-red-500/10 text-red-400 border-red-500/20', desc: 'All 16 courses' },
+    fullstack: { label: 'Fullstack', color: 'bg-green-500/10 text-green-400 border-green-500/20', desc: 'All 16 courses' },
+    admin: { label: 'Admin', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', desc: 'Full access' }
 };
 
 export default function Profile() {
@@ -60,159 +65,174 @@ export default function Profile() {
     const tierBadge = TIER_BADGES[subscriptionTier] || TIER_BADGES.free;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a]">
-            <Header />
-            <div className="max-w-4xl mx-auto px-6 py-8">
-                {/* Profile Header */}
-                <div className="bg-[#111111] rounded-xl border border-white/10 p-6 mb-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-white text-xl font-bold">
-                                {user?.name?.charAt(0).toUpperCase() || 'U'}
-                            </div>
-                            <div>
+        <div className="min-h-screen bg-[var(--bg-primary)]">
+            <Header progress={completionRate} />
+            <div className="max-w-5xl mx-auto px-6 pt-24 pb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    {/* Left Column: Stats & Progress */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { icon: RiBookOpenLine, label: 'Completed', value: completedCoursesCount },
+                                { icon: RiTrophyLine, label: 'Lessons', value: totalItems },
+                                { icon: RiFundsLine, label: 'Active', value: coursesInProgress.length },
+                                { icon: RiAwardLine, label: 'Completion', value: `${completionRate}%` }
+                            ].map(({ icon: Icon, label, value }) => (
+                                <div key={label} className="card-cyber p-4 flex flex-col items-center justify-center text-center">
+                                    <div className="w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-subtle)] flex items-center justify-center mb-3">
+                                        <Icon className="text-[var(--accent-primary)]" size={18} />
+                                    </div>
+                                    <span className="text-2xl font-bold text-white font-mono">{value}</span>
+                                    <p className="text-[10px] uppercase tracking-wider text-gray-500 font-mono mt-1">{label}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* In Progress */}
+                        <div className="card-cyber p-6">
+                            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <RiFundsLine size={18} className="text-[var(--accent-primary)]" />
+                                Active Modules
+                            </h2>
+                            {coursesInProgress.length > 0 ? (
+                                <div className="space-y-4">
+                                    {coursesInProgress.map(course => {
+                                        const progress = getCourseProgress(course.id, completedItems);
+                                        return (
+                                            <div
+                                                key={course.id}
+                                                onClick={() => navigate(`/course/${course.id}`)}
+                                                className="group p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] transition-all cursor-pointer"
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h3 className="font-medium text-white text-sm group-hover:text-[var(--accent-primary)] transition-colors">{course.title}</h3>
+                                                    <span className="text-xs font-mono text-[var(--accent-primary)]">{progress.percentage}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
+                                                    <div className="h-full bg-[var(--accent-primary)] transition-all shadow-[0_0_10px_var(--accent-glow)]" style={{ width: `${progress.percentage}%` }} />
+                                                </div>
+                                                <div className="flex justify-between mt-2">
+                                                    <p className="text-[10px] text-gray-500 font-mono">{progress.completed} / {progress.total} TASKS</p>
+                                                    <p className="text-[10px] text-gray-500 font-mono uppercase">Resuming...</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 text-sm">No active courses. Start a new module!</p>
+                                    <button onClick={() => navigate('/dashboard')} className="mt-4 text-[var(--accent-primary)] text-sm hover:underline">Browse Curriculum</button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Profile & Settings */}
+                    <div className="space-y-6">
+                        {/* Profile Card */}
+                        <div className="card-cyber p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-primary)] opacity-5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+
+                            <div className="text-center mb-6 relative z-10">
+                                <div className="w-24 h-24 mx-auto rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+                                    {user?.name?.charAt(0).toUpperCase() || <RiUser3Line size={32} />}
+                                </div>
                                 {isEditing ? (
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="text-xl font-bold text-white bg-transparent border-b border-white/30 focus:outline-none focus:border-white mb-1"
+                                        className="text-center text-xl font-bold text-white bg-white/5 border-b border-white/20 focus:border-[var(--accent-primary)] focus:outline-none w-full py-1 rounded-t"
                                     />
                                 ) : (
-                                    <h1 className="text-xl font-bold text-white">{user?.name || 'User'}</h1>
+                                    <h1 className="text-xl font-bold text-white">{user?.name || 'Cadet'}</h1>
                                 )}
-                                <p className="text-sm text-gray-500">{user?.email}</p>
+                                <p className="text-sm text-gray-500 font-mono mt-1">{user?.email}</p>
+                            </div>
+
+                            <div className="flex gap-2 justify-center mb-6">
+                                {isEditing ? (
+                                    <>
+                                        <button onClick={handleSave} className="flex-1 py-2 bg-[var(--accent-primary)] text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-blue-600 transition-colors">
+                                            Save
+                                        </button>
+                                        <button onClick={handleCancel} className="flex-1 py-2 bg-[var(--bg-primary)] text-gray-400 border border-[var(--border-subtle)] text-xs font-bold uppercase tracking-wider rounded-lg hover:text-white hover:border-gray-500 transition-colors">
+                                            Cancel
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button onClick={() => setIsEditing(true)} className="flex-1 py-2 bg-[var(--bg-primary)] text-gray-300 border border-[var(--border-subtle)] text-xs font-bold uppercase tracking-wider rounded-lg hover:text-white hover:border-[var(--accent-primary)] transition-colors flex items-center justify-center gap-2">
+                                        <RiEdit2Line size={12} /> Edit Profile
+                                    </button>
+                                )}
+                            </div>
+
+                            {isEditing && (
+                                <div className="text-sm space-y-3 mb-6 animate-fade-in">
+                                    <div className="flex items-center gap-3 bg-[var(--bg-primary)] p-3 rounded-lg border border-[var(--border-subtle)]">
+                                        <RiPhoneLine className="text-gray-500" size={14} />
+                                        <input
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="Phone Number"
+                                            className="bg-transparent text-white w-full focus:outline-none placeholder-gray-600 font-mono text-xs"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="pt-6 border-t border-[var(--border-subtle)]">
+                                <button onClick={handleLogout} className="w-full py-2 flex items-center justify-center gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-xs font-bold uppercase tracking-wider">
+                                    <RiLogoutBoxRLine size={14} /> Disconnect
+                                </button>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            {isEditing ? (
-                                <>
-                                    <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm rounded-lg font-medium hover:bg-gray-200">
-                                        <Save size={14} />Save
-                                    </button>
-                                    <button onClick={handleCancel} className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white text-sm rounded-lg font-medium hover:bg-white/10 border border-white/10">
-                                        <X size={14} />Cancel
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white text-sm rounded-lg font-medium hover:bg-white/10 border border-white/10">
-                                        <Edit2 size={14} />Edit
-                                    </button>
-                                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 text-sm rounded-lg font-medium hover:bg-red-500/20 border border-red-500/20">
-                                        <LogOut size={14} />Logout
-                                    </button>
-                                </>
+
+                        {/* Subscription Card */}
+                        <div className="card-cyber p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <RiVipCrownFill size={18} className="text-yellow-400" />
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Clearance</h3>
+                            </div>
+
+                            <div className={clsx("p-4 rounded-lg border mb-4 flex items-center justify-between", tierBadge.color)}>
+                                <div>
+                                    <span className="text-xs font-bold uppercase">{tierBadge.label}</span>
+                                    <p className="text-[10px] opacity-70 mt-1">{tierBadge.desc}</p>
+                                </div>
+                                <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                            </div>
+
+                            {subscriptionTier === 'free' && (
+                                <button
+                                    onClick={handleUpgrade}
+                                    className="w-full py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/20"
+                                >
+                                    Upgrade License <RiMessage2Line size={14} />
+                                </button>
+                            )}
+
+                            {user?.subscription_date && (
+                                <p className="text-[10px] text-gray-600 text-center mt-3 font-mono">
+                                    AUTHORIZED SINCE {new Date(user.subscription_date).toLocaleDateString()}
+                                </p>
                             )}
                         </div>
-                    </div>
-                    {isEditing && (
-                        <div className="mt-6 pt-6 border-t border-white/10">
-                            <div className="flex items-center gap-3">
-                                <Phone className="text-gray-500" size={16} />
-                                <input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    placeholder="Phone number (optional)"
-                                    className="flex-1 text-sm text-white bg-transparent border-b border-white/30 focus:outline-none focus:border-white placeholder-gray-600"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
 
-                {/* Subscription Card */}
-                <div className="bg-[#111111] rounded-xl border border-white/10 p-6 mb-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Crown size={20} className="text-yellow-400" />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h2 className="text-lg font-semibold text-white">Subscription</h2>
-                                    <span className={clsx("px-2 py-0.5 rounded-full text-xs font-medium border", tierBadge.color)}>
-                                        {tierBadge.label}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-gray-500">{tierBadge.desc}</p>
-                                {user?.subscription_date && (
-                                    <p className="text-xs text-gray-600 mt-1">
-                                        Since {new Date(user.subscription_date).toLocaleDateString()}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        {subscriptionTier === 'free' && (
+                        {/* Admin Link */}
+                        <div className="text-center">
                             <button
-                                onClick={handleUpgrade}
-                                className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm rounded-lg font-medium hover:bg-gray-200"
+                                onClick={() => navigate('/admin/access')}
+                                className="text-[10px] text-gray-700 hover:text-gray-500 transition-colors font-mono uppercase tracking-widest flex items-center justify-center gap-2 mx-auto"
                             >
-                                <MessageCircle size={14} />
-                                Upgrade
+                                <RiShieldKeyholeLine size={10} /> Access Control
                             </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    {[
-                        { icon: BookOpen, label: 'Completed', value: completedCoursesCount },
-                        { icon: Trophy, label: 'Lessons', value: totalItems },
-                        { icon: TrendingUp, label: 'In Progress', value: coursesInProgress.length },
-                        { icon: Award, label: 'Progress', value: `${completionRate}%` }
-                    ].map(({ icon: Icon, label, value }) => (
-                        <div key={label} className="bg-[#111111] rounded-xl border border-white/10 p-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
-                                    <Icon className="text-gray-400" size={16} />
-                                </div>
-                                <span className="text-xl font-bold text-white">{value}</span>
-                            </div>
-                            <p className="text-xs text-gray-500">{label}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* In Progress */}
-                {coursesInProgress.length > 0 && (
-                    <div className="bg-[#111111] rounded-xl border border-white/10 p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-white mb-4">Continue Learning</h2>
-                        <div className="space-y-3">
-                            {coursesInProgress.map(course => {
-                                const progress = getCourseProgress(course.id, completedItems);
-                                return (
-                                    <div
-                                        key={course.id}
-                                        onClick={() => navigate(`/course/${course.id}`)}
-                                        className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer border border-white/5"
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-medium text-white text-sm">{course.title}</h3>
-                                            <span className="text-xs font-medium text-white bg-white/10 px-2 py-0.5 rounded">{progress.percentage}%</span>
-                                        </div>
-                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-white transition-all" style={{ width: `${progress.percentage}%` }} />
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-2">{progress.completed} of {progress.total} completed</p>
-                                    </div>
-                                );
-                            })}
                         </div>
                     </div>
-                )}
-
-                {/* Admin Access */}
-                <div className="mt-8 pt-8 border-t border-white/5">
-                    <button
-                        onClick={() => navigate('/admin/access')}
-                        className="flex items-center gap-2 text-gray-600 hover:text-gray-400 text-xs transition-colors"
-                    >
-                        <Shield size={12} />
-                        <span>Admin Access</span>
-                    </button>
                 </div>
             </div>
         </div>

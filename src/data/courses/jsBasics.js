@@ -467,27 +467,12 @@ Create a calculator that:
 </html>` },
                         { name: 'style.css', language: 'css', content: '' },
                         { name: 'script.js', language: 'javascript', content: `// Your First JavaScript Calculator!
-
 // Step 1: Create two number variables
-let num1 = 10;
-let num2 = 5;
-
 // Step 2: Calculate sum
-
-
 // Step 3: Calculate difference
-
-
 // Step 4: Calculate product
-
-
 // Step 5: Calculate quotient
-
-
-// Step 6: Print all results
-console.log('Number 1:', num1);
-console.log('Number 2:', num2);
-// Print your calculations here
+// Step 6: Print all results Print your calculations here
 
 ` }
                     ]
@@ -1098,19 +1083,11 @@ Practice string manipulation with student data.
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
                         { name: 'script.js', language: 'javascript', content: `// String Operations Practice
-
 // 1. Create firstName and lastName
-
-
 // 2. Combine using template literal
-let fullName = 
-
 // 3. Convert to uppercase
-
-
 // 4. Get the length
 
-console.log(fullName);
 ` }
                     ]
                 },
@@ -1297,26 +1274,8 @@ Create eligibility checks for a scholarship.
 <body><h1>Scholarship Eligibility</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
-                        { name: 'script.js', language: 'javascript', content: `// Scholarship Eligibility Checker
+                        { name: 'script.js', language: 'javascript', content: `// Scholarship Eligibility Checker Student data Check 1: GPA must be >= 3.5 Check 2: Must be semester 3 or higher Check 3: Must be SE major (use ===) Combined check: All conditions must be true
 
-// Student data
-let gpa = 3.7;
-let semester = 4;
-let major = "Software Engineering";
-
-// Check 1: GPA must be >= 3.5
-
-
-// Check 2: Must be semester 3 or higher
-
-
-// Check 3: Must be SE major (use ===)
-
-
-// Combined check: All conditions must be true
-
-
-console.log("Eligible for scholarship:", /* your variable */);
 ` }
                     ]
                 },
@@ -1613,13 +1572,7 @@ Print a multiplication table.
 <body><h1>Multiplication Table</h1><script src="script.js"></script></body>
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
-                        { name: 'script.js', language: 'javascript', content: `// Multiplication Table for 7
-
-let number = 7;
-
-// Create a for loop from 1 to 10
-// Print: "7 x 1 = 7", "7 x 2 = 14", etc.
-
+                        { name: 'script.js', language: 'javascript', content: `// Multiplication Table for 7 Create a for loop from 1 to 10 Print: "7 x 1 = 7", "7 x 2 = 14", etc.
 
 ` }
                     ]
@@ -1814,14 +1767,8 @@ Create utility functions for a student system.
 </html>` },
                         { name: 'style.css', language: 'css', content: `body { font-family: sans-serif; padding: 40px; }` },
                         { name: 'script.js', language: 'javascript', content: `// Student Utility Functions
-
-// 1. Create calculateGPA function
-// It should take an array of grades and return the average
-
-
+// 1. Create calculateGPA function It should take an array of grades and return the average
 // 2. Test data
-let myGrades = [3.5, 3.8, 4.0, 3.2];
-
 // 3. Call function and log result
 
 ` }

@@ -494,20 +494,7 @@ button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }` },
-                        { name: 'script.js', language: 'javascript', content: `// Counter App
-
-let count = 0;
-
-// Select elements
-
-
-// Increment button
-
-
-// Decrement button
-
-
-// Reset button
+                        { name: 'script.js', language: 'javascript', content: `// Counter App Select elements Increment button Decrement button Reset button
 
 ` }
                     ]
@@ -751,31 +738,7 @@ button:hover {
 #clearBtn:hover {
     background: #600000;
 }` },
-                        { name: 'script.js', language: 'javascript', content: `// Todo List App
-
-// Select elements
-const todoForm = document.getElementById('todoForm');
-const todoInput = document.getElementById('todoInput');
-const todoList = document.getElementById('todoList');
-const todoCount = document.getElementById('todoCount');
-const clearBtn = document.getElementById('clearBtn');
-
-// Add todo function
-
-
-// Toggle complete function
-
-
-// Delete todo function
-
-
-// Update count function
-
-
-// Clear completed function
-
-
-// Event listeners
+                        { name: 'script.js', language: 'javascript', content: `// Todo List App Select elements Add todo function Toggle complete function Delete todo function Update count function Clear completed function Event listeners
 
 ` }
                     ]

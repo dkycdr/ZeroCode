@@ -1,17 +1,17 @@
 // Course Index - Export all courses
-import { html5Course } from './html5';
-import jsBasicsCourse from './jsBasics';
-import css3Course from './css3';
-import reactCourse from './react';
-import gitCourse from './git';
-import tailwindCourse from './tailwind';
+import { html5Course } from './html5/index';
+import { jsBasicsCourse } from './jsBasics/index';
+import { css3Course } from './css3/index';
+import { reactCourse } from './react/index';
+import { gitCourse } from './git/index';
+import { tailwindCourse } from './tailwind/index';
 import domCourse from './dom';
 import phpCourse from './php';
 import mysqlCourse from './mysql';
 import pythonCourse from './python';
-import jsEs6Course from './jsEs6';
+import { jsEs6Course } from './jsEs6/index';
 import typescriptCourse from './typescript';
-import nodeCourse from './node';
+import { nodeCourse } from './node';
 import mongodbCourse from './mongodb';
 import nextjsCourse from './nextjs';
 import cicdCourse from './cicd';
@@ -41,9 +41,9 @@ export const courseContent = {
 export const getCourseWithContent = (courseId) => {
     const meta = courseMeta[courseId];
     const content = courseContent[courseId];
-    
+
     if (!meta) return null;
-    
+
     return {
         ...meta,
         ...content,
@@ -62,7 +62,7 @@ export const getUnit = (courseId, unitId) => {
 export const getItem = (courseId, itemId) => {
     const course = courseContent[courseId];
     if (!course) return null;
-    
+
     for (const unit of course.units) {
         const item = unit.items.find(i => i.id === itemId);
         if (item) return { ...item, unitId: unit.id, unitTitle: unit.title };
@@ -74,7 +74,7 @@ export const getItem = (courseId, itemId) => {
 export const getNextItem = (courseId, currentItemId) => {
     const course = courseContent[courseId];
     if (!course) return null;
-    
+
     let foundCurrent = false;
     for (const unit of course.units) {
         for (const item of unit.items) {
@@ -89,7 +89,7 @@ export const getNextItem = (courseId, currentItemId) => {
 export const getPrevItem = (courseId, currentItemId) => {
     const course = courseContent[courseId];
     if (!course) return null;
-    
+
     let prevItem = null;
     for (const unit of course.units) {
         for (const item of unit.items) {
@@ -104,17 +104,17 @@ export const getPrevItem = (courseId, currentItemId) => {
 export const getCourseProgress = (courseId, completedItems = []) => {
     const course = courseContent[courseId];
     if (!course) return { total: 0, completed: 0, percentage: 0 };
-    
+
     let total = 0;
     let completed = 0;
-    
+
     for (const unit of course.units) {
         for (const item of unit.items) {
             total++;
             if (completedItems.includes(item.id)) completed++;
         }
     }
-    
+
     return {
         total,
         completed,
@@ -126,7 +126,7 @@ export const getCourseProgress = (courseId, completedItems = []) => {
 export const getAllItems = (courseId) => {
     const course = courseContent[courseId];
     if (!course) return [];
-    
+
     const items = [];
     for (const unit of course.units) {
         for (const item of unit.items) {
