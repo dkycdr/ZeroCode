@@ -478,7 +478,7 @@ In team projects, the main branch is often **protected**:
 In the next lesson, you'll learn about **merging** - how to combine branches back together, and how to handle conflicts when the same code is changed in different ways.
 
 Now you understand branches! 🌿
-            `
+            `,
             tasks: [
                 {
                     id: 'task1',
