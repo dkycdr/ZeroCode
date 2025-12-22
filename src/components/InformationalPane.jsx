@@ -52,7 +52,12 @@ export default function InformationalPane({ item, onComplete }) {
                         <div className="w-16 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent mb-8 opacity-50" />
 
                         <button
-                            onClick={onComplete}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onComplete();
+                            }}
+                            type="button" // Explicitly prevent submit behavior
                             className="group relative px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_50px_rgba(79,70,229,0.5)] overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)] opacity-0 group-hover:opacity-100 transition-opacity" />

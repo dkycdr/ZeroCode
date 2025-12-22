@@ -161,6 +161,17 @@ export const courses = {
         icon: 'python',
         totalUnits: 5
     },
+    'vue': {
+        id: 'vue',
+        title: 'Vue.js Mastery',
+        level: 'intermediate',
+        order: 12,
+        duration: '10 hours',
+        prerequisites: ['js-es6', 'dom'],
+        shortDesc: 'Reactivity, Composition API, Directives',
+        icon: 'vue',
+        totalUnits: 1
+    },
     'typescript': {
         id: 'typescript',
         title: 'TypeScript',
@@ -182,6 +193,17 @@ export const courses = {
         shortDesc: 'REST APIs, Middleware, Authentication',
         icon: 'node',
         totalUnits: 6
+    },
+    'express': {
+        id: 'express',
+        title: 'Express.js Framework',
+        level: 'intermediate',
+        order: 12,
+        duration: '8 hours',
+        prerequisites: ['node', 'js-es6'],
+        shortDesc: 'Web Framework, Middleware, REST APIs, Routes',
+        icon: 'express',
+        totalUnits: 2
     },
     'mongodb': {
         id: 'mongodb',
@@ -215,6 +237,17 @@ export const courses = {
         shortDesc: 'GitHub Actions, Docker, Deployment',
         icon: 'cicd',
         totalUnits: 4
+    },
+    'postgresql': {
+        id: 'postgresql',
+        title: 'PostgreSQL Database',
+        level: 'intermediate',
+        order: 11,
+        duration: '15 hours',
+        prerequisites: [],
+        shortDesc: 'SQL, Relations, Transactions, Performance',
+        icon: 'postgresql',
+        totalUnits: 1
     }
 };
 
@@ -230,7 +263,7 @@ export const getCourse = (courseId) => courses[courseId] || null;
 export const checkPrerequisites = (courseId, completedCourses = [], userEmail = '') => {
     const course = courses[courseId];
     if (!course) return false;
-    
+
     // Admin accounts have access to all courses
     // Check for admin email patterns: admin*@gmail.com, admin*@*, or any email containing 'admin'
     if (userEmail) {
@@ -240,10 +273,10 @@ export const checkPrerequisites = (courseId, completedCourses = [], userEmail = 
             return true;
         }
     }
-    
+
     // All beginner level courses are always accessible
     if (course.level === 'beginner') return true;
-    
+
     return course.prerequisites.every(prereq => completedCourses.includes(prereq));
 };
 

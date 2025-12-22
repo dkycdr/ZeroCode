@@ -1,22 +1,27 @@
-import { useState, useEffect } from 'react';
-import { RiFlashlightFill, RiArrowRightLine, RiVipCrownFill, RiMeteorLine, RiDoubleQuotesL } from 'react-icons/ri';
-import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import clsx from 'clsx';
+import { RiFlashlightFill, RiDoubleQuotesL, RiMeteorLine, RiVipCrownFill } from 'react-icons/ri';
 
 const MOTIVATIONS = [
-    "Consistency is the code to success.",
-    "Every bug is just an undocumented feature waiting to be fixed.",
-    "Your potential is infinite, like a while(true) loop.",
-    "Small commits leads to big changes.",
-    "Debug with patience, code with passion."
+    "The code is yours to command.",
+    "Bugs are just undocumented features.",
+    "Compile your dreams into reality.",
+    "Every line written is a step forward.",
+    "Logic is the foundation of digital art."
 ];
+
+import { useProgress } from '../../contexts/ProgressProvider';
+import CyberpunkStatCard from './CyberpunkStatCard';
 
 export default function WelcomeHero({ user, subscriptionTier }) {
     const navigate = useNavigate();
+    const { userStats } = useProgress(); // Get real-time stats
     const isFree = subscriptionTier === 'free';
     const [greeting, setGreeting] = useState('');
     const [tip, setTip] = useState('');
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -30,7 +35,7 @@ export default function WelcomeHero({ user, subscriptionTier }) {
     }, []);
 
     return (
-        <div className="relative overflow-hidden rounded-3xl p-8 sm:p-10 mb-10 group isolate">
+        <div className="relative overflow-hidden rounded-3xl p-8 sm:p-10 mb-10 group isolate h-full min-h-[360px] flex flex-col justify-center transition-all duration-500 will-change-transform">
             {/* Elegant Background - Dark Gradient Mesh */}
             <div className="absolute inset-0 bg-[#09090b] border border-white/5 rounded-3xl" />
 
@@ -41,8 +46,8 @@ export default function WelcomeHero({ user, subscriptionTier }) {
             {/* Grid Pattern Overlay */}
             <div className="absolute inset-0 bg-[url('/assets/grid-pattern.svg')] opacity-[0.03] pointer-events-none" />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                <div className="lg:col-span-2">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+                <div className="lg:col-span-2 flex flex-col justify-center">
                     {/* Status Badge */}
                     <div className="inline-flex items-center gap-3 mb-5">
                         <div className={clsx(
@@ -100,15 +105,41 @@ export default function WelcomeHero({ user, subscriptionTier }) {
                     </div>
                 </div>
 
-                {/* Right Side - Decorative */}
-                <div className="hidden lg:flex justify-end relative">
-                    <div className="w-28 h-28 rounded-full border border-white/5 flex items-center justify-center relative">
-                        <div className="absolute inset-0 border border-indigo-500/20 rounded-full animate-spin-slower border-t-transparent border-l-transparent" />
-                        <div className="absolute inset-2 border border-purple-500/20 rounded-full animate-reverse-spin border-b-transparent border-r-transparent" />
-                        <RiMeteorLine size={24} className="text-indigo-400 opacity-80" />
+                {/* Right Side - Gamification Hub */}
+                <div className="hidden lg:flex justify-end relative h-full min-h-[280px]">
+                    {/* 
+                        FIX: We render the collapsed variant even when expanded (but invisible)
+                        to ensure the parent container maintains its height/width footprint.
+                    */}
+                    <div className={clsx("w-full h-full transition-opacity duration-300", expanded ? "opacity-0 pointer-events-none" : "opacity-100")}>
+                        <CyberpunkStatCard
+                            userStats={userStats}
+                            isExpanded={false}
+                            onToggle={() => setExpanded(true)}
+                            layoutId="stat-card"
+                        />
                     </div>
                 </div>
             </div>
+
+            {/* Expanded Overlay */}
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        className="absolute inset-0 z-50 bg-[#09090b] flex"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <CyberpunkStatCard
+                            userStats={userStats}
+                            isExpanded={true}
+                            onToggle={() => setExpanded(false)}
+                            layoutId="stat-card"
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

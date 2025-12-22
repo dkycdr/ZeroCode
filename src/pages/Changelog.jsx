@@ -8,17 +8,32 @@ import {
 import { SiTailwindcss, SiTypescript } from 'react-icons/si';
 import AppLayout from '../components/layout/AppLayout';
 
+// Changelog Page Component
 const Changelog = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        localStorage.setItem('last_viewed_update', '2.5.0');
+        localStorage.setItem('last_viewed_update', '2.5.5');
     }, []);
 
     const updates = [
         {
-            version: "2.5.0",
+            version: "2.5.5",
             date: "Today",
+            type: "minor",
+            title: "Identity Refresh & Stability",
+            icon: <FaGem className="text-pink-400 text-xl" />,
+            color: "border-pink-500/50 bg-pink-500/10 text-pink-400",
+            changes: [
+                "New Brand Identity: 'Rocket Z0' Logo integration.",
+                "Fixed Critical Crash in Learning Navigation.",
+                "Resolved key collision in CSS Curriculum.",
+                "Optimized asset rendering for transparent logos."
+            ]
+        },
+        {
+            version: "2.5.0",
+            date: "Dec 22, 2025",
             type: "major",
             title: "The Elegant Intelligence Update",
             icon: <FaRobot className="text-indigo-400 text-xl" />,
@@ -161,7 +176,7 @@ const Changelog = () => {
                             <div className="hidden md:block">
                                 <div className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900/50 text-right">
                                     <p className="text-xs text-slate-500 font-mono uppercase">Current Version</p>
-                                    <p className="text-xl font-bold text-green-400 font-mono">v2.5.0</p>
+                                    <p className="text-xl font-bold text-green-400 font-mono">v2.5.5</p>
                                 </div>
                             </div>
                         </div>

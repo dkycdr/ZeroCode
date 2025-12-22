@@ -3,7 +3,7 @@ import {
     FaHtml5, FaCss3Alt, FaGitAlt, FaReact, FaNodeJs, FaPython
 } from 'react-icons/fa';
 import {
-    SiTypescript, SiJavascript, SiTailwindcss, SiNextdotjs, SiMongodb, SiPostgresql, SiMysql, SiPhp
+    SiTypescript, SiJavascript, SiTailwindcss, SiNextdotjs, SiMongodb, SiPostgresql, SiMysql, SiPhp, SiVuedotjs, SiExpress
 } from 'react-icons/si';
 import { VscGlobe, VscCircuitBoard } from 'react-icons/vsc';
 import clsx from 'clsx';
@@ -25,7 +25,10 @@ const COURSE_ICONS = {
     node: <FaNodeJs />,
     mongodb: <SiMongodb />,
     nextjs: <SiNextdotjs />,
-    cicd: <VscCircuitBoard />
+    cicd: <VscCircuitBoard />,
+    vue: <SiVuedotjs />,
+    express: <SiExpress />,
+    postgresql: <SiPostgresql />
 };
 
 const COURSE_COLORS = {
@@ -44,7 +47,10 @@ const COURSE_COLORS = {
     node: 'text-green-500',
     mongodb: 'text-green-500',
     nextjs: 'text-white',
-    cicd: 'text-gray-400'
+    cicd: 'text-gray-400',
+    vue: 'text-emerald-400',
+    express: 'text-yellow-300',
+    postgresql: 'text-blue-600'
 };
 
 export default function CourseCard({ course, isCompleted, isLocked, hasAccess }) {

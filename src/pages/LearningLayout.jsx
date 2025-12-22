@@ -21,7 +21,7 @@ import confetti from 'canvas-confetti';
 export default function LearningLayout() {
     const { courseId, itemId } = useParams();
     const navigate = useNavigate();
-    const { completedItems, markItemComplete } = useProgress();
+    const { completedItems, markItemComplete, reward, clearReward } = useProgress(); // Destructure reward stats
 
     const [item, setItem] = useState(null);
     const [activeFile, setActiveFile] = useState('index.html');
@@ -76,8 +76,7 @@ export default function LearningLayout() {
         return () => window.removeEventListener('message', handler);
     }, []);
 
-    const handleNext = () => {
-        markItemComplete(itemId);
+    const proceedToNext = () => {
         // Ensure drawer is closed on nav
         setIsDrawerOpen(false);
         const next = getNextItem(courseId, itemId);
@@ -86,6 +85,22 @@ export default function LearningLayout() {
         } else {
             navigate(`/course/${courseId}`);
         }
+    };
+
+    const handleNext = async () => {
+        // Pass proceedToNext as a callback to run after reward overlay closes
+        const earnedReward = await markItemComplete(itemId, courseId, getUnit(itemId)?.id, proceedToNext);
+
+        if (earnedReward) {
+            // Do not navigate immediately. Global Overlay handles it via callback.
+        } else {
+            proceedToNext();
+        }
+    };
+
+    const handleRewardClose = () => {
+        clearReward();
+        proceedToNext();
     };
 
     // Engine Switching Logic
@@ -338,6 +353,126 @@ export default function LearningLayout() {
 </html>`;
     };
 
+    const isVueCourse = () => {
+        return files.some(f => f.name.endsWith('.vue'));
+    };
+
+    const compileVue = () => {
+        // We use vue3-sfc-loader to handle .vue files including <script setup> without a build step.
+        // We serialized the current 'files' state into the HTML so the loader can read them "locally".
+        const serializedFiles = JSON.stringify(files.reduce((acc, f) => {
+            // Normalize path usually expected by loader (e.g., ./App.vue)
+            let name = f.name;
+            if (!name.startsWith('./') && !name.startsWith('/')) name = './' + name;
+            acc[name] = f.content;
+            return acc;
+        }, {})).replace(/</g, '\\u003c');
+
+        const scriptEnd = '<' + '/script>';
+
+        const consoleOverride = `
+            (function() {
+                const originalLog = console.log;
+                const originalError = console.error;
+                const originalWarn = console.warn;
+                
+                function post(level, args) {
+                    window.parent.postMessage({ 
+                        type: 'CONSOLE', 
+                        level: level, 
+                        payload: args.map(a => {
+                            try {
+                                return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a);
+                            } catch(e) { return String(a); }
+                        })
+                    }, '*');
+                }
+
+                console.log = function(...args) {
+                    originalLog.apply(console, args);
+                    post('log', args);
+                };
+                
+                console.error = function(...args) {
+                    originalError.apply(console, args);
+                    post('error', args);
+                };
+                
+                console.warn = function(...args) {
+                    originalWarn.apply(console, args);
+                    post('warn', args);
+                };
+                
+                window.onerror = function(msg, url, line, col, error) {
+                    post('error', [msg]);
+                    return false;
+                };
+                
+                window.addEventListener('unhandledrejection', function(event) {
+                    post('error', ['Unhandled Promise Rejection: ' + event.reason]);
+                });
+            })();
+        `;
+
+        return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js">${scriptEnd}
+    <script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js">${scriptEnd}
+    <script>${consoleOverride}${scriptEnd}
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        * { box-sizing: border-box; } 
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const files = ${serializedFiles};
+        
+        const options = {
+            moduleCache: {
+                vue: Vue
+            },
+            async getFile(url) {
+                const content = files[url] || files['./' + url] || files[url.replace('./', '')];
+                if (!content) throw new Error("File not found: " + url);
+                return content;
+            },
+            addStyle(textContent) {
+                const style = document.createElement('style');
+                style.textContent = textContent;
+                document.head.appendChild(style);
+            },
+            log(type, ...args) {
+                console[type](...args);
+            }
+        }
+        
+        const { loadModule } = window['vue3-sfc-loader'];
+        
+        // Find the main file
+        const appFile = Object.keys(files).find(f => f.endsWith('App.vue')) || Object.keys(files)[0];
+
+        if (!appFile) {
+            console.error("No component file found to mount!");
+        } else {
+            Vue.defineAsyncComponent(() => 
+                loadModule(appFile, options)
+                .then(component => {
+                    const app = Vue.createApp(component);
+                    app.config.errorHandler = (err) => console.error(err);
+                    app.mount('#app');
+                })
+                .catch(err => console.error("Failed to load module: " + err))
+            );
+        }
+    ${scriptEnd}
+</body>
+</html>`;
+    };
+
     const handleExecuteCode = (code) => {
         setConsoleLogs([]);
         const safeLog = (level, args) => {
@@ -370,13 +505,13 @@ export default function LearningLayout() {
 
         try {
             const sandbox = new Function('console', `
-                "use strict";
-                try {
+        "use strict";
+        try {
                     ${code}
-                } catch (err) {
-                    console.error(err.name + ": " + err.message);
-                }
-            `);
+        } catch (err) {
+            console.error(err.name + ": " + err.message);
+        }
+        `);
             sandbox(customConsole);
             safeLog('log', ['✓ Execution finished']);
         } catch (err) {
@@ -393,6 +528,8 @@ export default function LearningLayout() {
             if (pythonFile) setCompiledCode(compilePython(pythonFile.content));
         } else if (isTypeScriptCourse()) {
             setCompiledCode(compileTypeScript());
+        } else if (isVueCourse()) {
+            setCompiledCode(compileVue());
         } else {
             const hasHTML = files.some(f => f.name === 'index.html');
             if (!hasHTML) {
@@ -464,7 +601,7 @@ export default function LearningLayout() {
                 progress={progress}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
                 onAskAI={() => setIsAIPanelOpen(!isAIPanelOpen)}
-                onBack={() => navigate(`/course/${courseId}`)}
+                onBack={() => navigate(`/ course / ${courseId} `)}
             />
 
             <CourseMenuDrawer
@@ -484,10 +621,11 @@ export default function LearningLayout() {
                 isOpen={isAIPanelOpen}
                 onClose={() => setIsAIPanelOpen(false)}
                 currentCode={files.map(f => `// File: ${f.name}\n${f.content}`).join('\n\n')}
-                taskDescription={item?.content || "No context available."}
+                taskDescription={item?.content || "No context available."
+                }
             />
 
-            <div className="flex-1 min-h-0 w-full relative pt-16 pb-14 bg-[#050505]">
+            < div className="flex-1 min-h-0 w-full relative pt-16 pb-14 bg-[#050505]" >
                 <PanelGroup direction="horizontal" className="h-full w-full">
                     {/* Left Panel: Instructions */}
                     <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[#0a0a0c] border-r border-white/5 relative z-10">
@@ -539,7 +677,7 @@ export default function LearningLayout() {
                         )}
                     </Panel>
                 </PanelGroup>
-            </div>
+            </div >
 
             <Footer
                 onRun={handleRun}
@@ -550,6 +688,7 @@ export default function LearningLayout() {
                 isConsoleOpen={isConsoleOpen}
                 onNext={progress === 100 ? handleNext : null}
             />
-        </div>
+            {/* Reward Overlay removed - moved to Global App.jsx */}
+        </div >
     );
 }

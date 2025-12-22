@@ -9,12 +9,15 @@ import { domCourse } from './dom/index';
 import { phpCourse } from './php/index';
 import mysqlCourse from './mysql/index';
 import pythonCourse from './python';
+import vueCourse from './vue/index';
 import { jsEs6Course } from './jsEs6/index';
 import typescriptCourse from './typescript';
 import { nodeCourse } from './node';
 import { mongodbCourse } from './mongodb/index';
 import nextjsCourse from './nextjs';
 import cicdCourse from './cicd/index';
+import expressCourse from './express/index';
+import postgresqlCourse from './postgresql/index';
 import { CONTENT_TYPES, courses as courseMeta, LEVELS } from '../curriculumStructure';
 
 // All course content
@@ -29,12 +32,16 @@ export const courseContent = {
     'react': reactCourse,
     'php': phpCourse,
     'mysql': mysqlCourse,
+    'mysql': mysqlCourse,
     'python': pythonCourse,
+    'vue': vueCourse,
     'typescript': typescriptCourse,
     'node': nodeCourse,
     'mongodb': mongodbCourse,
     'nextjs': nextjsCourse,
     'cicd': cicdCourse,
+    'express': expressCourse,
+    'postgresql': postgresqlCourse,
 };
 
 // Get full course with content

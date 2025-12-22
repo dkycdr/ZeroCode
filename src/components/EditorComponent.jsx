@@ -165,7 +165,8 @@ const getLanguageFromPath = (path) => {
         'md': 'markdown',
         'yml': 'yaml',
         'yaml': 'yaml',
-        'dockerfile': 'dockerfile'
+        'dockerfile': 'dockerfile',
+        'vue': 'html'
     };
 
     // Special case for Dockerfile (no extension)

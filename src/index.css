@@ -111,4 +111,77 @@ pre {
 /* Tailwind Overrides/Additions can go here via @utility if using v4 or just classes */
 .font-mono {
   font-family: var(--font-mono) !important;
-}.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; } .scrollbar-thin::-webkit-scrollbar-track { background: transparent; } .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; } .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Mermaid Diagram Overrides */
+.mermaid svg {
+  font-family: var(--font-mono) !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+}
+
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node polygon,
+.mermaid .node path {
+  stroke-width: 3px !important;
+}
+
+.mermaid .node .label {
+  font-family: var(--font-mono) !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+.mermaid .edgeLabel {
+  background-color: #1a202c !important;
+  /* Match container bg */
+  color: #e2e8f0 !important;
+}
+
+
+.mermaid .edgePath .path {
+  stroke: #718096 !important;
+  /* Visible gray for lines */
+  stroke-width: 2px !important;
+}
+
+/* Animations */
+
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+.animate-reverse-spin-slow {
+  animation: spin 10s linear infinite reverse;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

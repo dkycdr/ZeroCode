@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthProvider';
-import { ProgressProvider } from './contexts/ProgressProvider';
+import { ProgressProvider, useProgress } from './contexts/ProgressProvider';
+import RewardOverlay from './components/dashboard/RewardOverlay';
 import LandingPage from './pages/LandingPage';
 import LearningLayout from './pages/LearningLayout';
 import CourseSyllabus from './pages/CourseSyllabus';
@@ -53,6 +54,13 @@ const GlobalChatbotWrapper = () => {
         return null;
     }
     return <NebulaChatbot />;
+    return <NebulaChatbot />;
+};
+
+// Global Reward Manager Component
+const GlobalRewardManager = () => {
+    const { reward, clearReward } = useProgress();
+    return <RewardOverlay reward={reward} onClose={clearReward} />;
 };
 
 function App() {
@@ -61,6 +69,7 @@ function App() {
             <AuthProvider>
                 <ProgressProvider>
                     <GlobalChatbotWrapper />
+                    <GlobalRewardManager />
                     <Routes>
                         {/* Public Routes */}
 
