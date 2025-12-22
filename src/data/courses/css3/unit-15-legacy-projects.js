@@ -1,12 +1,12 @@
 import { CONTENT_TYPES } from '../../curriculumStructure.js';
 
-export const unit7Projects = {
-    id: 'css3-unit-7',
+export const unit15Projects = {
+    id: 'css3-unit-15',
     title: 'CSS Project - The Profile Card',
     description: 'Put it all together. Build a professional, responsive Profile Card using Flexbox, Grid, and beautiful styling.',
     items: [
         {
-            id: 'css3-7-1',
+            id: 'css3-15-1',
             type: CONTENT_TYPES.INFORMATIONAL,
             title: 'Mental Model: The Blueprint 🏗️',
             duration: '10 min read',
@@ -36,7 +36,7 @@ This project in Tailwind would be:
             `
         },
         {
-            id: 'css3-7-2',
+            id: 'css3-15-2',
             type: CONTENT_TYPES.LESSON,
             title: 'Lesson: Building the Profile Card',
             duration: '45 min',
@@ -151,7 +151,7 @@ body {
             ]
         },
         {
-            id: 'css3-7-quiz',
+            id: 'css3-15-quiz',
             type: CONTENT_TYPES.QUIZ,
             title: 'Project Quiz',
             duration: '5 min',

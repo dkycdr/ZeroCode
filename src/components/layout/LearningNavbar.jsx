@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Menu, Terminal, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Menu, Terminal, Sparkles, CheckCircle2, ChevronLeft, Activity, Bot } from 'lucide-react';
 import clsx from 'clsx';
 import logo from '../../assets/logo.png';
 import { useAuth } from '../../contexts/AuthProvider';

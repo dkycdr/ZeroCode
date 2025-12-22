@@ -13,7 +13,7 @@ import { unit11LogicalProps } from './unit-11-logical-props.js';
 import { unit12ContainerQueries } from './unit-12-container-queries.js';
 import { unit13FormStyling } from './unit-13-form-styling.js';
 import { unit14Capstone } from './unit-14-capstone.js';
-import { unit7Projects } from './unit-15-legacy-projects.js'; // Legacy Projects
+import { unit15Projects } from './unit-15-legacy-projects.js'; // Legacy Projects
 import { unit16LegacyGrid } from './unit-16-legacy-grid.js'; // Legacy Grid
 
 
@@ -41,7 +41,7 @@ export const css3Course = {
         unit12ContainerQueries,
         unit13FormStyling,
         unit14Capstone,
-        unit7Projects,
+        unit15Projects,
         unit16LegacyGrid
     ]
 };
