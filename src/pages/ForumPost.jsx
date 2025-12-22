@@ -1,36 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
+import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../contexts/AuthProvider';
-import { useProgress } from '../contexts/ProgressProvider';
-import { getOverallProgress } from '../data/curriculumStructure';
 import { sql } from '../lib/neon';
 import {
-    ArrowLeft, ThumbsUp, MessageCircle, Clock, User, Send, Trash2
+    ArrowLeft, ThumbsUp, MessageCircle, Clock, Send, Trash2, Edit2, X
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const CATEGORIES = [
-    { id: 'general', label: 'General', color: 'text-blue-400 border-blue-400/30' },
-    { id: 'html-css', label: 'HTML & CSS', color: 'text-orange-400 border-orange-400/30' },
-    { id: 'javascript', label: 'JavaScript', color: 'text-yellow-400 border-yellow-400/30' },
-    { id: 'react', label: 'React', color: 'text-cyan-400 border-cyan-400/30' },
-    { id: 'backend', label: 'Backend', color: 'text-green-400 border-green-400/30' },
-    { id: 'help', label: 'Help & Support', color: 'text-red-400 border-red-400/30' },
+    { id: 'general', label: 'General', color: 'text-blue-400 border-blue-900/50' },
+    { id: 'html-css', label: 'HTML & CSS', color: 'text-orange-400 border-orange-900/50' },
+    { id: 'javascript', label: 'JavaScript', color: 'text-yellow-400 border-yellow-900/50' },
+    { id: 'react', label: 'React', color: 'text-cyan-400 border-cyan-900/50' },
+    { id: 'backend', label: 'Backend', color: 'text-green-400 border-green-900/50' },
+    { id: 'help', label: 'Help', color: 'text-red-400 border-red-900/50' },
 ];
 
 export default function ForumPost() {
     const { postId } = useParams();
     const navigate = useNavigate();
     const { user, isAdmin } = useAuth();
-    const { completedCourses } = useProgress();
-    const progress = getOverallProgress(completedCourses);
 
     const [post, setPost] = useState(null);
     const [replies, setReplies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [replyContent, setReplyContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    // Edit State
+    const [isEditingPost, setIsEditingPost] = useState(false);
+    const [editPostContent, setEditPostContent] = useState('');
+    const [editPostTitle, setEditPostTitle] = useState('');
+
+    // Reply Edit State (one at a time)
+    const [editingReplyId, setEditingReplyId] = useState(null);
+    const [editReplyContent, setEditReplyContent] = useState('');
 
     useEffect(() => {
         loadPost();
@@ -47,6 +52,8 @@ export default function ForumPost() {
             `;
             if (result.length > 0) {
                 setPost(result[0]);
+                setEditPostContent(result[0].content);
+                setEditPostTitle(result[0].title);
             } else {
                 navigate('/community');
             }
@@ -93,6 +100,36 @@ export default function ForumPost() {
         }
     };
 
+    const handleUpdatePost = async () => {
+        try {
+            await sql`
+                UPDATE forum_posts 
+                SET title = ${editPostTitle}, content = ${editPostContent}
+                WHERE id = ${postId}
+            `;
+            setIsEditingPost(false);
+            loadPost();
+        } catch (error) {
+            console.error('Error updating post:', error);
+            alert('Failed to update post');
+        }
+    };
+
+    const handleUpdateReply = async (replyId) => {
+        try {
+            await sql`
+                UPDATE forum_replies
+                SET content = ${editReplyContent}
+                WHERE id = ${replyId}
+            `;
+            setEditingReplyId(null);
+            loadReplies();
+        } catch (error) {
+            console.error('Error updating reply:', error);
+            alert('Failed to update reply');
+        }
+    };
+
     const handleLike = async () => {
         try {
             const existing = await sql`
@@ -100,11 +137,9 @@ export default function ForumPost() {
             `;
 
             if (existing.length > 0) {
-                // Unlike
                 await sql`DELETE FROM forum_likes WHERE post_id = ${postId} AND user_id = ${user.id}`;
                 await sql`UPDATE forum_posts SET likes = likes - 1 WHERE id = ${postId}`;
             } else {
-                // Like
                 await sql`INSERT INTO forum_likes (post_id, user_id) VALUES (${postId}, ${user.id})`;
                 await sql`UPDATE forum_posts SET likes = likes + 1 WHERE id = ${postId}`;
             }
@@ -138,6 +173,15 @@ export default function ForumPost() {
         }
     };
 
+    const renderContent = (content) => {
+        const parts = content.split(/(@\w+)/g);
+        return parts.map((part, i) =>
+            part.startsWith('@')
+                ? <span key={i} className="text-blue-400 font-bold bg-blue-400/10 px-1 rounded mx-0.5">{part}</span>
+                : <span key={i}>{part}</span>
+        );
+    };
+
     const formatDate = (date) => {
         const d = new Date(date);
         return d.toLocaleDateString('en-US', {
@@ -146,152 +190,200 @@ export default function ForumPost() {
         });
     };
 
-    const getCategoryStyle = (categoryId) => {
-        return CATEGORIES.find(c => c.id === categoryId)?.color || 'text-white border-white';
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]"></div>
+                <div className="w-6 h-6 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     if (!post) return null;
 
-    const canDelete = isAdmin || post.user_id === user.id;
+    const canEditPost = post.user_id === user.id;
+    const canDeletePost = isAdmin || post.user_id === user.id;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] font-sans">
-            <Header progress={progress.percentage} />
+        <AppLayout>
+            <div className="max-w-4xl mx-auto">
+                {/* Back */}
+                <button
+                    onClick={() => navigate('/community')}
+                    className="flex items-center gap-2 text-gray-500 hover:text-white mb-8 transition-colors text-xs font-medium group"
+                >
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                    Back to Discussions
+                </button>
 
-            <main className="min-h-[calc(100vh-56px)] overflow-y-auto pt-20 pb-20">
-                <div className="max-w-4xl mx-auto px-6">
-                    {/* Back */}
-                    <button
-                        onClick={() => navigate('/community')}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors text-xs font-mono font-bold uppercase tracking-wider group"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Feed
-                    </button>
-
-                    {/* Post */}
-                    <div className="card-cyber p-8 mb-8 animate-fade-in-up">
-                        <div className="flex items-center gap-2 mb-6">
+                {/* Post */}
+                <div className="bg-[#121214] border border-[#27272a] rounded-xl p-8 mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
                             <span className={clsx(
-                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-transparent",
-                                getCategoryStyle(post.category)
+                                "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border",
+                                CATEGORIES.find(c => c.id === post.category)?.color || CATEGORIES[0].color
                             )}>
                                 {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
                             </span>
                         </div>
 
-                        <h1 className="text-3xl font-bold text-white mb-6 leading-tight">{post.title}</h1>
-
-                        <div className="prose prose-invert max-w-none mb-8 text-gray-300 leading-relaxed font-light">
-                            {post.content.split('\n').map((paragraph, idx) => (
-                                <p key={idx} className="mb-4 last:mb-0">{paragraph}</p>
-                            ))}
-                        </div>
-
-                        <div className="flex items-center justify-between pt-6 border-t border-[var(--border-subtle)]">
-                            <div className="flex items-center gap-6 text-xs text-gray-500 font-mono tracking-tight">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center text-[var(--accent-primary)]">
-                                        <User size={12} />
-                                    </div>
-                                    <span className="text-gray-400 font-bold">{post.author_name || post.author_email?.split('@')[0]}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <Clock size={12} />
-                                    <span>{formatDate(post.created_at)}</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <button
-                                    onClick={handleLike}
-                                    className="flex items-center gap-2 text-gray-500 hover:text-[var(--accent-primary)] transition-colors group"
-                                >
-                                    <ThumbsUp size={16} className="group-hover:scale-110 transition-transform" />
-                                    <span className="font-mono text-sm">{post.likes || 0}</span>
+                        <div className="flex items-center gap-3">
+                            {canEditPost && !isEditingPost && (
+                                <button onClick={() => setIsEditingPost(true)} className="text-gray-500 hover:text-white transition-colors">
+                                    <Edit2 size={16} />
                                 </button>
-                                {canDelete && (
-                                    <button
-                                        onClick={handleDeletePost}
-                                        className="text-gray-600 hover:text-red-400 transition-colors"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                )}
-                            </div>
+                            )}
+                            {canDeletePost && (
+                                <button onClick={handleDeletePost} className="text-gray-500 hover:text-red-400 transition-colors">
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    {/* Replies */}
-                    <div className="mb-8">
-                        <h2 className="text-sm font-bold text-gray-400 mb-6 flex items-center gap-2 uppercase tracking-wider">
-                            <MessageCircle size={16} />
-                            Transmission Log ({replies.length})
-                        </h2>
-
+                    {isEditingPost ? (
                         <div className="space-y-4">
-                            {replies.map((reply, index) => (
-                                <div
-                                    key={reply.id}
-                                    className="bg-[var(--bg-panel)] rounded-xl border border-[var(--border-subtle)] p-6 animate-fade-in-up"
-                                    style={{ animationDelay: `${index * 0.05}ms` }}
-                                >
+                            <input
+                                type="text"
+                                value={editPostTitle}
+                                onChange={(e) => setEditPostTitle(e.target.value)}
+                                className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-xl font-bold text-white focus:border-gray-500 outline-none"
+                            />
+                            <textarea
+                                value={editPostContent}
+                                onChange={(e) => setEditPostContent(e.target.value)}
+                                rows={6}
+                                className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-sm text-gray-200 focus:border-gray-500 outline-none"
+                            />
+                            <div className="flex gap-2 justify-end">
+                                <button onClick={() => setIsEditingPost(false)} className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white">Cancel</button>
+                                <button onClick={handleUpdatePost} className="px-3 py-1.5 bg-white text-black text-xs font-bold rounded hover:bg-gray-200">Save Changes</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <h1 className="text-3xl font-bold text-white mb-6 leading-tight">{post.title}</h1>
+                            <div className="prose prose-invert max-w-none mb-8 text-gray-300 leading-relaxed text-base">
+                                {post.content.split('\n').map((paragraph, idx) => (
+                                    <p key={idx} className="mb-4 last:mb-0">{renderContent(paragraph)}</p>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    <div className="flex items-center justify-between pt-6 border-t border-[#27272a]">
+                        <div className="flex items-center gap-6 text-xs text-gray-500 font-medium tracking-tight">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center text-[10px] text-white font-bold">
+                                    {post.author_name?.[0] || 'U'}
+                                </div>
+                                <span className="text-gray-400 font-bold">{post.author_name || post.author_email?.split('@')[0]}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Clock size={14} />
+                                <span>{formatDate(post.created_at)}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleLike}
+                            className="flex items-center gap-2 text-gray-500 hover:text-[var(--accent-primary)] transition-colors group"
+                        >
+                            <ThumbsUp size={18} className="group-hover:scale-110 transition-transform" />
+                            <span className="font-mono text-sm">{post.likes || 0}</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Replies */}
+                <div className="mb-8">
+                    <h2 className="text-sm font-semibold text-gray-400 mb-6 flex items-center gap-2 uppercase tracking-wider">
+                        Discussion ({replies.length})
+                    </h2>
+
+                    <div className="space-y-4">
+                        {replies.map((reply) => {
+                            const isEditingThisReply = editingReplyId === reply.id;
+                            const canEditReply = reply.user_id === user.id;
+                            const canDeleteReply = isAdmin || reply.user_id === user.id;
+
+                            return (
+                                <div key={reply.id} className="bg-[#121214] rounded-lg border border-[#27272a] p-5">
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-6 h-6 rounded-full bg-[#111] border border-[var(--border-subtle)] flex items-center justify-center text-gray-500">
-                                                    <User size={12} />
+                                                <div className="w-6 h-6 rounded-full bg-[#18181b] flex items-center justify-center text-[10px] text-gray-400 font-bold border border-[#27272a]">
+                                                    {reply.author_name?.[0] || 'U'}
                                                 </div>
-                                                <span className="text-sm font-bold text-white">{reply.author_name || reply.author_email?.split('@')[0]}</span>
-                                                <span className="text-xs text-gray-600 font-mono">{formatDate(reply.created_at)}</span>
+                                                <span className="text-sm font-semibold text-white">{reply.author_name || reply.author_email?.split('@')[0]}</span>
+                                                <span className="text-xs text-gray-600">{formatDate(reply.created_at)}</span>
                                             </div>
-                                            {(isAdmin || reply.user_id === user.id) && (
-                                                <button
-                                                    onClick={() => handleDeleteReply(reply.id)}
-                                                    className="text-gray-600 hover:text-red-400 transition-colors"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            )}
+
+                                            <div className="flex items-center gap-2">
+                                                {canEditReply && !isEditingThisReply && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingReplyId(reply.id);
+                                                            setEditReplyContent(reply.content);
+                                                        }}
+                                                        className="text-gray-600 hover:text-white transition-colors"
+                                                    >
+                                                        <Edit2 size={13} />
+                                                    </button>
+                                                )}
+                                                {canDeleteReply && !isEditingThisReply && (
+                                                    <button
+                                                        onClick={() => handleDeleteReply(reply.id)}
+                                                        className="text-gray-600 hover:text-red-400 transition-colors"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                        <p className="text-gray-300 leading-relaxed text-sm pl-9">{reply.content}</p>
+
+                                        {isEditingThisReply ? (
+                                            <div className="pl-9 space-y-3">
+                                                <textarea
+                                                    value={editReplyContent}
+                                                    onChange={(e) => setEditReplyContent(e.target.value)}
+                                                    rows={3}
+                                                    className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-sm text-gray-300 focus:border-gray-500 outline-none"
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setEditingReplyId(null)} className="px-2 py-1 text-xs text-gray-500 hover:text-white">Cancel</button>
+                                                    <button onClick={() => handleUpdateReply(reply.id)} className="px-2 py-1 bg-white text-black text-xs font-bold rounded">Save</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-300 leading-relaxed text-sm pl-9">{renderContent(reply.content)}</p>
+                                        )}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
+                </div>
 
-                    {/* Reply Form */}
-                    <form onSubmit={handleReply} className="card-cyber p-6 sticky bottom-6 z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-[#0a0a0a]/90 backdrop-blur-md">
-                        <textarea
+                {/* Reply Form */}
+                <form onSubmit={handleReply} className="sticky bottom-6 z-10">
+                    <div className="bg-[#121214]/90 backdrop-blur-md border border-[#27272a] p-1.5 rounded-xl shadow-2xl flex items-center gap-2">
+                        <input
+                            type="text"
                             value={replyContent}
                             onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder="Add your transmission..."
-                            rows={2}
-                            className="w-full px-4 py-3 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-[var(--accent-primary)] resize-none mb-4 font-normal"
-                            required
+                            placeholder="Type a reply... Use @ to tag"
+                            className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
                         />
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-600 font-mono">SECURE CHANNEL OPEN</span>
-                            <button
-                                type="submit"
-                                disabled={submitting || !replyContent.trim()}
-                                className="flex items-center gap-2 px-6 py-2 bg-[var(--accent-primary)] text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-[0_0_15px_var(--accent-glow)]"
-                            >
-                                <Send size={14} />
-                                {submitting ? 'Sending...' : 'Transmit'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </main>
-        </div>
+                        <button
+                            type="submit"
+                            disabled={submitting || !replyContent.trim()}
+                            className="bg-white text-black p-2.5 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:bg-gray-700"
+                        >
+                            <Send size={16} />
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </AppLayout>
     );
 }

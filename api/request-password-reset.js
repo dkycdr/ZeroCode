@@ -85,6 +85,9 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, message: 'Reset code sent to email' });
     } catch (error) {
         console.error('Password reset error:', error);
+        if (error.response) {
+            console.error('SMTP Response:', error.response);
+        }
         return res.status(500).json({ success: false, error: error.message });
     }
 }

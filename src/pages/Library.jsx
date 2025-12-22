@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Header from '../components/Header';
+import AppLayout from '../components/layout/AppLayout';
 import { useProgress } from '../contexts/ProgressProvider';
 import { getOverallProgress } from '../data/curriculumStructure';
 import {
@@ -60,80 +60,76 @@ export default function Library() {
     });
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] font-sans">
-            <Header progress={progress.percentage} />
+        <AppLayout>
+            <div className="max-w-6xl mx-auto">
+                {/* Header */}
+                <div className="mb-10 text-center md:text-left animate-fade-in-up">
+                    <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">Resource Library</h1>
+                    <p className="text-gray-400 text-lg max-w-2xl">Curated tools, documentation, and references to accelerate your development workflow.</p>
+                </div>
 
-            <main className="min-h-[calc(100vh-56px)] overflow-y-auto pt-20 pb-20">
-                <div className="max-w-6xl mx-auto px-6">
-                    {/* Header */}
-                    <div className="mb-10 text-center md:text-left animate-fade-in-up">
-                        <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">Resource Library</h1>
-                        <p className="text-gray-400 text-lg max-w-2xl">Curated tools, documentation, and references to accelerate your development workflow.</p>
+                {/* Search & Filter */}
+                <div className="flex flex-col lg:flex-row gap-6 mb-10 items-start lg:items-center">
+                    <div className="relative flex-1 w-full group">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search resources..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--bg-panel)] transition-all shadow-sm"
+                        />
                     </div>
-
-                    {/* Search & Filter */}
-                    <div className="flex flex-col lg:flex-row gap-6 mb-10 items-start lg:items-center">
-                        <div className="relative flex-1 w-full group">
-                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search resources..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[var(--bg-panel)] transition-all shadow-sm"
-                            />
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto pb-2 w-full lg:w-auto custom-scrollbar">
-                            {CATEGORIES.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => setSelectedCategory(cat.id)}
-                                    className={clsx(
-                                        "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                                        selectedCategory === cat.id
-                                            ? "bg-[var(--accent-primary)] text-white shadow-[0_0_15px_var(--accent-glow)]"
-                                            : "bg-[var(--bg-panel)] text-gray-400 hover:bg-[var(--bg-panel)] hover:text-white border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]"
-                                    )}
-                                >
-                                    {cat.icon}
-                                    {cat.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Resources Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredResources.map((resource, index) => (
-                            <a
-                                key={resource.id}
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group card-cyber p-6 flex flex-col h-full animate-fade-in-up"
-                                style={{ animationDelay: `${index * 0.05}ms` }}
+                    <div className="flex gap-2 overflow-x-auto pb-2 w-full lg:w-auto custom-scrollbar">
+                        {CATEGORIES.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.id)}
+                                className={clsx(
+                                    "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                                    selectedCategory === cat.id
+                                        ? "bg-[var(--accent-primary)] text-white shadow-[0_0_15px_var(--accent-glow)]"
+                                        : "bg-[var(--bg-panel)] text-gray-400 hover:bg-[var(--bg-panel)] hover:text-white border border-[var(--border-subtle)] hover:border-[var(--accent-primary)]"
+                                )}
                             >
-                                <div className="flex items-start justify-between mb-5">
-                                    <div className="w-12 h-12 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] flex items-center justify-center group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--accent-primary)]/10 transition-all duration-300 shadow-sm group-hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                                        {resource.icon}
-                                    </div>
-                                    <ExternalLink size={16} className="text-gray-500 group-hover:text-[var(--accent-primary)] transition-colors transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                                </div>
-                                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[var(--accent-primary)] transition-colors">{resource.title}</h3>
-                                <p className="text-sm text-gray-400 leading-relaxed flex-1">{resource.desc}</p>
-                            </a>
+                                {cat.icon}
+                                {cat.label}
+                            </button>
                         ))}
                     </div>
-
-                    {filteredResources.length === 0 && (
-                        <div className="text-center py-20 bg-[var(--bg-panel)] rounded-xl border border-[var(--border-subtle)] border-dashed">
-                            <Search size={48} className="text-gray-600 mx-auto mb-4 opacity-50" />
-                            <p className="text-gray-400 text-lg font-medium">No resources found</p>
-                            <p className="text-gray-600 text-sm mt-1">Try adjusting your search terms or filters</p>
-                        </div>
-                    )}
                 </div>
-            </main>
-        </div>
+
+                {/* Resources Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {filteredResources.map((resource, index) => (
+                        <a
+                            key={resource.id}
+                            href={resource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group card-cyber p-6 flex flex-col h-full animate-fade-in-up"
+                            style={{ animationDelay: `${index * 0.05}ms` }}
+                        >
+                            <div className="flex items-start justify-between mb-5">
+                                <div className="w-12 h-12 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] flex items-center justify-center group-hover:border-[var(--accent-primary)] group-hover:bg-[var(--accent-primary)]/10 transition-all duration-300 shadow-sm group-hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                    {resource.icon}
+                                </div>
+                                <ExternalLink size={16} className="text-gray-500 group-hover:text-[var(--accent-primary)] transition-colors transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[var(--accent-primary)] transition-colors">{resource.title}</h3>
+                            <p className="text-sm text-gray-400 leading-relaxed flex-1">{resource.desc}</p>
+                        </a>
+                    ))}
+                </div>
+
+                {filteredResources.length === 0 && (
+                    <div className="text-center py-20 bg-[var(--bg-panel)] rounded-xl border border-[var(--border-subtle)] border-dashed">
+                        <Search size={48} className="text-gray-600 mx-auto mb-4 opacity-50" />
+                        <p className="text-gray-400 text-lg font-medium">No resources found</p>
+                        <p className="text-gray-600 text-sm mt-1">Try adjusting your search terms or filters</p>
+                    </div>
+                )}
+            </div>
+        </AppLayout>
     );
 }

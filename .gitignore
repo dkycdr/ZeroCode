@@ -29,7 +29,7 @@ dist-ssr
 .env.production
 
 # Local dev files only
-email-server.js
+
 dev-server.js
 setup-password-reset.js
 setup-admin-simple.js

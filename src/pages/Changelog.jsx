@@ -6,18 +6,34 @@ import {
     FaGem, FaBug, FaCode, FaRobot, FaDatabase, FaShieldAlt
 } from 'react-icons/fa';
 import { SiTailwindcss, SiTypescript } from 'react-icons/si';
+import AppLayout from '../components/layout/AppLayout';
 
 const Changelog = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        localStorage.setItem('last_viewed_update', '2.2.0');
+        localStorage.setItem('last_viewed_update', '2.5.0');
     }, []);
 
     const updates = [
         {
-            version: "2.2.0",
+            version: "2.5.0",
             date: "Today",
+            type: "major",
+            title: "The Elegant Intelligence Update",
+            icon: <FaRobot className="text-indigo-400 text-xl" />,
+            color: "border-indigo-500/50 bg-indigo-500/10 text-indigo-400",
+            changes: [
+                "New AI Learning Assistant with context-aware code help.",
+                "Complete Rebranding: 'ZeroCode' with High Contrast Identity.",
+                "Forum 2.0: Elegant Dark UI, Visual Tagging, and Editing.",
+                "Redesigned Navigation with Syllabus-based progress tracking.",
+                "Fixed 'Get Unstuck' and optimized performance."
+            ]
+        },
+        {
+            version: "2.2.0",
+            date: "Dec 21, 2025",
             type: "major",
             title: "The Node.js Expansion",
             icon: <FaNodeJs className="text-green-400 text-xl" />,
@@ -115,93 +131,95 @@ const Changelog = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#050511] text-white p-6 relative overflow-hidden">
-            {/* Background Grid */}
-            <div className="absolute inset-0 bg-[url('/assets/grid-pattern.svg')] opacity-5 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
+        <AppLayout>
+            <div className="relative">
+                {/* Background Grid */}
+                <div className="absolute inset-0 bg-[url('/assets/grid-pattern.svg')] opacity-5 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="max-w-4xl mx-auto relative z-10">
-                <header className="mb-16 pt-8">
-                    <button
-                        onClick={() => navigate('/dashboard')}
-                        className="group flex items-center text-slate-400 hover:text-white mb-8 transition-colors"
-                    >
-                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 mr-3 transition-all">
-                            <FaArrowLeft />
-                        </div>
-                        <span className="font-mono text-sm tracking-wider">RETURN TO BASE</span>
-                    </button>
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <header className="mb-16">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="group flex items-center text-slate-400 hover:text-white mb-8 transition-colors"
+                        >
+                            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 mr-3 transition-all">
+                                <FaArrowLeft />
+                            </div>
+                            <span className="font-mono text-sm tracking-wider">RETURN TO BASE</span>
+                        </button>
 
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-5xl font-black mb-2 bg-gradient-to-r from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">
-                                SYSTEM LOGS
-                            </h1>
-                            <p className="text-slate-400 font-mono text-lg">
-                                // Tracking protocol evolution
-                            </p>
-                        </div>
-                        <div className="hidden md:block">
-                            <div className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900/50 text-right">
-                                <p className="text-xs text-slate-500 font-mono uppercase">Current Version</p>
-                                <p className="text-xl font-bold text-green-400 font-mono">v2.2.0</p>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-5xl font-black mb-2 bg-gradient-to-r from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">
+                                    SYSTEM LOGS
+                                </h1>
+                                <p className="text-slate-400 font-mono text-lg">
+                                    // Tracking protocol evolution
+                                </p>
+                            </div>
+                            <div className="hidden md:block">
+                                <div className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900/50 text-right">
+                                    <p className="text-xs text-slate-500 font-mono uppercase">Current Version</p>
+                                    <p className="text-xl font-bold text-green-400 font-mono">v2.5.0</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
 
-                <div className="relative border-l-2 border-slate-800 ml-4 md:ml-10 space-y-12 pb-20">
-                    {updates.map((update, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="relative pl-8 md:pl-12"
-                        >
-                            {/* Timeline Node */}
-                            <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-[#050511] ${update.type === 'major' ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]' : 'bg-slate-600'}`} />
+                    <div className="relative border-l-2 border-slate-800 ml-4 md:ml-10 space-y-12 pb-20">
+                        {updates.map((update, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="relative pl-8 md:pl-12"
+                            >
+                                {/* Timeline Node */}
+                                <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-4 border-[#050511] ${update.type === 'major' ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]' : 'bg-slate-600'}`} />
 
-                            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 md:p-8 hover:bg-slate-800/40 hover:border-white/10 transition-all group backdrop-blur-sm">
-                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className={`p-3 rounded-xl border ${update.color} shadow-lg shadow-black/20`}>
-                                            {update.icon}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h2 className="text-2xl font-bold text-white group-hover:text-blue-200 transition-colors">
-                                                    {update.title}
-                                                </h2>
-                                                {update.type === 'major' && (
-                                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-pink-500/20 text-pink-400 border border-pink-500/20">
-                                                        Major
-                                                    </span>
-                                                )}
+                                <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 md:p-8 hover:bg-slate-800/40 hover:border-white/10 transition-all group backdrop-blur-sm">
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className={`p-3 rounded-xl border ${update.color} shadow-lg shadow-black/20`}>
+                                                {update.icon}
                                             </div>
-                                            <p className="text-slate-400 text-sm font-mono flex items-center gap-2">
-                                                <span>v{update.version}</span>
-                                                <span className="w-1 h-1 rounded-full bg-slate-600" />
-                                                <span>{update.date}</span>
-                                            </p>
+                                            <div>
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <h2 className="text-2xl font-bold text-white group-hover:text-blue-200 transition-colors">
+                                                        {update.title}
+                                                    </h2>
+                                                    {update.type === 'major' && (
+                                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-pink-500/20 text-pink-400 border border-pink-500/20">
+                                                            Major
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-slate-400 text-sm font-mono flex items-center gap-2">
+                                                    <span>v{update.version}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-600" />
+                                                    <span>{update.date}</span>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {update.changes.map((change, i) => (
-                                        <li key={i} className="flex items-start text-slate-300 text-sm group/item">
-                                            <span className="mr-3 mt-1.5 w-1.5 h-1.5 rounded-sm bg-indigo-500 group-hover/item:bg-cyan-400 transition-colors" />
-                                            <span className="leading-relaxed">{change}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </motion.div>
-                    ))}
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {update.changes.map((change, i) => (
+                                            <li key={i} className="flex items-start text-slate-300 text-sm group/item">
+                                                <span className="mr-3 mt-1.5 w-1.5 h-1.5 rounded-sm bg-indigo-500 group-hover/item:bg-cyan-400 transition-colors" />
+                                                <span className="leading-relaxed">{change}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
+        </AppLayout>
     );
 };
 
