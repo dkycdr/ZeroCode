@@ -10,6 +10,7 @@ import { unit9Database } from './unit-9-database';
 import { unit10Auth } from './unit-10-auth';
 import { unit11WebSockets } from './unit-11-websockets';
 import { unit12Deploy } from './unit-12-deploy';
+import { unit13Capstone } from './unit-13-capstone';
 
 export const nodeCourse = {
     id: 'node',
@@ -30,6 +31,7 @@ export const nodeCourse = {
         unit9Database,
         unit10Auth,
         unit11WebSockets,
-        unit12Deploy
+        unit12Deploy,
+        unit13Capstone
     ]
 };

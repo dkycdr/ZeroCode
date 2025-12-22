@@ -57,12 +57,12 @@ Git attaches a name and email to every commit. This is crucial for history track
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Set your global user name',
+                    description: 'Set your global user name',
                     regex: '"user":{.*"name":".+"'
                 },
                 {
                     id: 'task2',
-                    text: 'Set your global user email',
+                    description: 'Set your global user email',
                     regex: '"user":{.*"email":".+"'
                 }
             ]
@@ -97,7 +97,9 @@ This opens the manual page (manpage) which details every single flag and option 
             type: 'lesson',
             title: 'Lab: The Status Quo',
             duration: '10 min',
-            files: [],
+            files: [
+                { name: 'README.md', content: 'Project status tracking', language: 'markdown' }
+            ],
             content: `
 # Mission: Situation Report
 The \`git status\` command is your best friend. It tells you exactly what state your working directory is in.
@@ -116,12 +118,12 @@ The \`git status\` command is your best friend. It tells you exactly what state 
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Initialize the repository',
+                    description: 'Initialize the repository',
                     regex: '"initialized":true'
                 },
                 {
                     id: 'task2',
-                    text: 'Create a file named secret.txt',
+                    description: 'Create a file named secret.txt',
                     regex: '"files":\\[.*"secret.txt".*\\]'
                 }
             ]
@@ -134,21 +136,24 @@ The \`git status\` command is your best friend. It tells you exactly what state 
             questions: [
                 {
                     id: 'q1',
-                    text: 'Which config level applies to all projects for the current user?',
+                    question: 'Which config level applies to all projects for the current user?',
                     options: ['--system', '--local', '--global', '--root'],
-                    correct: 2
+                    correctIndex: 2,
+                    explanation: 'The `--global` flag sets configuration for the current user, applying to all repositories on the machine.'
                 },
                 {
                     id: 'q2',
-                    text: 'If you set a local config user.name, will it override the global one?',
+                    question: 'If you set a local config user.name, will it override the global one?',
                     options: ['Yes', 'No', 'Only if the global one is empty', 'Git will error'],
-                    correct: 0
+                    correctIndex: 0,
+                    explanation: 'Yes, local configuration (`.git/config`) always takes precedence over global configuration.'
                 },
                 {
                     id: 'q3',
-                    text: 'How do you check your current configuration?',
+                    question: 'How do you check your current configuration?',
                     options: ['git check', 'git config --list', 'git status', 'git show'],
-                    correct: 1
+                    correctIndex: 1,
+                    explanation: '`git config --list` displays all the settings Git can find at that point, from system, global, and local scopes.'
                 }
             ]
         }

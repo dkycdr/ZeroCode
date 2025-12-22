@@ -1,7 +1,8 @@
 import { unit1SyntaxBasics } from './unit-1-syntax-basics.js';
 import { unit2TemplateLiterals } from './unit-2-template-literals.js';
-
+import { unit3ArrowFunctions } from './unit-3-arrow-functions.js';
 import { unit4Promises } from './unit-4-promises.js';
+
 import { unit5Modules } from './unit-5-modules.js';
 import { unit6AsyncAwait } from './unit-6-async-await.js';
 import { unit7DestructuringObjects } from './unit-7-destructuring-objects.js';
@@ -16,7 +17,7 @@ export const jsEs6Course = {
     units: [
         unit1SyntaxBasics,
         unit2TemplateLiterals,
-
+        unit3ArrowFunctions,
         unit4Promises,
         unit5Modules,
         unit6AsyncAwait,

@@ -94,13 +94,13 @@ You are in a new project directory. Your goal is to convert this directory into 
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Initialize a new Git repository',
+                    description: 'Initialize a new Git repository',
                     // Validator: checks if "initialized": true in the gitState JSON
                     regex: '"initialized":true'
                 },
                 {
                     id: 'task2',
-                    text: 'Check the status (run git status)',
+                    description: 'Check the status (run git status)',
                     // We can't easily verify they ran a command unless we track command history in state
                     // For now, let's just assume checking status usually leads to seeing untracked files
                     // But wait, the validator checks the STATE.
@@ -158,12 +158,12 @@ You have a file named \`mission.txt\`. It is currently **Untracked**. You must a
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Initialize the repository',
+                    description: 'Initialize the repository',
                     regex: '"initialized":true'
                 },
                 {
                     id: 'task2',
-                    text: 'Add mission.txt to the staging area',
+                    description: 'Add mission.txt to the staging area',
                     // The "staging" array in our hook should contain "mission.txt"
                     regex: '"staging":\\[.*"mission.txt".*\\]'
                 }
@@ -217,7 +217,7 @@ It's time to save your work. You need to commit \`core.js\` to the repository hi
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Commit the file',
+                    description: 'Commit the file',
                     // Check if 'commits' array has length > 0
                     regex: '"commits":\\[{.*"files":\\[.*"core.js".*\\].*\\]'
                 }
@@ -247,7 +247,7 @@ Make a commit and then check the log history to confirm it exists.
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Create at least one commit',
+                    description: 'Create at least one commit',
                     regex: '"commits":\\[.+\\]'
                 }
             ]
@@ -260,21 +260,24 @@ Make a commit and then check the log history to confirm it exists.
             questions: [
                 {
                     id: 'q1',
-                    text: 'Which command initializes a new Git repository?',
+                    question: 'Which command initializes a new Git repository?',
                     options: ['git new', 'git start', 'git create', 'git init'],
-                    correct: 3
+                    correctIndex: 3,
+                    explanation: 'The `git init` command creates a new empty Git repository or reinitializes an existing one.'
                 },
                 {
                     id: 'q2',
-                    text: 'Where does Git store the database of your project?',
+                    question: 'Where does Git store the database of your project?',
                     options: ['In a central server only', 'In the .git directory', 'In the cloud', 'In package.json'],
-                    correct: 1
+                    correctIndex: 1,
+                    explanation: 'Git stores all the project history and metadata in the hidden `.git` directory at the root of your project.'
                 },
                 {
                     id: 'q3',
-                    text: 'What state is a file in if it is in the staging area?',
+                    question: 'What state is a file in if it is in the staging area?',
                     options: ['Modified', 'Committed', 'Staged', 'Ignored'],
-                    correct: 2
+                    correctIndex: 2,
+                    explanation: 'Files in the staging area are "Staged". They are ready to be committed in the next snapshot.'
                 }
             ]
         }

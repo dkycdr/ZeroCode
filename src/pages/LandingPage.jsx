@@ -6,7 +6,7 @@ import {
     Terminal, Layers, Cpu, Zap, ChevronRight, Globe, Shield
 } from 'lucide-react';
 import { VscCode, VscTerminal, VscRocket } from 'react-icons/vsc';
-import { RiFlashlightFill, RiStackFill, RiCpuLine, RiShieldCheckFill, RiWhatsappLine } from 'react-icons/ri';
+import { RiFlashlightFill, RiStackFill, RiCpuLine, RiShieldCheckFill, RiWhatsappLine, RiVipCrownFill, RiGlobalLine } from 'react-icons/ri';
 import { FaCheck } from 'react-icons/fa';
 import clsx from 'clsx';
 
@@ -14,24 +14,64 @@ const PRICING = {
     beginner: {
         name: 'Starter',
         price: 50000,
-        description: 'Foundation skills',
+        description: 'Perfect for beginners starting their journey',
         courses: 5,
-        features: ['HTML5 & CSS3', 'JavaScript Basics', 'Git Version Control', 'Tailwind CSS', 'Lifetime access']
+        theme: 'cyan',
+        gradient: 'from-cyan-500/10 to-transparent',
+        border: 'group-hover:border-cyan-500/50',
+        text: 'text-cyan-400',
+        glow: 'shadow-[0_0_30px_rgba(34,211,238,0.1)]',
+        features: [
+            'HTML5 & CSS3 Mastery',
+            'JavaScript Fundamentals',
+            'Git Version Control',
+            'Tailwind CSS Styling',
+            'Lifetime Course Access',
+            'Community Forum Access',
+            'Certificate of Completion'
+        ]
     },
     intermediate: {
         name: 'Developer',
         price: 75000,
-        description: 'Build real apps',
+        description: 'Build dynamic, real-world applications',
         courses: 11,
         popular: true,
-        features: ['Everything in Starter', 'DOM & Modern JS', 'React.js', 'PHP & MySQL', 'Python basics']
+        theme: 'purple',
+        gradient: 'from-purple-500/10 to-transparent',
+        border: 'border-purple-500/50',
+        text: 'text-purple-400',
+        glow: 'shadow-[0_0_40px_rgba(168,85,247,0.15)]',
+        features: [
+            'Everything in Starter',
+            'Modern DOM Manipulation',
+            'React.js & Hooks Deep Dive',
+            'PHP & SQL Database Basics',
+            'Python for Automation',
+            'Build 10+ Real Projects',
+            'Portfolio-Ready Assets'
+        ]
     },
     advanced: {
         name: 'Professional',
         price: 80000,
-        description: 'Production ready',
+        description: 'Full-stack mastery for serious engineers',
         courses: 16,
-        features: ['Everything in Developer', 'TypeScript', 'Node.js & Express', 'MongoDB', 'Next.js & CI/CD']
+        theme: 'amber',
+        gradient: 'from-amber-500/10 to-transparent',
+        border: 'group-hover:border-amber-500/50',
+        text: 'text-amber-400',
+        glow: 'shadow-[0_0_30px_rgba(251,191,36,0.1)]',
+        features: [
+            'Everything in Developer',
+            'TypeScript Architecture',
+            'Node.js & Express Backyard',
+            'MongoDB & Mongoose',
+            'Next.js Full Stack App',
+            'CI/CD & DevOps Pipelines',
+            'System Design Architecture',
+            'Priority Support Channel'
+        ]
     }
 };
 
@@ -111,7 +151,7 @@ export default function LandingPage() {
                             <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                         <a
-                            href="/plans"
+                            href="#pricing"
                             className="w-full sm:w-auto px-8 py-4 bg-[var(--bg-panel)] text-gray-300 border border-[var(--border-subtle)] rounded-xl font-bold uppercase tracking-wider hover:text-white hover:border-white/20 transition flex items-center justify-center gap-2"
                         >
                             <RiShieldCheckFill size={18} />
@@ -190,100 +230,159 @@ export default function LandingPage() {
 
             {/* Pricing */}
             <section id="pricing" className="px-6 pb-32 relative z-10">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-16">
-                        <div className="inline-block px-3 py-1 rounded border border-[var(--accent-primary)]/30 text-[var(--accent-primary)] text-xs font-bold uppercase tracking-widest mb-4">Access Levels</div>
-                        <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-                        <p className="text-gray-400">One-time payment for lifetime access.</p>
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-20 animate-fade-in-up">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full text-xs font-mono text-[var(--accent-primary)] mb-8 border border-[var(--accent-primary)]/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                            <span className="w-1.5 h-1.5 bg-[var(--accent-primary)] rounded-full animate-pulse"></span>
+                            <span className="tracking-wider uppercase">Secure Your Access</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6">Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-primary)] to-cyan-400">Clearance Level</span></h2>
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto font-light">
+                            One-time investment. Lifetime access. Zero recurring fees.
+                            Initialize your training protocol today.
+                        </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
+                    {/* Elite Bundle (Master Key) */}
+                    <div className="mb-24 relative group">
+                        {/* Animated Holographic Border */}
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 rounded-3xl opacity-50 group-hover:opacity-100 blur transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+
+                        <div className="relative p-8 md:p-12 bg-[#080808] rounded-3xl border border-white/10 overflow-hidden">
+                            {/* Background Effects */}
+                            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-b from-purple-500/10 to-transparent rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+                            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-t from-blue-500/10 to-transparent rounded-full blur-[100px] pointer-events-none translate-y-1/2 -translate-x-1/3"></div>
+
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
+                                <div className="flex-1 text-center md:text-left">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-lg text-yellow-400 text-xs font-bold uppercase tracking-widest mb-4 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                                        <RiVipCrownFill size={14} />
+                                        <span>Ultimate Access</span>
+                                    </div>
+
+                                    <h3 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                                        Master Key <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Bundle</span>
+                                    </h3>
+                                    <p className="text-gray-400 text-lg max-w-xl leading-relaxed font-light">
+                                        Unlock the entire Zerocode ecosystem. Get instant access to all 16 existing courses plus future content updates.
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2 mt-8 justify-center md:justify-start">
+                                        {['HTML', 'CSS', 'JS', 'React', 'Node', 'Python', 'SQL', 'Git'].map((tech) => (
+                                            <span key={tech} className="px-3 py-1 bg-white/5 border border-white/5 rounded text-[10px] font-mono text-gray-400 uppercase hover:bg-white/10 transition-colors cursor-default">
+                                                {tech}
+                                            </span>
+                                        ))}
+                                        <span className="px-3 py-1 bg-white/5 border border-white/5 rounded text-[10px] font-mono text-gray-400 uppercase">+8 More</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-center gap-6 p-8 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-sm min-w-[300px]">
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-3 mb-2">
+                                            <span className="text-lg text-gray-500 line-through decoration-red-500/50 decoration-2">205K</span>
+                                            <span className="px-3 py-1 bg-green-500 text-black text-xs font-bold uppercase tracking-wider rounded-full shadow-[0_0_15px_rgba(34,197,94,0.4)] animate-pulse">
+                                                Save 20%
+                                            </span>
+                                        </div>
+                                        <div className="flex items-baseline justify-center gap-1">
+                                            <span className="text-6xl font-bold text-white tracking-tight">164K</span>
+                                            <span className="text-gray-400 font-bold">IDR</span>
+                                        </div>
+                                        <div className="text-xs text-gray-500 uppercase tracking-widest mt-2">One-Time Payment</div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => user ? handleBuy('fullstack') : navigate('/register')}
+                                        className="w-full py-4 bg-white text-black rounded-xl font-bold uppercase tracking-wider hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 group/btn"
+                                    >
+                                        <RiGlobalLine size={20} />
+                                        <span>Unlock Everything</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 items-start relative">
+                        {/* Background Splashes */}
+                        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[128px] pointer-events-none"></div>
+                        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] pointer-events-none"></div>
+
                         {Object.entries(PRICING).map(([key, plan]) => (
                             <div
                                 key={key}
                                 className={clsx(
-                                    "relative p-8 rounded-2xl border transition-all duration-300 group flex flex-col",
+                                    "relative p-8 rounded-3xl border transition-all duration-500 group overflow-hidden flex flex-col",
                                     plan.popular
-                                        ? "bg-[var(--bg-panel)] border-[var(--accent-primary)] shadow-[0_0_30px_rgba(59,130,246,0.15)] z-10 scale-105"
-                                        : "bg-[#0c0c0c] border-[var(--border-subtle)] hover:border-gray-600 opacity-80 hover:opacity-100"
+                                        ? `bg-[#0c0c0c]/80 backdrop-blur-xl ${plan.border} ${plan.glow} scale-105 z-10`
+                                        : `bg-[#0a0a0a]/50 backdrop-blur-md border-white/5 ${plan.border} hover:-translate-y-2 hover:bg-[#0c0c0c]`
                                 )}
                             >
+                                {/* Gradient Bg */}
+                                <div className={`absolute inset-0 bg-gradient-to-b ${plan.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
                                 {plan.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[var(--accent-primary)] text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-[0_0_15px_var(--accent-glow)]">
-                                        Most Popular
+                                    <div className="absolute top-0 right-0">
+                                        <div className="bg-gradient-to-bl from-purple-600 to-purple-800 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-widest shadow-lg">
+                                            Best Value
+                                        </div>
                                     </div>
                                 )}
 
-                                <div className="mb-6">
-                                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                                    <p className="text-sm text-gray-500">{plan.description}</p>
-                                </div>
-
-                                <div className="mb-8 p-4 bg-black/30 rounded-xl border border-white/5">
-                                    <div className="fles items-baseline">
-                                        <span className="text-4xl font-bold font-mono text-white">
-                                            {(plan.price / 1000).toFixed(0)}K
-                                        </span>
-                                        <span className="text-sm text-gray-500 ml-2">IDR</span>
+                                <div className="relative z-10">
+                                    <div className="mb-8">
+                                        <h3 className={`text-2xl font-bold mb-2 ${plan.text}`}>{plan.name}</h3>
+                                        <p className="text-sm text-gray-500 font-light">{plan.description}</p>
                                     </div>
-                                </div>
 
-                                <div className="space-y-4 mb-8 flex-1">
-                                    {plan.features.map((f, i) => (
-                                        <div key={i} className="flex items-start gap-3 text-sm text-gray-400">
-                                            <div className={clsx(
-                                                "mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0",
-                                                plan.popular ? "text-[var(--accent-primary)] bg-[var(--accent-primary)]/10" : "text-gray-600 bg-gray-600/10"
-                                            )}>
-                                                <FaCheck size={10} />
-                                            </div>
-                                            <span className={plan.popular ? 'text-gray-300' : ''}>{f}</span>
+                                    <div className="mb-8 p-6 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-sm">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-4xl font-bold font-mono text-white">
+                                                {(plan.price / 1000).toFixed(0)}K
+                                            </span>
+                                            <span className="text-xs text-gray-500 uppercase tracking-wider">IDR / Life</span>
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
 
-                                <button
-                                    onClick={() => user ? handleBuy(key) : navigate('/register')}
-                                    className={clsx(
-                                        "w-full py-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2",
-                                        plan.popular
-                                            ? "bg-[var(--accent-primary)] text-white hover:bg-blue-600 shadow-[0_0_15px_var(--accent-glow)]"
-                                            : "bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-white/20"
-                                    )}
-                                >
-                                    <RiFlashlightFill size={14} className={plan.popular ? "fill-white" : ""} />
-                                    {user ? 'Purchase Access' : 'Start Now'}
-                                </button>
+                                    <div className="space-y-4 mb-10 flex-1">
+                                        {plan.features.map((f, i) => (
+                                            <div key={i} className="flex items-start gap-3 text-sm group/item">
+                                                <div className={clsx(
+                                                    "mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                                                    plan.popular
+                                                        ? "bg-purple-500/20 text-purple-400 group-hover/item:bg-purple-500 group-hover/item:text-white"
+                                                        : `bg-white/5 text-gray-500 group-hover/item:bg-${plan.theme}-500 group-hover/item:text-white`
+                                                )}>
+                                                    <FaCheck size={9} />
+                                                </div>
+                                                <span className={plan.popular ? 'text-gray-300' : 'text-gray-400 group-hover:text-gray-300 transition-colors'}>
+                                                    {f}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={() => user ? handleBuy(key) : navigate('/register')}
+                                        className={clsx(
+                                            "w-full py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden relative",
+                                            plan.popular
+                                                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-[0_0_30px_rgba(147,51,234,0.3)]"
+                                                : "bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white border border-white/5"
+                                        )}
+                                    >
+                                        <span className="relative z-10 flex items-center gap-2">
+                                            {user ? 'Initialize Upgrade' : 'Start Sequence'}
+                                            <RiFlashlightFill size={14} className={plan.popular ? "animate-pulse" : ""} />
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Bundle */}
-                    <div className="mt-12 p-8 bg-gradient-to-r from-[#0c0c0c] to-[#111] rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-[var(--accent-primary)]/5 to-transparent pointer-events-none" />
 
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-xl font-bold text-white">Full Stack Bundle</h3>
-                                    <span className="px-3 py-0.5 bg-green-500/10 text-green-400 border border-green-500/20 text-[10px] font-bold uppercase tracking-wider rounded">Save 20%</span>
-                                </div>
-                                <p className="text-gray-400 font-light">Access all 16 courses available in the curriculum database.</p>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <div className="text-right">
-                                    <p className="text-2xl font-bold font-mono text-white">164K <span className="text-base text-gray-400 font-sans">IDR</span></p>
-                                    <p className="text-sm text-gray-600 line-through">205K IDR</p>
-                                </div>
-                                <button
-                                    onClick={() => user ? handleBuy('fullstack') : navigate('/register')}
-                                    className="px-8 py-4 bg-white text-black rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-200 transition shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-                                >
-                                    Unlock All
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 

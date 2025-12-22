@@ -1,3 +1,4 @@
+
 import { CONTENT_TYPES } from '../../curriculumStructure.js';
 
 export const unit16Capstone = {
@@ -16,103 +17,10 @@ export const unit16Capstone = {
 
 ## 1. The Requirement
 You have been hired to build the frontend for a new store, "ReactMart".
-The client needs an Admin Dashboard where they can:
-1.  **View Products** (Data Fetching, Lists).
-2.  **Add/Edit Products** (Forms, Validation).
-3.  **Manage Settings** (Context, Global Settings).
-4.  **Navigate** seamlessly (Router).
-
-## 2. Technical Stack
-*   **Routing**: Nested routes for \`/dashboard/products\` and \`/dashboard/settings\`.
-*   **State**: Global \`AuthContext\` for user session.
-*   **Patterns**: Component Composition for the Layout.
-*   **Performance**: Lazy load the Settings page.
-
-## 3. Success Criteria
-*   Clean, modular code folder structure.
-*   No prop drilling > 2 levels.
-*   Handling loading and error states gracefully.
-            `
-        },
-        {
-            id: 'react-16-2',
-            type: CONTENT_TYPES.INFORMATIONAL,
-            title: 'Deep Dive: State Architecture 🏗️',
-            duration: '20 min read',
-            content: `
-# Deep Dive: State Architecture 🏗️
-
-## 1. Global State (Context)
-*   **User**: Who is logged in? (AuthContext)
-*   **Theme**: Dark/Light mode? (ThemeContext)
-
-## 2. Server State (Cache)
-*   **Products List**: Fetched from API. Should be kept in a \`useProducts\` hook or React Query.
-*   **Orders**: Another async resource.
-
-## 3. Local State (useState)
-*   **Form Inputs**: Creating a product.
-*   **Modal Open/Close**: UI state.
-
-## 4. Lifted State
-*   **Search Filter**: Needs to be shared between the SearchBar and the ProductList. Lift it to the common parent (ProductPage).
-            `
-        },
-        {
-            id: 'react-16-3',
-            type: CONTENT_TYPES.INFORMATIONAL,
-            title: 'Deep Dive: Folder Structure 🗂️',
-            duration: '15 min read',
-            content: `
-# Deep Dive: Folder Structure 🗂️
-
-## Recommended Structure
-\`\`\`
-src/
-  features/
-    auth/           # Login logic
-    products/       # Product logic
-      components/
-      hooks/
-      context/
-  components/       # Shared UI (Button, Modal)
-  layouts/          # DashboardLayout
-  pages/            # Next.js style pages
-  App.jsx           # Routes definition
-\`\`\`
-
-## Feature-Driven
-Group files by **feature**, not just by file type.
-Don't put all components in one giant \`components/\` folder.
-            `
-        },
-        {
-            id: 'react-16-4',
-            type: CONTENT_TYPES.INFORMATIONAL,
-            title: 'Deep Dive: Production Checklist ✅',
-            duration: '15 min read',
-            content: `
-# Deep Dive: Production Checklist ✅
-
-## 1. Error Handling
-Did you wrap features in Error Boundaries?
-Do failed API calls show a toast notification?
-
-## 2. Loading States
-Avoiding "layout shift" (jumping content).
-Use Skeletons or Spinners while data loads.
-
-## 3. Optimization
-Is the bundle huge? Lazy load routes.
-Are specific lists lagging? Use \`memo\` or \`useMemo\`.
-
-## 4. Accessibility
-Basic keyboard navigation.
-Alt tags on images.
             `
         },
 
-        // PART 2: PRACTICAL LABS (LESSONS)
+        // LABS
         {
             id: 'react-16-lesson-1',
             type: CONTENT_TYPES.LESSON,
@@ -122,15 +30,6 @@ Alt tags on images.
 # Lab 1: Global Context Setup
 
 Initialize the \`AuthContext\` and \`ThemeContext\`.
-
-## The Mission
-1.  **Auth**: User object (name, role).
-2.  **Theme**: 'light' or 'dark'.
-3.  **Provide**: Wrap the App.
-4.  **Hook**: Create custom hook \`useAuth\`.
-
-## Architecture
-This foundation will power the Protected Routes in later steps.
             `,
             tasks: [
                 {
@@ -161,21 +60,22 @@ This foundation will power the Protected Routes in later steps.
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    // Task 1: State
+    // Task 1: Initialize User State (null by default)
     const [user, setUser] = useState(null);
 
+    // Mock Login Function
     const login = (name) => setUser({ name, role: 'admin' });
     const logout = () => setUser(null);
 
-    // Task 2: Provider
+    // Task 2: Return Provider
     return (
         <AuthContext.Provider value={{ user, login, logout }}>
-            {children}
+             {/* Render children here */}
         </AuthContext.Provider>
     );
 }
 
-// Task 3: Hook
+// Task 3: Create useAuth Hook
 export function useAuth() {
     return useContext(AuthContext);
 }
@@ -192,16 +92,6 @@ export function useAuth() {
 # Lab 2: Dashboard Layout
 
 Create the Shell using Nested Routes.
-
-## The Mission
-1.  **Layout**: Sidebar (Nav) + Main Content (Outlet).
-2.  **Protection**: Redirect to \`/login\` if no user.
-3.  **Routes**:
-    *   \`/dashboard\` -> Index (Stats)
-    *   \`/dashboard/products\` -> Product List
-
-## Redirect Logic
-If \`!user\`, return \`<Navigate to="/login" />\`.
             `,
             tasks: [
                 {
@@ -233,103 +123,24 @@ import { useAuth } from './AuthContext';
 export default function DashboardLayout() {
     const { user } = useAuth();
 
-    // Task 1 & 2: Protection
+    // Task 1: Check if user is logged in
+    // Task 2: If not, redirect to /login
     
     return (
         <div className="layout">
             <aside>
-                <Link to="/previous-orders">Orders</Link>
-                <Link to="/products">Products</Link>
+                <nav>
+                    <Link to="/dashboard">Home</Link>
+                    <Link to="/dashboard/products">Products</Link>
+                </nav>
             </aside>
             <main>
-                {/* Task 3 */}
+                {/* Task 3: Render Outlet here */}
                 
             </main>
         </div>
     );
 }
-`
-                }
-            ]
-        },
-        {
-            id: 'react-16-lesson-3',
-            type: CONTENT_TYPES.LESSON,
-            title: 'Lab 3: Product Management',
-            duration: '45 min',
-            content: `
-# Lab 3: Product Management
-
-Build a Product List with Optimistic Deletion.
-
-## The Mission
-1.  **Fetch**: Load products on mount.
-2.  **Delete**: Button to delete product.
-3.  **Optimistic**: Remove from UI immediately.
-4.  **Error**: Restore if API fails.
-
-## Real World
-Users hate waiting for the spinner just to delete an item. Make it snappy.
-            `,
-            tasks: [
-                {
-                    id: 1,
-                    description: 'Effect: Fetch data.',
-                    completed: false,
-                    regex: /useEffect/
-                },
-                {
-                    id: 2,
-                    description: 'Optimistic: Filter local state.',
-                    completed: false,
-                    regex: /setProducts\s*\(\s*p\s*=>\s*p\.filter/
-                },
-                {
-                    id: 3,
-                    description: 'Rollback: Restore on error.',
-                    completed: false,
-                    regex: /catch.*setProducts\s*\(\s*previous/s
-                }
-            ],
-            files: [
-                {
-                    name: 'ProductList.jsx',
-                    language: 'javascript',
-                    content: `import { useState, useEffect } from 'react';
-
-export default function ProductList() {
-    const [products, setProducts] = useState([]);
-
-    // Task 1: Fetch
-    
-    const handleDelete = async (id) => {
-        const previous = products;
-        
-        // Task 2: Optimistic Update
-        
-        try {
-            await deleteProductAPI(id);
-        } catch (err) {
-            // Task 3: Rollback
-            alert("Failed to delete");
-            
-        }
-    };
-
-    return (
-        <ul>
-            {products.map(p => (
-                <li key={p.id}>
-                    {p.name}
-                    <button onClick={() => handleDelete(p.id)}>X</button>
-                </li>
-            ))}
-        </ul>
-    );
-}
-
-// Mock API
-const deleteProductAPI = () => new Promise(r => setTimeout(r, 500));
 `
                 }
             ]
@@ -343,20 +154,6 @@ const deleteProductAPI = () => new Promise(r => setTimeout(r, 500));
 # Lab 4: The Final Assembly
 
 Wire up the Routes in App.jsx.
-
-## The Mission
-1.  **Providers**: Wrap with AuthProvider.
-2.  **Router**: BrowserRouter.
-3.  **Routes**: Login, Dashboard (Nested).
-4.  **404**: Catch all.
-
-## Structure
-\`\`\`
-/ (Login)
-/dashboard
-  / (Stats)
-  /products
-\`\`\`
             `,
             tasks: [
                 {
@@ -390,91 +187,87 @@ import Login from './Login';
 
 export default function App() {
     return (
-        // Task 1
+        // Task 1: Wrap with AuthProvider
         <BrowserRouter>
              <Routes>
                 <Route path="/login" element={<Login />} />
                 
-                {/* Task 2: Protected Layout */}
-                <Route path="/dashboard" element={null}>
-                    {/* Task 3: Index */}
-                    <Route path="products" element={<ProductList />} />
-                </Route>
+                {/* Task 2: Nested Dashboard Route */}
+                {/* Task 3: Index Route for Products */}
+                
              </Routes>
         </BrowserRouter>
     );
 }
 `
-                }
-            ]
-        },
+                },
+                {
+                    name: 'Login.jsx',
+                    language: 'javascript',
+                    content: `import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-        // PART 3: ASSESSMENT (QUIZ)
-        {
-            id: 'react-16-quiz',
-            type: CONTENT_TYPES.QUIZ,
-            title: 'Final Exam',
-            duration: '15 min',
-            questions: [
-                {
-                    id: 'q1',
-                    question: 'Where should global user authentication state live?',
-                    options: [
-                        'In a global variable',
-                        'In localStorage only',
-                        'In a Context Provider wrapping the App',
-                        'In every component'
-                    ],
-                    correctIndex: 2,
-                    explanation: 'Context is the standard way to broadcast global data like Auth/Theme to the components that need it.'
+export default function Login() {
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogin = () => {
+        login("Test User");
+        navigate("/dashboard");
+    };
+
+    return (
+        <div className="login-page">
+            <h1>Login</h1>
+            <button onClick={handleLogin}>Log In as Guest</button>
+        </div>
+    );
+}`
                 },
                 {
-                    id: 'q2',
-                    question: 'How do you protect a route from unauthenticated users?',
-                    options: [
-                        'Delete the route',
-                        'Render a component that checks the user and returns <Navigate /> if falsy',
-                        'Use CSS to hide it',
-                        'Ask the user nicely'
-                    ],
-                    correctIndex: 1,
-                    explanation: 'The "Protected Route" wrapper pattern allows you to centrally manage access control.'
+                    name: 'AuthContext.jsx',
+                    language: 'javascript',
+                    content: `import { createContext, useContext, useState } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+    const [user, setUser] = useState(null);
+    const login = (name) => setUser({ name, role: 'admin' });
+    const logout = () => setUser(null);
+
+    return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+             {children}
+        </AuthContext.Provider>
+    );
+}
+
+export function useAuth() {
+    return useContext(AuthContext);
+}`
                 },
                 {
-                    id: 'q3',
-                    question: 'What is "Optimistic UI"?',
-                    options: [
-                        'Hoping the code works',
-                        'Updating the UI assuming success before the server responds',
-                        'Using bright colors',
-                        'Writing clean code'
-                    ],
-                    correctIndex: 1,
-                    explanation: 'It removes perceived latency, making the app feel instant.'
+                    name: 'DashboardLayout.jsx',
+                    language: 'javascript',
+                    content: `import { Outlet, Navigate, Link } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+
+export default function DashboardLayout() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" />;
+    return (
+        <div className="layout">
+            <nav><Link to="/dashboard/products">Products</Link></nav>
+            <main><Outlet /></main>
+        </div>
+    );
+}`
                 },
                 {
-                    id: 'q4',
-                    question: 'If you have a complex dashboard with many pages, what performance trick helps initial load?',
-                    options: [
-                        'Remove all CSS',
-                        'Code Splitting (Lazy Loading) the routes',
-                        'Use more JPGs',
-                        'Put everything in one file'
-                    ],
-                    correctIndex: 1,
-                    explanation: '`const Page = lazy(() => import("./Page"))` ensures the user only downloads the code for the page they are viewing.'
-                },
-                {
-                    id: 'q5',
-                    question: 'Congratulations! You reached the end.',
-                    options: [
-                        'I am a React Master',
-                        'I am a React Beginner',
-                        'I prefer Angular',
-                        'I prefer Vue'
-                    ],
-                    correctIndex: 0,
-                    explanation: 'You have completed the Elite React Curriculum. Go build something great!'
+                    name: 'ProductList.jsx',
+                    language: 'javascript',
+                    content: `export default function ProductList() { return <h2>Product List</h2>; }`
                 }
             ]
         }

@@ -5,12 +5,16 @@ import InstructionPane from '../components/InstructionPane';
 import EditorComponent from '../components/EditorComponent';
 import PreviewPane from '../components/PreviewPane';
 import Terminal from '../components/Terminal/Terminal'; // Import Terminal
+import PythonTerminal from '../components/Terminal/PythonTerminal';
 import QuizPane from '../components/QuizPane';
 import InformationalPane from '../components/InformationalPane';
-import Header from '../components/Header';
+// import Header from '../components/Header'; // Deprecated in favor of LearningNavbar
 import Footer from '../components/Footer';
+import LearningNavbar from '../components/layout/LearningNavbar';
+import CourseMenuDrawer from '../components/layout/CourseMenuDrawer';
+import AIAssistantPanel from '../components/layout/AIAssistantPanel'; // UPDATED IMPORTS
 import { useProgress } from '../contexts/ProgressProvider';
-import { getItem, getNextItem, getCourseProgress, CONTENT_TYPES } from '../data/courses/index';
+import { getItem, getNextItem, getUnit, getCourseProgress, CONTENT_TYPES, courses as courseMetaMap } from '../data/courses/index';
 import { evaluateCode } from '../utils/validator';
 import confetti from 'canvas-confetti';
 
@@ -30,6 +34,11 @@ export default function LearningLayout() {
     const [isChecking, setIsChecking] = useState(false);
     const [progress, setProgress] = useState(0);
     const [tasks, setTasks] = useState([]);
+
+    // New State for Drawer
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    // New State for AI
+    const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
 
     // Terminal State for Git Course
     const [virtualGitState, setVirtualGitState] = useState(null);
@@ -69,6 +78,8 @@ export default function LearningLayout() {
 
     const handleNext = () => {
         markItemComplete(itemId);
+        // Ensure drawer is closed on nav
+        setIsDrawerOpen(false);
         const next = getNextItem(courseId, itemId);
         if (next) {
             navigate(`/learn/${courseId}/${next.id}`);
@@ -76,6 +87,20 @@ export default function LearningLayout() {
             navigate(`/course/${courseId}`);
         }
     };
+
+    // Engine Switching Logic
+    const getEngineForCourse = (id) => {
+        if (!id) return 'PREVIEW';
+        if (id === 'python') return 'PYTHON';
+        if (['git', 'cicd', 'node', 'nextjs', 'mongodb', 'mysql', 'php', 'typescript'].includes(id)) return 'TERMINAL';
+        return 'PREVIEW'; // html5, css3, jsBasics, jsEs6, dom, react, tailwind
+    };
+
+    const activeEngine = getEngineForCourse(courseId);
+
+    // Fetch Unit and Course Meta for Navbar/Drawer
+    const currentUnit = item ? getUnit(courseId, item.unitId) : null;
+    const currentCourse = courseId ? courseMetaMap[courseId] : null;
 
     if (!item) {
         return (
@@ -87,30 +112,63 @@ export default function LearningLayout() {
         );
     }
 
+    // Common Wrapper for all content types to include Navbar/Drawer
+    const ContentWrapper = ({ children }) => (
+        <div className="h-screen w-full flex flex-col bg-[var(--bg-primary)] fixed inset-0 font-sans">
+            <LearningNavbar
+                courseTitle={item?.unitTitle || currentCourse?.title}
+                lessonTitle={item?.title}
+                progress={progress}
+                onOpenDrawer={() => setIsDrawerOpen(true)}
+                onAskAI={() => setIsAIPanelOpen(!isAIPanelOpen)} // Toggle Panel
+                onBack={() => navigate(`/course/${courseId}`)}
+            />
+
+            <CourseMenuDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                courseTitle={currentCourse?.title}
+                unitTitle={currentUnit?.title}
+                unitDescription={currentUnit?.description}
+                unitItems={currentUnit?.items}
+                courseId={courseId}
+                currentItemId={itemId}
+                completedItems={completedItems}
+            />
+
+            {/* AI Panel - Render outside of resizable panels but inside wrapper */}
+            <AIAssistantPanel
+                isOpen={isAIPanelOpen}
+                onClose={() => setIsAIPanelOpen(false)}
+                currentCode={files.map(f => `// File: ${f.name}\n${f.content}`).join('\n\n')}
+                taskDescription={item?.content || "No context available."}
+            />
+
+            <div className="flex-1 min-h-0 overflow-hidden pt-16">
+                {children}
+            </div>
+        </div>
+    );
+
     // Render Quiz
     if (item.type === CONTENT_TYPES.QUIZ) {
         return (
-            <div className="h-screen w-full flex flex-col bg-[var(--bg-primary)] fixed inset-0 font-sans">
-                <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0 overflow-hidden pt-16">
-                    <QuizPane quiz={item} onComplete={handleNext} />
-                </div>
-            </div>
+            <ContentWrapper>
+                <QuizPane quiz={item} onComplete={handleNext} />
+            </ContentWrapper>
         );
     }
 
     // Render Informational
     if (item.type === CONTENT_TYPES.INFORMATIONAL) {
         return (
-            <div className="h-screen w-full flex flex-col bg-[var(--bg-primary)] fixed inset-0 font-sans">
-                <Header progress={getCourseProgress(courseId, completedItems).percentage} />
-                <div className="flex-1 min-h-0 overflow-hidden pt-16">
-                    <InformationalPane item={item} onComplete={handleNext} />
-                </div>
-            </div>
+            <ContentWrapper>
+                <InformationalPane item={item} onComplete={handleNext} />
+            </ContentWrapper>
         );
     }
 
+    // ... (Compiler Logic: compile, compilePython, etc. - Kept exactly as is)
     const compile = () => {
         let html = files.find(f => f.name === 'index.html')?.content || '';
         const cssFiles = files.filter(f => f.name.endsWith('.css'));
@@ -159,10 +217,8 @@ export default function LearningLayout() {
         if (html.includes('</head>')) {
             html = html.replace('</head>', consoleOverride + '</head>');
         } else if (html.includes('<head>')) {
-            // If only open head exists (rare, usually balanced)
             html = html.replace('<head>', '<head>' + consoleOverride);
         } else {
-            // No head tag, prepend to start
             html = consoleOverride + html;
         }
 
@@ -171,7 +227,6 @@ export default function LearningLayout() {
             if (html.includes('</head>')) {
                 html = html.replace('</head>', `<style>${css}</style></head>`);
             } else {
-                // If no head, append style to console override (start of file)
                 html = html + `<style>${css}</style>`;
             }
         }
@@ -182,7 +237,6 @@ export default function LearningLayout() {
             if (html.includes('</body>')) {
                 html = html.replace('</body>', scriptTag + '</body>');
             } else {
-                // If no body, just append to end
                 html = html + scriptTag;
             }
         }
@@ -356,13 +410,8 @@ export default function LearningLayout() {
 
         let results;
         if (courseId === 'git') {
-            // Specialized Git Validation
             results = tasks.map(task => {
                 try {
-                    // Tasks usually are regex strings in this platform
-                    // For Git, we might need a custom validator function or just check properties
-                    // But for now, let's assume the 'regex' in the task can also match against the gitState JSON string
-                    // This is a hacky way to use regex on an object, but efficient for quick prototyping
                     const stateString = JSON.stringify(virtualGitState);
                     const regex = new RegExp(task.regex);
                     return regex.test(stateString);
@@ -371,7 +420,6 @@ export default function LearningLayout() {
                 }
             });
         } else {
-            // Standard Code Validation
             const allContent = files.map(f => f.content).join('\n');
             results = evaluateCode(allContent, tasks);
         }
@@ -409,10 +457,36 @@ export default function LearningLayout() {
     };
 
     return (
-        <div className="h-screen w-full grid grid-rows-[auto_1fr_auto] overflow-hidden bg-[var(--bg-primary)] fixed inset-0 font-sans">
-            <Header progress={progress} />
+        <div className="h-screen w-full flex flex-col overflow-hidden bg-[var(--bg-primary)] fixed inset-0 font-sans">
+            <LearningNavbar
+                courseTitle={item?.unitTitle || currentCourse?.title}
+                lessonTitle={item?.title}
+                progress={progress}
+                onOpenDrawer={() => setIsDrawerOpen(true)}
+                onAskAI={() => setIsAIPanelOpen(!isAIPanelOpen)}
+                onBack={() => navigate(`/course/${courseId}`)}
+            />
 
-            <div className="min-h-0 w-full relative pt-16">
+            <CourseMenuDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                courseTitle={currentCourse?.title}
+                unitTitle={currentUnit?.title}
+                unitDescription={currentUnit?.description}
+                unitItems={currentUnit?.items}
+                courseId={courseId}
+                currentItemId={itemId}
+                completedItems={completedItems}
+            />
+
+            <AIAssistantPanel
+                isOpen={isAIPanelOpen}
+                onClose={() => setIsAIPanelOpen(false)}
+                currentCode={files.map(f => `// File: ${f.name}\n${f.content}`).join('\n\n')}
+                taskDescription={item?.content || "No context available."}
+            />
+
+            <div className="flex-1 min-h-0 w-full relative pt-16 pb-14">
                 <PanelGroup direction="horizontal" className="h-full w-full">
                     {/* Left Panel: Instructions */}
                     <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[var(--bg-panel)] border-r border-[var(--border-subtle)]">
@@ -422,14 +496,12 @@ export default function LearningLayout() {
                     <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
 
                     {/* Middle Panel: Editor */}
-                    {/* Middle Panel: Editor */}
-                    {/* Middle Panel: Editor */}
                     <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-[#0a0a0a]">
                         <EditorComponent
                             files={files}
-                            setFiles={setFiles}     // Allow Editor to modify files
-                            folders={folders}       // Pass folders
-                            setFolders={setFolders} // Allow Editor to modify folders
+                            setFiles={setFiles}
+                            folders={folders}
+                            setFolders={setFolders}
                             activeFile={activeFile}
                             onFileChange={setActiveFile}
                             onCodeChange={handleCodeChange}
@@ -438,9 +510,14 @@ export default function LearningLayout() {
 
                     <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
 
-                    {/* Right Panel: Preview/Terminal */}
+                    {/* Right Panel: Dynamic Engine */}
                     <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-[#0a0a0a]">
-                        {courseId === 'git' ? (
+                        {activeEngine === 'PYTHON' ? (
+                            <PythonTerminal
+                                files={files}
+                                onStateChange={(state) => setConsoleLogs(prev => [...prev, { level: 'info', message: state, timestamp: new Date().toLocaleTimeString() }])}
+                            />
+                        ) : activeEngine === 'TERMINAL' ? (
                             <Terminal
                                 files={files}
                                 setFiles={setFiles}

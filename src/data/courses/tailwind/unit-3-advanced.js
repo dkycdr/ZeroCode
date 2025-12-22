@@ -1,384 +1,557 @@
+
 import { CONTENT_TYPES } from '../../curriculumStructure.js';
 
 export const unit3Advanced = {
     id: 'tailwind-unit-3',
-    title: 'Advanced Styling',
-    description: 'Master colors, shadows, and transitions',
+    title: 'Unit 3: States & Interactivity',
+    description: 'Static UIs are boring. Make your interface come alive with Hover, Focus, and Active states. Master the "Group" and "Peer" modifiers for complex interactions.',
     items: [
-                {
-                    id: 'tailwind-3-1',
-                    type: CONTENT_TYPES.INFORMATIONAL,
-                    title: 'Colors & Gradients',
-                    duration: '8 min read',
-                    content: `
-# Colors & Gradients in Tailwind
+        // 1. Deep Dive: Pseudo-Classes
+        {
+            id: 'tailwind-3-1',
+            type: CONTENT_TYPES.INFORMATIONAL,
+            title: 'Deep Dive: State Modifiers 🖱️',
+            duration: '15 min read',
+            content: `
+# Deep Dive: State Modifiers 🖱️
 
-## Color System
-
-Tailwind provides a comprehensive color palette with shades from 50 to 950.
-
-### Available Colors
-
-\`\`\`
-slate, gray, zinc, neutral, stone
-red, orange, amber, yellow, lime, green
-emerald, teal, cyan, sky, blue, indigo
-violet, purple, fuchsia, pink, rose
+## 1. The Interaction Paradigm
+In standard CSS, you write a separate block for interactions:
+\`\`\`css
+.btn { background: blue; }
+.btn:hover { background: darkblue; }
+.btn:active { background: black; }
 \`\`\`
 
-### Using Colors
-
+In Tailwind, you specificy the state *prefix* directly on the element.
 \`\`\`html
-<!-- Background -->
-<div class="bg-blue-500">Blue background</div>
-<div class="bg-red-100">Light red background</div>
-
-<!-- Text -->
-<p class="text-gray-800">Dark gray text</p>
-<p class="text-green-600">Green text</p>
-
-<!-- Border -->
-<div class="border-2 border-purple-500">Purple border</div>
-\`\`\`
-
-## Opacity
-
-Add opacity with slash notation:
-
-\`\`\`html
-<div class="bg-blue-500/50">50% opacity</div>
-<div class="bg-red-600/75">75% opacity</div>
-<div class="text-gray-900/90">90% opacity text</div>
-\`\`\`
-
-## Gradients
-
-\`\`\`html
-<!-- Linear gradients -->
-<div class="bg-gradient-to-r from-blue-500 to-purple-600">
-    Left to right gradient
-</div>
-
-<div class="bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500">
-    Diagonal with 3 colors
-</div>
-
-<!-- Gradient directions -->
-bg-gradient-to-t    <!-- to top -->
-bg-gradient-to-tr   <!-- to top right -->
-bg-gradient-to-r    <!-- to right -->
-bg-gradient-to-br   <!-- to bottom right -->
-bg-gradient-to-b    <!-- to bottom -->
-bg-gradient-to-bl   <!-- to bottom left -->
-bg-gradient-to-l    <!-- to left -->
-bg-gradient-to-tl   <!-- to top left -->
-\`\`\`
-
-## Custom Colors
-
-You can use arbitrary values:
-
-\`\`\`html
-<div class="bg-[#800000]">Custom maroon</div>
-<div class="text-[#0a192f]">Custom navy</div>
-\`\`\`
-
-## Color Combinations
-
-### Primary Button
-\`\`\`html
-<button class="bg-blue-600 hover:bg-blue-700 text-white">
-    Click me
+<button class="bg-blue-500 hover:bg-blue-700 active:bg-black">
+  Click Me
 </button>
 \`\`\`
 
-### Card with Gradient Header
+## 2. Common States
+| Prefix | Trigger | Use Case |
+| :--- | :--- | :--- |
+| \`hover:\` | Mouse over | Buttons, Links, Cards |
+| \`focus:\` | Keyboard/Click | Inputs, Textareas |
+| \`active:\` | Mouse click | Buttons (Click feel) |
+| \`disabled:\` | Disabled attr | Form Submit Buttons |
+
+## 3. Stacking Modifiers
+You can combine modifiers!
+*   \`md:hover:bg-red-500\`: Only apply red background on hover IF screen is medium or larger.
+*   \`dark:focus:border-white\`: Only white border on focus IF in dark mode.
+
+> [!TIP]
+> Order matters less than specificity, but standard convention is:
+> \`base-style\` -> \`responsive\` -> \`states\` -> \`dark-mode\`.
+            `
+        },
+        // 2. Deep Dive: Group & Peer
+        {
+            id: 'tailwind-3-2',
+            type: CONTENT_TYPES.INFORMATIONAL,
+            title: 'Deep Dive: Group & Peer 👯',
+            duration: '20 min read',
+            content: `
+# Deep Dive: Group & Peer 👯
+
+## 1. The Parent-Child Problem
+Sometimes you want to change a Child's style when the Parent is hovered.
+Standard CSS: \`.card:hover .title { color: blue }\`.
+
+Tailwind Solution: **Group**.
+1.  Add \`group\` to the **Parent**.
+2.  Add \`group-hover:class\` to the **Child**.
+
 \`\`\`html
-<div class="bg-white rounded-lg overflow-hidden">
-    <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-        <h2 class="text-white text-2xl font-bold">Title</h2>
-    </div>
-    <div class="p-6">Content</div>
+<div class="group card p-4 hover:bg-black">
+    <h3 class="text-gray-900 group-hover:text-white">
+        Title changes to white on hover!
+    </h3>
+    <p class="text-gray-500 group-hover:text-gray-300">
+        Description gets lighter.
+    </p>
 </div>
 \`\`\`
 
-> 💡 **Pro Tip**: Use lighter shades (100-300) for backgrounds, darker shades (600-900) for text and buttons.
-                    `
+## 2. The Sibling Problem
+Sometimes you want to style Element B when Element A (Sibling) is focused/checked.
+Example: Custom Checkbox or Floating Label.
+Tailwind Solution: **Peer**.
+1.  Add \`peer\` to the **Sibling A**.
+2.  Add \`peer-checked:class\` to **Sibling B**.
+
+\`\`\`html
+<input type="checkbox" class="peer hidden" id="chk" />
+<label for="chk" class="peer-checked:bg-blue-500 peer-checked:text-white">
+    Custom Checkbox UI
+</label>
+\`\`\`
+
+> [!IMPORTANT]
+> The \`peer\` element must appear **BEFORE** the target element in the HTML structure.
+            `
+        },
+        // 3. Deep Dive: Transition Physics
+        {
+            id: 'tailwind-3-3',
+            type: CONTENT_TYPES.INFORMATIONAL,
+            title: 'Deep Dive: Physics & Timing ⏱️',
+            duration: '15 min read',
+            content: `
+# Deep Dive: Physics & Timing ⏱️
+
+## 1. Don't Just Snap
+Instant color changes look cheap.
+Always add \`transition-colors\` or \`transition-all\` when using hover effects.
+
+## 2. The Duration Scale
+*   \`duration-75\`: Micro-interactions (Click).
+*   \`duration-150\`: Standard UI (Hover).
+*   \`duration-300\`: Large movements (Modal open).
+*   \`duration-500+\`: Narrative transitions.
+
+## 3. Easing Curves
+*   \`ease-in\`: Example: Leaving the screen (starts slow, speeds up).
+*   \`ease-out\`: Example: Entering the screen (starts fast, slows down).
+*   \`ease-in-out\`: Generic (slow start, fast middle, slow end).
+
+\`\`\`html
+<button class="transition-transform duration-200 ease-out hover:scale-105 active:scale-95">
+   Bouncy Physics
+</button>
+\`\`\`
+            `
+        },
+        // 4. Deep Dive: Accessibility (Focus)
+        {
+            id: 'tailwind-3-4',
+            type: CONTENT_TYPES.INFORMATIONAL,
+            title: 'Deep Dive: Focus Rings 🎯',
+            duration: '10 min read',
+            content: `
+# Deep Dive: Focus Rings 🎯
+
+## 1. Never Remove Outline
+\`outline: none\` is a sin against accessibility. Keyboard users rely on the focus ring to know where they are.
+
+## 2. Custom Focus Rings
+Tailwind allows you to style the ring without relying on the ugly default browser implementation.
+
+\`\`\`html
+<button class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+    Accessible & Beautiful
+</button>
+\`\`\`
+
+*   \`ring-2\`: Adds a 2px box-shadow ring.
+*   \`ring-offset-2\`: Adds white space between the element and the ring.
+
+This creates a high-quality "Offset" look seen in standard operating systems (macOS/Windows).
+            `
+        },
+
+        // PART 2: PRACTICAL LABS
+        // Lab 1: Interactive Button
+        {
+            id: 'tailwind-3-lesson-1',
+            type: CONTENT_TYPES.LESSON,
+            title: 'Lab 1: The Perfect Button',
+            duration: '20 min',
+            content: `
+# Lab 1: The Perfect Button
+
+Create a button that feels "tactile" using State Modifiers.
+
+## The Mission
+1.  **Base**: \`bg-blue-600\`, \`text-white\`, \`px-6\`, \`py-3\`, \`rounded-lg\`, \`font-semibold\`, \`shadow-md\`.
+2.  **Hover**: Lighten background (\`hover:bg-blue-500\`), Move up slightly (\`hover:-translate-y-1\`), Increase shadow (\`hover:shadow-lg\`).
+3.  **Active**: Darken background (\`active:bg-blue-700\`), Press down (\`active:translate-y-0\`), Shrink shadow (\`active:shadow-sm\`).
+4.  **Transition**: Smooth it all out with \`transition-all duration-200\`.
+
+## Physics Logic
+*   Hover = Lift up (Light hits it).
+*   Active = Press down (Shadow disappears).
+            `,
+            tasks: [
+                {
+                    id: 1,
+                    description: 'Base Styles: bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md font-semibold.',
+                    completed: false,
+                    regex: /<button[^>]*class=["'](?=.*\bbg-blue-600\b)(?=.*\btext-white\b)(?=.*\bpx-6\b)(?=.*\bpy-3\b)(?=.*\brounded-lg\b)(?=.*\bshadow-md\b)(?=.*\bfont-semibold\b)[^"']*["']/
                 },
                 {
-                    id: 'tailwind-3-2',
-                    type: CONTENT_TYPES.LESSON,
-                    title: 'Shadows & Effects',
-                    duration: '20 min',
-                    content: `
-# Shadows & Effects
-
-## Box Shadows
-
-\`\`\`html
-<div class="shadow-sm">Small shadow</div>
-<div class="shadow">Default shadow</div>
-<div class="shadow-md">Medium shadow</div>
-<div class="shadow-lg">Large shadow</div>
-<div class="shadow-xl">Extra large shadow</div>
-<div class="shadow-2xl">2X large shadow</div>
-<div class="shadow-inner">Inner shadow</div>
-<div class="shadow-none">No shadow</div>
-\`\`\`
-
-## Colored Shadows
-
-\`\`\`html
-<div class="shadow-lg shadow-blue-500/50">Blue shadow</div>
-<div class="shadow-xl shadow-purple-500/30">Purple shadow</div>
-\`\`\`
-
-## Border Radius
-
-\`\`\`html
-<div class="rounded-none">No radius</div>
-<div class="rounded-sm">Small radius</div>
-<div class="rounded">Default radius</div>
-<div class="rounded-md">Medium radius</div>
-<div class="rounded-lg">Large radius</div>
-<div class="rounded-xl">Extra large radius</div>
-<div class="rounded-2xl">2X large radius</div>
-<div class="rounded-3xl">3X large radius</div>
-<div class="rounded-full">Full circle/pill</div>
-
-<!-- Individual corners -->
-<div class="rounded-t-lg">Top corners</div>
-<div class="rounded-r-lg">Right corners</div>
-<div class="rounded-b-lg">Bottom corners</div>
-<div class="rounded-l-lg">Left corners</div>
-<div class="rounded-tl-lg">Top-left only</div>
-\`\`\`
-
-## Opacity
-
-\`\`\`html
-<div class="opacity-0">Invisible</div>
-<div class="opacity-25">25% visible</div>
-<div class="opacity-50">50% visible</div>
-<div class="opacity-75">75% visible</div>
-<div class="opacity-100">Fully visible</div>
-\`\`\`
-
-## Blur
-
-\`\`\`html
-<div class="blur-none">No blur</div>
-<div class="blur-sm">Small blur</div>
-<div class="blur">Default blur</div>
-<div class="blur-lg">Large blur</div>
-<div class="blur-2xl">Extra large blur</div>
-
-<!-- Backdrop blur (for glassmorphism) -->
-<div class="backdrop-blur-sm bg-white/30">
-    Glass effect
-</div>
-\`\`\`
-
----
-
-## Your Mission
-Create a modern card with shadows and effects.
-                    `,
-                    tasks: [
-                        { id: 1, description: 'Add "shadow-lg" or "shadow-xl" class to the main card <div> (line 9) for large shadow', completed: false, regex: /shadow-(lg|xl|2xl)/ },
-                        { id: 2, description: 'Add "rounded-xl" or "rounded-2xl" class to the main card <div> (line 9) for extra rounded corners', completed: false, regex: /rounded-(xl|2xl|3xl)/ },
-                        { id: 3, description: 'Add "hover:shadow-2xl" class to the main card <div> (line 9) for hover shadow effect', completed: false, regex: /hover:shadow/ },
-                        { id: 4, description: 'Add "bg-gradient-to-r from-blue-500 to-purple-600" to the icon <div> (line 10) for gradient background', completed: false, regex: /bg-gradient-to/ }
-                    ],
-                    files: [
-                        { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
+                    id: 2,
+                    description: 'Hover State: hover:bg-blue-500 hover:-translate-y-1 hover:shadow-lg.',
+                    completed: false,
+                    regex: /<button[^>]*class=["'](?=.*\bhover:bg-blue-500\b)(?=.*\bhover:-translate-y-1\b)(?=.*\bhover:shadow-lg\b)[^"']*["']/
+                },
+                {
+                    id: 3,
+                    description: 'Active State: active:bg-blue-700 active:translate-y-0 active:shadow-sm.',
+                    completed: false,
+                    regex: /<button[^>]*class=["'](?=.*\bactive:bg-blue-700\b)(?=.*\bactive:translate-y-0\b)(?=.*\bactive:shadow-sm\b)[^"']*["']/
+                },
+                {
+                    id: 4,
+                    description: 'Transition: transition-all duration-200.',
+                    completed: false,
+                    regex: /<button[^>]*class=["'](?=.*\btransition-all\b)(?=.*\bduration-200\b)[^"']*["']/
+                }
+            ],
+            files: [
+                {
+                    name: 'index.html',
+                    language: 'html',
+                    content: `<!DOCTYPE html>
 <html>
 <head>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
-    <!-- Create a modern card with shadows and effects -->
-    <div class="bg-white p-8 max-w-md">
-        <div class="w-16 h-16 bg-blue-500 mb-4"></div>
-        <h2 class="text-2xl font-bold mb-2">Modern Card</h2>
-        <p class="text-gray-600 mb-4">
-            Add shadows, rounded corners, and hover effects to make this card look amazing!
-        </p>
-        <button class="bg-blue-600 text-white px-6 py-2">
-            Learn More
-        </button>
-    </div>
+<body class="p-20 flex justify-center bg-gray-100">
+
+    <!-- Task 1-4: The Perfect Button -->
+    <button class="">
+        Click Me
+    </button>
+
 </body>
-</html>` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
-                    ]
-                },
-                {
-                    id: 'tailwind-3-3',
-                    type: CONTENT_TYPES.LESSON,
-                    title: 'Transitions & Animations',
-                    duration: '25 min',
-                    content: `
-# Transitions & Animations
-
-## Transitions
-
-Add smooth transitions to property changes:
-
-\`\`\`html
-<!-- Transition all properties -->
-<button class="transition hover:bg-blue-600">
-    Smooth transition
-</button>
-
-<!-- Transition specific properties -->
-<div class="transition-colors hover:bg-blue-500">Colors only</div>
-<div class="transition-transform hover:scale-110">Transform only</div>
-<div class="transition-opacity hover:opacity-50">Opacity only</div>
-<div class="transition-shadow hover:shadow-lg">Shadow only</div>
-\`\`\`
-
-## Duration
-
-\`\`\`html
-<div class="transition duration-75">75ms</div>
-<div class="transition duration-150">150ms (default)</div>
-<div class="transition duration-300">300ms</div>
-<div class="transition duration-500">500ms</div>
-<div class="transition duration-1000">1000ms</div>
-\`\`\`
-
-## Timing Functions
-
-\`\`\`html
-<div class="transition ease-linear">Linear</div>
-<div class="transition ease-in">Ease in</div>
-<div class="transition ease-out">Ease out</div>
-<div class="transition ease-in-out">Ease in-out</div>
-\`\`\`
-
-## Transform
-
-\`\`\`html
-<!-- Scale -->
-<div class="hover:scale-105">Scale up 5%</div>
-<div class="hover:scale-110">Scale up 10%</div>
-<div class="hover:scale-95">Scale down 5%</div>
-
-<!-- Rotate -->
-<div class="hover:rotate-45">Rotate 45°</div>
-<div class="hover:rotate-90">Rotate 90°</div>
-<div class="hover:-rotate-12">Rotate -12°</div>
-
-<!-- Translate -->
-<div class="hover:translate-x-2">Move right</div>
-<div class="hover:-translate-y-2">Move up</div>
-
-<!-- Skew -->
-<div class="hover:skew-x-12">Skew X</div>
-<div class="hover:skew-y-6">Skew Y</div>
-\`\`\`
-
-## Animations
-
-Built-in animations:
-
-\`\`\`html
-<div class="animate-spin">Spinning</div>
-<div class="animate-ping">Pinging</div>
-<div class="animate-zerocode">Pulsing</div>
-<div class="animate-bounce">Bouncing</div>
-\`\`\`
-
-## Combining Effects
-
-\`\`\`html
-<button class="
-    bg-blue-600 text-white px-6 py-3 rounded-lg
-    transition-all duration-300
-    hover:bg-blue-700 hover:scale-105 hover:shadow-lg
-    active:scale-95
-">
-    Interactive Button
-</button>
-\`\`\`
-
----
-
-## Your Mission
-Create an interactive card with smooth transitions.
-                    `,
-                    tasks: [
-                        { id: 1, description: 'Add "transition-all" class to all three card <div> elements (lines 5, 11, 17) for smooth animation', completed: false, regex: /transition(-all)?/ },
-                        { id: 2, description: 'Add "hover:scale-105" class to all three card <div> elements for zoom effect on hover', completed: false, regex: /hover:scale/ },
-                        { id: 3, description: 'Add "hover:shadow-xl" class to all three card <div> elements for shadow on hover', completed: false, regex: /hover:shadow/ },
-                        { id: 4, description: 'Add "duration-300" class to all three card <div> elements for 300ms animation duration', completed: false, regex: /duration-\d+/ }
-                    ],
-                    files: [
-                        { name: 'index.html', language: 'html', content: `<!DOCTYPE html>
-<html>
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 p-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Add transitions and hover effects to these cards -->
-        <div class="bg-white p-6 rounded-lg">
-            <div class="w-12 h-12 bg-blue-500 rounded-full mb-4"></div>
-            <h3 class="text-xl font-bold mb-2">Card 1</h3>
-            <p class="text-gray-600">Hover over me!</p>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg">
-            <div class="w-12 h-12 bg-purple-500 rounded-full mb-4"></div>
-            <h3 class="text-xl font-bold mb-2">Card 2</h3>
-            <p class="text-gray-600">I should scale up!</p>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg">
-            <div class="w-12 h-12 bg-pink-500 rounded-full mb-4"></div>
-            <h3 class="text-xl font-bold mb-2">Card 3</h3>
-            <p class="text-gray-600">Add shadow on hover!</p>
-        </div>
-    </div>
-</body>
-</html>` },
-                        { name: 'style.css', language: 'css', content: '' },
-                        { name: 'script.js', language: 'javascript', content: '' }
-                    ]
-                },
-                {
-                    id: 'tailwind-3-quiz',
-                    type: CONTENT_TYPES.QUIZ,
-                    title: 'Advanced Styling Quiz',
-                    duration: '3 min',
-                    questions: [
-                        {
-                            id: 'q1',
-                            question: 'What does "hover:scale-110" do?',
-                            options: [
-                                'Scales element to 110px',
-                                'Scales element to 110% on hover',
-                                'Adds 110px padding on hover',
-                                'Rotates 110 degrees'
-                            ],
-                            correctIndex: 1,
-                            explanation: 'scale-110 scales the element to 110% of its original size when hovered.'
-                        },
-                        {
-                            id: 'q2',
-                            question: 'How do you create a gradient from blue to purple?',
-                            options: [
-                                'gradient-blue-purple',
-                                'bg-gradient blue purple',
-                                'bg-gradient-to-r from-blue-500 to-purple-600',
-                                'color-gradient-blue-purple'
-                            ],
-                            correctIndex: 2,
-                            explanation: 'Use bg-gradient-to-[direction] with from-[color] and to-[color] classes.'
-                        }
-                    ]
+</html>`
                 }
             ]
+        },
+        // Lab 2: Card Hover Effects (Group)
+        {
+            id: 'tailwind-3-lesson-2',
+            type: CONTENT_TYPES.LESSON,
+            title: 'Lab 2: Group Hover Card',
+            duration: '25 min',
+            content: `
+# Lab 2: Group Hover Card
+
+You have a card image and some text. When you hover the **Card**, you want the **Text** to change color and the **Image** to zoom in.
+Standard CSS would require complex nesting. Tailwind uses \`group\`.
+
+## The Mission
+1.  **Parent**: Add \`group\` to the correct container. \`overflow-hidden\`.
+2.  **Image**: Add \`group-hover:scale-110\`, \`transition\`, \`duration-500\`.
+3.  **Title**: Add \`group-hover:text-blue-600\`, \`transition\`.
+4.  **Arrow Icon**: Add \`group-hover:translate-x-2\`.
+
+## Structure
+\`\`\`html
+<div class="group ...">
+   <img class="group-hover:scale..." />
+   <div>
+      <h3 class="group-hover:text...">Title</h3>
+      <span class="group-hover:translate...">-></span>
+   </div>
+</div>
+\`\`\`
+            `,
+            tasks: [
+                {
+                    id: 1,
+                    description: 'Parent: Add "group" class.',
+                    completed: false,
+                    regex: /<a[^>]*class=["'](?=.*\bgroup\b)[^"']*["']/
+                },
+                {
+                    id: 2,
+                    description: 'Image: group-hover:scale-110 transition duration-500.',
+                    completed: false,
+                    regex: /<img[^>]*class=["'](?=.*\bgroup-hover:scale-110\b)(?=.*\btransition\b)(?=.*\bduration-500\b)[^"']*["']/
+                },
+                {
+                    id: 3,
+                    description: 'Text Color: group-hover:text-blue-600.',
+                    completed: false,
+                    regex: /<h3[^>]*class=["'](?=.*\bgroup-hover:text-blue-600\b)[^"']*["']/
+                },
+                {
+                    id: 4,
+                    description: 'Icon Move: group-hover:translate-x-2.',
+                    completed: false,
+                    regex: /<span[^>]*class=["'](?=.*\bgroup-hover:translate-x-2\b)[^"']*["']/
+                }
+            ],
+            files: [
+                {
+                    name: 'index.html',
+                    language: 'html',
+                    content: `<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-10 bg-gray-50">
+
+    <!-- Task 1: Add "group" to this link -->
+    <a href="#" class="block max-w-sm bg-white rounded-xl shadow-lg overflow-hidden">
+        
+        <div class="h-48 overflow-hidden">
+            <!-- Task 2: Zoom image on hover -->
+            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085" class="w-full h-full object-cover">
+        </div>
+
+        <div class="p-6">
+            <!-- Task 3: Change text color -->
+            <h3 class="text-xl font-bold mb-2 text-gray-900 transition-colors">
+                Frontend Mastery
+            </h3>
+            
+            <div class="flex items-center text-gray-500 mt-4">
+                Learn more 
+                <!-- Task 4: Move arrow right -->
+                <span class="ml-2 transition-transform">-></span>
+            </div>
+        </div>
+    </a>
+
+</body>
+</html>`
+                }
+            ]
+        },
+        // Lab 3: Floating Label (Peer)
+        {
+            id: 'tailwind-3-lesson-3',
+            type: CONTENT_TYPES.LESSON,
+            title: 'Lab 3: Floating Input Label',
+            duration: '30 min',
+            content: `
+# Lab 3: Floating Input Label
+
+The "Material Design" input style. The placeholder acts as a label covering the input, but when you focus, it floats to the top.
+This requires the \`peer\` modifier.
+
+## The Mission
+1.  **Input**: Add \`peer\` class. Use \`placeholder-transparent\` (so we don't see double text).
+2.  **Label**: Position absolute. \`peer-placeholder-shown:top-2\` (Start position).
+3.  **Float Action**: \`peer-focus:-top-3.5\`, \`peer-focus:text-sm\`, \`peer-focus:text-blue-600\`.
+
+## Logic
+When the placeholder is shown (empty input, no focus), the label sits inside.
+When the placeholder is NOT shown (user typed something) OR input is focused, the label floats up.
+
+> [!NOTE]
+> We rely on \`peer-placeholder-shown\` to detect if the input is empty!
+            `,
+            tasks: [
+                {
+                    id: 1,
+                    description: 'Input: Add "peer" and "placeholder-transparent".',
+                    completed: false,
+                    regex: /<input[^>]*class=["'](?=.*\bpeer\b)(?=.*\bplaceholder-transparent\b)[^"']*["']/
+                },
+                {
+                    id: 2,
+                    description: 'Label Base: absolute left-2 -top-3.5 text-gray-600 text-sm transition-all.',
+                    completed: false,
+                    regex: /<label[^>]*class=["'](?=.*\babsolute\b)(?=.*\bleft-2\b)(?=.*\b-top-3\.5\b)(?=.*\btext-gray-600\b)(?=.*\btext-sm\b)(?=.*\btransition-all\b)[^"']*["']/
+                },
+                {
+                    id: 3,
+                    description: 'Label Return: peer-placeholder-shown:text-base peer-placeholder-shown:top-2.',
+                    completed: false,
+                    regex: /<label[^>]*class=["'](?=.*\bpeer-placeholder-shown:text-base\b)(?=.*\bpeer-placeholder-shown:top-2\b)[^"']*["']/
+                },
+                {
+                    id: 4,
+                    description: 'Label Focus: peer-focus:-top-3.5 peer-focus:text-blue-600.',
+                    completed: false,
+                    regex: /<label[^>]*class=["'](?=.*\bpeer-focus:-top-3\.5\b)(?=.*\bpeer-focus:text-blue-600\b)[^"']*["']/
+                }
+            ],
+            files: [
+                {
+                    name: 'index.html',
+                    language: 'html',
+                    content: `<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-20 bg-white">
+
+    <div class="relative w-64 mt-10">
+        <!-- Task 1: The Peer Input -->
+        <input 
+            type="text" 
+            id="email" 
+            placeholder="john@example.com" 
+            class="border-b-2 border-gray-300 focus:border-blue-600 outline-none w-full py-2"
+        />
+
+        <!-- Task 2,3,4: The Floating Label -->
+        <label 
+            for="email" 
+            class=""
+        >
+            Email Address
+        </label>
+    </div>
+
+</body>
+</html>`
+                }
+            ]
+        },
+        // Lab 4: Dark Mode
+        {
+            id: 'tailwind-3-lesson-4',
+            type: CONTENT_TYPES.LESSON,
+            title: 'Lab 4: Dark Mode Toggle',
+            duration: '25 min',
+            content: `
+# Lab 4: Dark Mode
+
+By default, Tailwind uses the system preference (\`media\`).
+But we often want manual control (\`class\`). We simulate this by adding \`class="dark"\` to a parent wrapper.
+
+## The Mission
+1.  **Wrapper**: Add \`dark\` class to the body/wrapper to simulate dark mode active.
+2.  **Card**: \`bg-white\` normally, \`dark:bg-gray-800\` in dark mode.
+3.  **Text**: \`text-gray-900\` normally, \`dark:text-white\` in dark mode.
+4.  **Description**: \`text-gray-500\` normally, \`dark:text-gray-400\`.
+
+## Concept
+We create a component that looks good in BOTH modes simultaneously by simply prefixing the alternative styles.
+            `,
+            tasks: [
+                {
+                    id: 1,
+                    description: 'Wrapper: Ensure class="dark" is present (for simulation).',
+                    completed: false,
+                    regex: /<div[^>]*class=["'](?=.*\b(dark)\b)[^"']*["']/
+                },
+                {
+                    id: 2,
+                    description: 'Card Background: bg-white dark:bg-gray-800.',
+                    completed: false,
+                    regex: /<div[^>]*class=["'](?=.*\bbg-white\b)(?=.*\bdark:bg-gray-800\b)[^"']*["']/
+                },
+                {
+                    id: 3,
+                    description: 'Title Text: text-gray-900 dark:text-white.',
+                    completed: false,
+                    regex: /<h3[^>]*class=["'](?=.*\btext-gray-900\b)(?=.*\bdark:text-white\b)[^"']*["']/
+                },
+                {
+                    id: 4,
+                    description: 'Body Text: text-gray-500 dark:text-gray-400.',
+                    completed: false,
+                    regex: /<p[^>]*class=["'](?=.*\btext-gray-500\b)(?=.*\bdark:text-gray-400\b)[^"']*["']/
+                }
+            ],
+            files: [
+                {
+                    name: 'index.html',
+                    language: 'html',
+                    content: `<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="p-10 bg-gray-200">
+
+    <!-- Task 1: Add "dark" here to test dark mode -->
+    <div class="p-10">
+        
+        <!-- Task 2: Card Background -->
+        <div class="rounded-lg shadow-lg p-6 max-w-sm mx-auto">
+            
+            <!-- Task 3: Title -->
+            <h3 class="text-2xl font-bold mb-2">Dark Mode Ready</h3>
+            
+            <!-- Task 4: Body -->
+            <p class="">
+                This card automatically adapts to system themes or user toggles.
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+</html>`
+                }
+            ]
+        },
+
+        // PART 3: QUIZ
+        {
+            id: 'tailwind-3-quiz',
+            type: CONTENT_TYPES.QUIZ,
+            title: 'Unit 3 Assessment',
+            duration: '10 min',
+            questions: [
+                {
+                    id: 'q1',
+                    question: 'How do you target the hover state of a parent element from a child?',
+                    options: [
+                        'parent-hover:',
+                        'group-hover:',
+                        'peer-hover:',
+                        'hover-parent:'
+                    ],
+                    correctIndex: 1,
+                    explanation: 'Add `group` to the parent, then use `group-hover:` on the child.'
+                },
+                {
+                    id: 'q2',
+                    question: 'When using "peer" modifiers, where must the peer element be located?',
+                    options: [
+                        'Inside the target element',
+                        'Anywhere in the DOM',
+                        'Immediately BEFORE the target element',
+                        'Immediately AFTER the target element'
+                    ],
+                    correctIndex: 2,
+                    explanation: 'The General Sibling Combinator (~) requires the `peer` to appear before the element you are styling in the HTML.'
+                },
+                {
+                    id: 'q3',
+                    question: 'Which class removes the default browser focus ring?',
+                    options: [
+                        'ring-0',
+                        'border-none',
+                        'outline-none',
+                        'no-focus'
+                    ],
+                    correctIndex: 2,
+                    explanation: '`outline-none` removes the default focus style. You should ALWAYS replace it with a custom `ring` or `border` for accessibility.'
+                },
+                {
+                    id: 'q4',
+                    question: 'How do you enable manual dark mode toggling?',
+                    options: [
+                        'It is automatic',
+                        'Set darkMode: "media" in config',
+                        'Set darkMode: "class" in config',
+                        'Use data-theme attributes'
+                    ],
+                    correctIndex: 2,
+                    explanation: 'Setting `darkMode: "class"` tells Tailwind to look for a `.dark` class on the HTML tag instead of checking system preferences.'
+                },
+                {
+                    id: 'q5',
+                    question: 'What is the "active" state triggered by?',
+                    options: [
+                        'Hovering over an element',
+                        'Focusing via keyboard',
+                        'Clicking/Pressing down on an element',
+                        'Disabling an element'
+                    ],
+                    correctIndex: 2,
+                    explanation: '`active` corresponds to the time between holding the mouse button down and releasing it.'
+                }
+            ]
+        }
+    ]
 };

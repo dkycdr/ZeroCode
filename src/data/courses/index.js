@@ -5,16 +5,16 @@ import { css3Course } from './css3/index';
 import { reactCourse } from './react/index';
 import { gitCourse } from './git/index';
 import { tailwindCourse } from './tailwind/index';
-import domCourse from './dom';
-import phpCourse from './php';
-import mysqlCourse from './mysql';
+import { domCourse } from './dom/index';
+import { phpCourse } from './php/index';
+import mysqlCourse from './mysql/index';
 import pythonCourse from './python';
 import { jsEs6Course } from './jsEs6/index';
 import typescriptCourse from './typescript';
 import { nodeCourse } from './node';
-import mongodbCourse from './mongodb';
+import { mongodbCourse } from './mongodb/index';
 import nextjsCourse from './nextjs';
-import cicdCourse from './cicd';
+import cicdCourse from './cicd/index';
 import { CONTENT_TYPES, courses as courseMeta, LEVELS } from '../curriculumStructure';
 
 // All course content

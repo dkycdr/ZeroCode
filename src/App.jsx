@@ -17,7 +17,6 @@ import Library from './pages/Library';
 import Forum from './pages/Forum';
 import ForumPost from './pages/ForumPost';
 import Leaderboard from './pages/Leaderboard';
-import AccessPlans from './pages/AccessPlans';
 import Features from './pages/Features';
 import Changelog from './pages/Changelog';
 
@@ -64,7 +63,6 @@ function App() {
                         <Route path="/verify-email" element={<EmailVerification />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/plans" element={<AccessPlans />} />
                         <Route path="/features" element={<Features />} />
 
                         {/* Admin Routes */}

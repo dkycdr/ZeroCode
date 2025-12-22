@@ -1,3 +1,4 @@
+
 import { CONTENT_TYPES } from '../../curriculumStructure.js';
 
 export const unit11Capstone = {
@@ -16,24 +17,6 @@ export const unit11Capstone = {
 
 ## The Client
 A crypto-trading startup needs a lightweight dashboard to monitor transactions.
-
-## The Requirements
-1.  **Live Data**: Fetch transactions from a simulated API Endpoint.
-2.  **Safety**: Handle network errors gracefully.
-3.  **Analysis**: Calculate Total Volume and Filter "High Value" trades.
-4.  **Interface**: Render these trades as cards on the screen.
-5.  **Interaction**: Allow the user to toggle between "All" and "Whales" (High Value).
-
-## The Architecture (MVC Lite)
-*   **Model**: The Data (Array of Objects).
-*   **View**: The DOM (HTML Generation).
-*   **Controller**: The Logic (Fetch, Filter, Events).
-
-## Your Toolkit
-*   \`async/await\` for fetching.
-*   \`.map()\` and \`.filter()\` for data processing.
-*   \`document.createElement\` for the UI.
-*   \`classList\` for styling.
             `
         },
 
@@ -54,7 +37,6 @@ We need to get the raw materials.
 3.  Use \`try/catch\`.
 4.  Return the JSON array on success.
 5.  Return empty array \`[]\` on fail.
-
             `,
             tasks: [
                 {
@@ -86,9 +68,17 @@ We need to get the raw materials.
                 {
                     name: 'data.js',
                     language: 'javascript',
-                    content: `const url = "https://api.zerocode.com/trades";
+                    content: `// Constants
+const API_URL = "https://api.zerocode.com/trades";
 
-// TODO: fetchTrades function
+/**
+ * Fetches trade data from the API.
+ * Returns an array of trade objects.
+ */
+async function fetchTrades() {
+    // TODO: Implement fetch logic here
+    
+}
 `
                 }
             ]
@@ -102,19 +92,13 @@ We need to get the raw materials.
 # Phase 2: The Logic Layer
 
 We have data. Now interpret it.
-
-## The Mission
-1.  **Format**: Create \`formatCurrency(num)\`. Adds "$".
-2.  **Filter**: Create \`getWhales(trades)\`. Keep only trades \`> 1000\`.
-3.  **Analyze**: Create \`getTotal(trades)\`. Use \`.reduce\` to sum the volume.
-
             `,
             tasks: [
                 {
                     id: 1,
                     description: 'Format: Return "$" + num.',
                     completed: false,
-                    regex: /return\s*["']\$["']\s*\+\s*num/
+                    regex: /return\s*['"]\$['"]\s*\+\s*num/
                 },
                 {
                     id: 2,
@@ -133,10 +117,32 @@ We have data. Now interpret it.
                 {
                     name: 'logic.js',
                     language: 'javascript',
-                    content: `// Helper libraries
+                    content: `/**
+ * Formats a number as currency string
+ * @param {number} num 
+ * @returns {string} e.g. "$100"
+ */
+function formatCurrency(num) {
+    // TODO
+}
 
-// Phase 2 Logic
-// TODO...
+/**
+ * Filters for high value trades (> 1000)
+ * @param {Array} trades 
+ * @returns {Array}
+ */
+function getWhales(trades) {
+    // TODO: Use .filter()
+}
+
+/**
+ * Calculates total volume
+ * @param {Array} trades 
+ * @returns {number}
+ */
+function getTotal(trades) {
+    // TODO: Use .reduce()
+}
 `
                 }
             ]
@@ -150,33 +156,25 @@ We have data. Now interpret it.
 # Phase 3: The View Layer
 
 Paint pixels.
-
-## The Mission
-1.  Target \`#app\`.
-2.  Function \`render(trades)\`.
-3.  Clear container: \`innerHTML = ""\`.
-4.  Loop trades. Create \`div\`. Add class \`trade-card\`.
-5.  Set content. Append.
-
             `,
             tasks: [
                 {
                     id: 1,
                     description: 'Select: const app = querySelector("#app").',
                     completed: false,
-                    regex: /querySelector\s*\(\s*["']#app["']\s*\)/
+                    regex: /querySelector\s*\(\s*['"]#app['"]\s*\)/
                 },
                 {
                     id: 2,
                     description: 'Clear: app.innerHTML = "".',
                     completed: false,
-                    regex: /app\.innerHTML\s*=\s*["']["']/
+                    regex: /app\.innerHTML\s*=\s*['"]['"]/
                 },
                 {
                     id: 3,
                     description: 'Create: document.createElement("div").',
                     completed: false,
-                    regex: /createElement\s*\(\s*["']div["']\s*\)/
+                    regex: /createElement\s*\(\s*['"]div['"]\s*\)/
                 },
                 {
                     id: 4,
@@ -189,10 +187,23 @@ Paint pixels.
                 {
                     name: 'view.js',
                     language: 'javascript',
-                    content: `const app = null; // Select app
+                    content: `// Selectors
+const app = document.querySelector('#app');
 
+/**
+ * Renders a list of trades to the DOM
+ * @param {Array} list 
+ */
 function render(list) {
-    // TODO: Clear and Loop
+    // 1. Clear existing content
+    app.innerHTML = "";
+
+    // 2. Loop and Create Elements
+    list.forEach(trade => {
+        // TODO: Create div, add class 'trade-card', set innerText
+        
+        // TODO: Append to app
+    });
 }
 `
                 }
@@ -207,13 +218,6 @@ function render(list) {
 # Phase 4: The Controller
 
 Wire it up.
-
-## The Mission
-1.  **Init**: Fetch data on load. Render All.
-2.  **Toggle**: On Checkbox click...
-3.  If checked: \`render(getWhales(data))\`.
-4.  Else: \`render(data)\`.
-
             `,
             tasks: [
                 {
@@ -226,7 +230,7 @@ Wire it up.
                     id: 2,
                     description: 'Listen: checkbox.addEventListener("change").',
                     completed: false,
-                    regex: /addEventListener\s*\(\s*["']change["']/
+                    regex: /addEventListener\s*\(\s*['"]change['"]/
                 },
                 {
                     id: 3,
@@ -240,12 +244,33 @@ Wire it up.
                     name: 'app.js',
                     language: 'javascript',
                     content: `// Main Controller
+const checkbox = document.querySelector('#whale-filter');
+
+let allData = [];
 
 async function init() {
-    // TODO: Load and Render
+    console.log("App Starting...");
+    
+    // 1. Fetch Data
+    // TODO
+    
+    // 2. Initial Render
+    // TODO render(allData)
 }
 
-// TODO: Event Listener
+// Event Listener
+checkbox.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    
+    if (isChecked) {
+        // TODO: Filter and Render Whales
+    } else {
+        // TODO: Render All
+    }
+});
+
+// Start App
+init();
 `
                 }
             ]

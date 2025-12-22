@@ -482,12 +482,12 @@ Now you understand branches! 🌿
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Create a new branch named "feature"',
+                    description: 'Create a new branch named "feature"',
                     regex: '"branches":\\[.*"feature".*\\]'
                 },
                 {
                     id: 'task2',
-                    text: 'Switch to the "feature" branch',
+                    description: 'Switch to the "feature" branch',
                     regex: '"branch":"feature"'
                 }
             ]

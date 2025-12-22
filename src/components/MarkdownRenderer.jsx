@@ -1,9 +1,91 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import mermaid from 'mermaid';
+
+// Initialize Mermaid
+mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    themeVariables: {
+        primaryColor: '#4299e1',
+        primaryTextColor: '#fff',
+        primaryBorderColor: '#2b6cb0',
+        lineColor: '#4299e1',
+        secondaryColor: '#48bb78',
+        tertiaryColor: '#ed8936',
+        background: '#1a202c',
+        mainBkg: '#1a202c',
+        nodeBorder: '#4a5568',
+        clusterBkg: '#2d3748',
+        darkMode: true,
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+    }
+});
+
+// Mermaid Diagram Component
+// Robust Mermaid Component
+// Robust Mermaid Component (DOM-based)
+const MermaidDiagram = ({ chart }) => {
+    const elementRef = React.useRef(null);
+    const [isRendered, setIsRendered] = React.useState(false);
+    const [error, setError] = React.useState(null);
+
+    React.useEffect(() => {
+        if (!chart || !elementRef.current) return;
+
+        const runMermaid = async () => {
+            try {
+                // Reset content
+                elementRef.current.removeAttribute('data-processed');
+                elementRef.current.innerHTML = chart;
+
+                // Run mermaid on the element
+                await mermaid.run({
+                    nodes: [elementRef.current],
+                    suppressErrors: false
+                });
+
+                setIsRendered(true);
+                setError(null);
+            } catch (err) {
+                console.error('Mermaid run failed:', err);
+                setError(err.message);
+                setIsRendered(true); // Show error
+            }
+        };
+
+        // Small delay to ensure DOM is ready and prevent race conditions
+        const timer = setTimeout(runMermaid, 50);
+        return () => clearTimeout(timer);
+    }, [chart]);
+
+    return (
+        <div className="my-8 flex justify-center bg-[#1a202c] p-6 rounded-lg border border-gray-700 shadow-xl overflow-x-auto relative min-h-[100px]">
+            {error ? (
+                <div className="text-red-400 font-mono text-sm p-4 border border-red-900 bg-red-900/20 rounded">
+                    Mermaid Error: {error}
+                </div>
+            ) : (
+                <div
+                    ref={elementRef}
+                    className="mermaid opacity-100 transition-opacity duration-300"
+                    style={{ visibility: isRendered ? 'visible' : 'hidden' }}
+                />
+            )}
+
+            {!isRendered && !error && (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-500 animate-pulse">
+                    Rendering Diagram...
+                </div>
+            )}
+        </div>
+    );
+};
 
 /**
  * MarkdownRenderer
@@ -54,6 +136,14 @@ const MarkdownRenderer = ({ content, className = '' }) => {
                     ),
                     code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || '');
+                        const language = match ? match[1] : '';
+
+                        // Handle Mermaid diagrams
+                        if (!inline && language === 'mermaid') {
+                            return <MermaidDiagram chart={String(children).trim()} />;
+                        }
+
+                        // Handle regular code blocks
                         return !inline && match ? (
                             <div className="my-8 rounded-lg overflow-hidden border border-gray-700 shadow-xl bg-[#1e1e1e]">
                                 <div className="bg-[#252526] px-4 py-2 text-xs font-mono text-gray-400 flex justify-between items-center border-b border-black/20">
@@ -62,12 +152,12 @@ const MarkdownRenderer = ({ content, className = '' }) => {
                                         <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
                                         <div className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50"></div>
                                     </div>
-                                    <span className="font-bold text-blue-400 uppercase tracking-widest">{match[1]}</span>
+                                    <span className="font-bold text-blue-400 uppercase tracking-widest">{language}</span>
                                 </div>
                                 <SyntaxHighlighter
                                     {...props}
                                     style={vscDarkPlus}
-                                    language={match[1]}
+                                    language={language}
                                     PreTag="div"
                                     customStyle={{
                                         margin: 0,

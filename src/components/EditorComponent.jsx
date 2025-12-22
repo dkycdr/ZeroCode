@@ -1,6 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Editor, { useMonaco, loader } from '@monaco-editor/react';
 import clsx from 'clsx';
+import {
+    Folder,
+    FileCode,
+    ChevronRight,
+    ChevronDown,
+    FilePlus,
+    Search
+} from 'lucide-react';
 
 loader.config({
     paths: {
@@ -8,13 +16,188 @@ loader.config({
     }
 });
 
+// Helper to build tree from flat paths
+const buildFileTree = (files, folders) => {
+    const root = {};
+
+    // Ensure all explicitly defined folders exist in the tree
+    folders.forEach(folderPath => {
+        const parts = folderPath.split('/');
+        let current = root;
+        parts.forEach((part, index) => {
+            if (!current[part]) {
+                current[part] = {
+                    name: part,
+                    path: parts.slice(0, index + 1).join('/'),
+                    type: 'folder',
+                    children: {}
+                };
+            }
+            current = current[part].children;
+        });
+    });
+
+    // Add files to the tree
+    files.forEach(file => {
+        const parts = file.name.split('/');
+        const fileName = parts.pop();
+        let current = root;
+
+        parts.forEach((part, index) => {
+            // If a file is in a folder that wasn't in 'folders' array (shouldn't happen but good safety)
+            if (!current[part]) {
+                current[part] = {
+                    name: part,
+                    path: parts.slice(0, index + 1).join('/'),
+                    type: 'folder',
+                    children: {}
+                };
+            }
+            current = current[part].children;
+        });
+
+        current[fileName] = {
+            name: fileName,
+            path: file.name,
+            type: 'file',
+            originalFile: file
+        };
+    });
+
+    return root;
+};
+
+// Recursive Tree Item Component
+const FileTreeItem = ({ node, level, activeFile, activeFolder, expandedFolders, onToggleFolder, onFileClick, onFolderClick }) => {
+    const isExpanded = expandedFolders[node.path];
+    const isSelected = activeFile === node.path;
+    const isFolderSelected = activeFolder === node.path;
+
+    // Indentation
+    const paddingLeft = `${level * 12 + 12}px`;
+
+    if (node.type === 'folder') {
+        const children = Object.values(node.children).sort((a, b) => {
+            // Folders first, then files
+            if (a.type === b.type) return a.name.localeCompare(b.name);
+            return a.type === 'folder' ? -1 : 1;
+        });
+
+        return (
+            <div>
+                <div
+                    className={clsx(
+                        "flex items-center gap-1 py-1 pr-2 cursor-pointer select-none transition-colors text-xs",
+                        isFolderSelected ? "bg-blue-500/20 text-blue-400" : "hover:bg-white/5 text-gray-400"
+                    )}
+                    style={{ paddingLeft }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onFolderClick(node.path);
+                        onToggleFolder(node.path);
+                    }}
+                >
+                    <span className="opacity-70">
+                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </span>
+                    <Folder size={14} className={isFolderSelected ? "text-blue-400" : "text-yellow-500/80"} />
+                    <span className="font-medium truncate">{node.name}</span>
+                </div>
+                {isExpanded && (
+                    <div>
+                        {children.map(child => (
+                            <FileTreeItem
+                                key={child.path}
+                                node={child}
+                                level={level + 1}
+                                activeFile={activeFile}
+                                activeFolder={activeFolder}
+                                expandedFolders={expandedFolders}
+                                onToggleFolder={onToggleFolder}
+                                onFileClick={onFileClick}
+                                onFolderClick={onFolderClick}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className={clsx(
+                "flex items-center gap-2 py-1.5 pr-2 cursor-pointer select-none transition-colors text-xs border-l-2",
+                isSelected
+                    ? "bg-[#1a1a1a] text-white border-blue-500"
+                    : "border-transparent text-gray-400 hover:text-gray-300 hover:bg-white/5"
+            )}
+            style={{ paddingLeft }}
+            onClick={(e) => {
+                e.stopPropagation();
+                onFileClick(node.path);
+            }}
+        >
+            <FileCode size={14} className={pathEndsWith(node.name, 'html') ? 'text-orange-400' : pathEndsWith(node.name, 'css') ? 'text-blue-400' : pathEndsWith(node.name, 'js') ? 'text-yellow-400' : 'text-gray-400'} />
+            <span className="truncate">{node.name}</span>
+        </div>
+    );
+};
+
+const pathEndsWith = (path, ext) => path.toLowerCase().endsWith(ext);
+
+// Helper to detect language from file extension
+const getLanguageFromPath = (path) => {
+    if (!path) return 'javascript';
+    const ext = path.split('.').pop().toLowerCase();
+
+    const languageMap = {
+        'js': 'javascript',
+        'jsx': 'javascript',
+        'ts': 'typescript',
+        'tsx': 'typescript',
+        'html': 'html',
+        'css': 'css',
+        'py': 'python',
+        'php': 'php',
+        'sql': 'sql',
+        'json': 'json',
+        'md': 'markdown',
+        'yml': 'yaml',
+        'yaml': 'yaml',
+        'dockerfile': 'dockerfile'
+    };
+
+    // Special case for Dockerfile (no extension)
+    if (path.endsWith('Dockerfile')) return 'dockerfile';
+
+    return languageMap[ext] || 'javascript';
+};
+
 export default function EditorComponent({ files, setFiles, folders, setFolders, activeFile, onFileChange, onCodeChange }) {
     const monaco = useMonaco();
     const [isEditorReady, setIsEditorReady] = useState(false);
     const [useFallback, setUseFallback] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    // File Tree State
     const [newFileName, setNewFileName] = useState('');
     const [isCreatingFile, setIsCreatingFile] = useState(false);
+    const [activeFolder, setActiveFolder] = useState(null); // Selected folder path
+    const [expandedFolders, setExpandedFolders] = useState({});
+
+    useEffect(() => {
+        // Auto-expand folders that contain the active file
+        if (activeFile) {
+            const parts = activeFile.split('/');
+            if (parts.length > 1) {
+                const folderPath = parts.slice(0, -1).join('/');
+                setExpandedFolders(prev => ({ ...prev, [folderPath]: true }));
+
+                // Also expand parents if nested deep (simple one-level up for now)
+            }
+        }
+    }, [activeFile]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -26,7 +209,7 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
         return () => clearTimeout(timeout);
     }, [isEditorReady]);
 
-    // ZeroCode Dark Theme (Same as before)
+    // ZeroCode Dark Theme
     useEffect(() => {
         if (monaco) {
             monaco.editor.defineTheme('zerocode-dark', {
@@ -50,6 +233,19 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                 }
             });
             monaco.editor.setTheme('zerocode-dark');
+
+            // Configure TypeScript Compiler Options for React support
+            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                target: monaco.languages.typescript.ScriptTarget.ES2020,
+                allowNonTsExtensions: true,
+                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                module: monaco.languages.typescript.ModuleKind.CommonJS,
+                noEmit: true,
+                esModuleInterop: true,
+                jsx: monaco.languages.typescript.JsxEmit.React,
+                reactNamespace: 'React',
+                allowSyntheticDefaultImports: true
+            });
         }
     }, [monaco]);
 
@@ -64,78 +260,95 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
     const createFile = (e) => {
         e.preventDefault();
         if (!newFileName) return;
-        if (files.some(f => f.name === newFileName)) {
+
+        // Construct full path based on active folder
+        let fullPath = newFileName;
+        if (activeFolder) {
+            // Avoid double slashes if user typed path
+            if (newFileName.startsWith('/')) fullPath = activeFolder + newFileName;
+            else fullPath = `${activeFolder}/${newFileName}`;
+        }
+
+        if (files.some(f => f.name === fullPath)) {
             alert('File already exists');
             return;
         }
-        // Add file
+
         if (setFiles) {
-            setFiles(prev => [...prev, { name: newFileName, content: '', path: newFileName }]);
-            onFileChange(newFileName);
+            setFiles(prev => [...prev, { name: fullPath, content: '', path: fullPath }]);
+            onFileChange(fullPath);
             setNewFileName('');
             setIsCreatingFile(false);
+            // Auto expand the folder we just added to
+            if (activeFolder) {
+                setExpandedFolders(prev => ({ ...prev, [activeFolder]: true }));
+            }
         }
     };
+
+    const fileTree = useMemo(() => buildFileTree(files, folders), [files, folders]);
 
     return (
         <div className="h-full flex bg-[#0a0a0a] border-r border-white/10 font-sans">
             {/* File Explorer Sidebar */}
             {isSidebarOpen && (
-                <div className="w-48 bg-[#050505] border-r border-white/5 flex flex-col">
-                    <div className="p-3 text-xs font-bold text-gray-400 tracking-wider flex items-center justify-between">
+                <div className="w-56 bg-[#050505] border-r border-white/5 flex flex-col flex-shrink-0">
+                    <div className="p-3 text-xs font-bold text-gray-400 tracking-wider flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]">
                         <span>EXPLORER</span>
                         <div className="flex gap-1">
                             <button
                                 onClick={() => setIsCreatingFile(true)}
-                                className="hover:text-white p-1 rounded hover:bg-white/10"
-                                title="New File"
+                                className="hover:text-white hover:bg-white/10 p-1 rounded transition-colors text-blue-400"
+                                title={activeFolder ? `New File in ${activeFolder}` : "New File in Root"}
                             >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                                <FilePlus size={14} />
                             </button>
                         </div>
                     </div>
 
                     {/* New File Input */}
                     {isCreatingFile && (
-                        <form onSubmit={createFile} className="px-2 mb-2">
-                            <input
-                                autoFocus
-                                type="text"
-                                value={newFileName}
-                                onChange={e => setNewFileName(e.target.value)}
-                                onBlur={() => setIsCreatingFile(false)}
-                                placeholder="filename.js"
-                                className="w-full bg-[#1a1a1a] text-white text-xs px-2 py-1 rounded border border-blue-500 outline-none"
-                            />
-                        </form>
+                        <div className="p-2 bg-[#1a1a1a] border-b border-blue-500/30">
+                            <div className="text-[10px] text-gray-500 mb-1 flex items-center gap-1">
+                                <Folder size={10} />
+                                {activeFolder || 'root'} /
+                            </div>
+                            <form onSubmit={createFile}>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    value={newFileName}
+                                    onChange={e => setNewFileName(e.target.value)}
+                                    onBlur={() => {
+                                        // Small delay to allow form submit if clicking enter
+                                        setTimeout(() => {
+                                            if (!newFileName) setIsCreatingFile(false)
+                                        }, 200)
+                                    }}
+                                    placeholder="filename.js"
+                                    className="w-full bg-black text-white text-xs px-2 py-1.5 rounded border border-blue-500/50 outline-none focus:border-blue-500"
+                                />
+                            </form>
+                        </div>
                     )}
 
-                    <div className="flex-1 overflow-y-auto">
-                        {/* Folders (Simplified Mock View) */}
-                        {folders && folders.map(folder => (
-                            <div key={folder} className="px-3 py-1 text-xs text-blue-400 flex items-center gap-2 cursor-pointer hover:bg-white/5">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
-                                {folder}
-                            </div>
-                        ))}
-
-                        {/* Files */}
-                        {files.map((file) => (
-                            <button
-                                key={file.name}
-                                onClick={() => onFileChange(file.name)}
-                                className={clsx(
-                                    "w-full px-3 py-1.5 text-xs text-left flex items-center gap-2 transition-colors",
-                                    file.name === activeFile
-                                        ? "bg-[#1a1a1a] text-white border-l-2 border-blue-500"
-                                        : "text-gray-500 hover:text-gray-300 hover:bg-white/5"
-                                )}
-                            >
-                                <span className="opacity-75">
-                                    {file.name.endsWith('.js') ? 'JS' : file.name.endsWith('.html') ? '<>' : file.name.endsWith('.css') ? '#' : 'TXT'}
-                                </span>
-                                {file.name}
-                            </button>
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden py-2 custom-scrollbar">
+                        {/* Tree View */}
+                        {Object.values(fileTree).sort((a, b) => {
+                            if (a.type === b.type) return a.name.localeCompare(b.name);
+                            return a.type === 'folder' ? -1 : 1;
+                        }).map(node => (
+                            <FileTreeItem
+                                key={node.path}
+                                node={node}
+                                level={0}
+                                activeFile={activeFile}
+                                activeFolder={activeFolder}
+                                expandedFolders={expandedFolders}
+                                onToggleFolder={(path) => setExpandedFolders(prev => ({ ...prev, [path]: !prev[path] }))}
+                                onFileClick={(path) => onFileChange(path)}
+                                onFolderClick={(path) => setActiveFolder(path === activeFolder ? null : path)}
+                            />
                         ))}
                     </div>
                 </div>
@@ -144,12 +357,15 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
             {/* Editor Area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Simplified Tabs / Breadcrumbs */}
-                <div className="flex bg-[#0a0a0a] border-b border-white/5 h-9 items-center px-4 justify-between">
-                    <div className="text-xs text-gray-400 flex items-center gap-2">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="hover:text-white mr-2">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <div className="flex bg-[#0a0a0a] border-b border-white/5 h-9 items-center px-4 justify-between select-none">
+                    <div className="text-xs text-gray-400 flex items-center gap-2 overflow-hidden">
+                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="hover:text-white mr-2 flex-shrink-0">
+                            {isSidebarOpen ? <ChevronDown size={14} className="rotate-90" /> : <ChevronRight size={14} />}
                         </button>
-                        <span>{activeFile}</span>
+                        <span className="flex items-center gap-1 truncate">
+                            <FileCode size={12} className="text-blue-400" />
+                            {activeFile}
+                        </span>
                     </div>
                 </div>
 
@@ -167,7 +383,7 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                             height="100%"
                             theme="zerocode-dark"
                             path={activeFile}
-                            defaultLanguage={activeFile.endsWith('.html') ? 'html' : activeFile.endsWith('.css') ? 'css' : 'javascript'}
+                            defaultLanguage={getLanguageFromPath(activeFile)}
                             defaultValue={files.find(f => f.name === activeFile)?.content || ''}
                             value={files.find(f => f.name === activeFile)?.content || ''}
                             onChange={handleEditorChange}
@@ -190,7 +406,7 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                                 hover: { enabled: false },
                                 minimap: { enabled: false },
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 13, // Slightly smaller
+                                fontSize: 13,
                                 lineHeight: 22,
                                 padding: { top: 16 },
                                 scrollBeyondLastLine: false,

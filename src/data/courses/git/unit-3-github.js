@@ -35,7 +35,9 @@ This mysterious folder contains everything.
             type: 'lesson',
             title: 'Lab: Where is Your Head?',
             duration: '15 min',
-            files: [],
+            files: [
+                { name: 'project_notes.txt', content: 'Learning about Git internals', language: 'text' }
+            ],
             content: `
 # Mission: Locate HEAD
 
@@ -54,12 +56,12 @@ Usually, it contains a reference to a branch, like \`ref: refs/heads/master\`.
             tasks: [
                 {
                     id: 'task1',
-                    text: 'Initialize repo',
+                    description: 'Initialize repo',
                     regex: '"initialized":true'
                 },
                 {
                     id: 'task2',
-                    text: 'Read HEAD file (run cat .git/HEAD)',
+                    description: 'Read HEAD file (run cat .git/HEAD)',
                     // We can't verify they ran 'cat', but we can check if they are initialized.
                     // This lab is mostly exploration.
                     regex: '"initialized":true'
@@ -93,21 +95,24 @@ When you switch branches, Git just updates the content of the HEAD file.
             questions: [
                 {
                     id: 'q1',
-                    text: 'What does the HEAD file usually contain?',
+                    question: 'What does the HEAD file usually contain?',
                     options: ['The latest commit hash', 'A reference to the current branch', 'Your username', 'The remote URL'],
-                    correct: 1
+                    correctIndex: 1,
+                    explanation: 'HEAD is a pointer that points to the current branch reference, e.g., `ref: refs/heads/master`.'
                 },
                 {
                     id: 'q2',
-                    text: 'Where are local repository settings stored?',
+                    question: 'Where are local repository settings stored?',
                     options: ['.git/settings', '.git/config', '~/.gitconfig', '/etc/gitconfig'],
-                    correct: 1
+                    correctIndex: 1,
+                    explanation: 'Repository-specific settings are stored in `.git/config`.'
                 },
                 {
                     id: 'q3',
-                    text: 'What is a branch in Git?',
+                    question: 'What is a branch in Git?',
                     options: ['A copy of all files', 'A separate folder', 'A movable pointer to a commit', 'A backup on GitHub'],
-                    correct: 2
+                    correctIndex: 2,
+                    explanation: 'A branch is technically just a lightweight movable pointer to a specific commit hash.'
                 }
             ]
         }

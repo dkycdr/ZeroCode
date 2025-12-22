@@ -3,12 +3,12 @@ import { unit2BasicCommands } from './unit-2-basic-commands';
 import { unit3Github } from './unit-3-github';
 import { unit4Project } from './unit-4-project';
 import { unit5BranchingMerging } from './unit-5-branching-merging';
-import { unit5Remote } from './unit-5-remote';
-import { unit6Collaboration } from './unit-6-collaboration';
-import { unit7RebaseCherrypick } from './unit-7-rebase-cherrypick';
-import { unit8StashClean } from './unit-8-stash-clean';
-import { unit9HooksAutomation } from './unit-9-hooks-automation';
-import { unit10AdvancedWorkflows } from './unit-10-advanced-workflows';
+import { unit6Remote } from './unit-6-remote';
+import { unit7Collaboration } from './unit-7-collaboration';
+import { unit8RebaseCherrypick } from './unit-8-rebase-cherrypick';
+import { unit9StashClean } from './unit-9-stash-clean';
+import { unit10HooksAutomation } from './unit-10-hooks-automation';
+import { unit11AdvancedWorkflows } from './unit-11-advanced-workflows';
 
 export const gitCourse = {
     id: 'git',
@@ -21,12 +21,13 @@ export const gitCourse = {
         unit1Introduction,
         unit2BasicCommands,
         unit3Github,
+        unit4Project,
         unit5BranchingMerging,
-        unit5Remote,
-        unit6Collaboration,
-        unit7RebaseCherrypick,
-        unit8StashClean,
-        unit9HooksAutomation,
-        unit10AdvancedWorkflows
+        unit6Remote,
+        unit7Collaboration,
+        unit8RebaseCherrypick,
+        unit9StashClean,
+        unit10HooksAutomation,
+        unit11AdvancedWorkflows
     ]
 };
