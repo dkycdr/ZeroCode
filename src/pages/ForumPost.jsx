@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import AvatarWithBorder from '../components/common/AvatarWithBorder';
 
 const CATEGORIES = [
     { id: 'general', label: 'General', color: 'text-blue-400 border-blue-900/50' },
@@ -46,7 +47,7 @@ export default function ForumPost() {
     const loadPost = async () => {
         try {
             const result = await sql`
-                SELECT p.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.subscription_tier as author_tier, u.created_at as author_joined
+                SELECT p.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.border as author_border, u.subscription_tier as author_tier, u.created_at as author_joined
                 FROM forum_posts p
                 JOIN users u ON p.user_id = u.id
                 WHERE p.id = ${postId}
@@ -69,7 +70,7 @@ export default function ForumPost() {
     const loadReplies = async () => {
         try {
             const result = await sql`
-                SELECT r.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.subscription_tier as author_tier, u.created_at as author_joined
+                SELECT r.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.border as author_border, u.subscription_tier as author_tier, u.created_at as author_joined
                 FROM forum_replies r
                 JOIN users u ON r.user_id = u.id
                 WHERE r.post_id = ${postId}
@@ -282,15 +283,13 @@ export default function ForumPost() {
                             <>
                                 <h1 className="text-3xl md:text-5xl font-black text-white mb-8 leading-[1.1] tracking-tighter">{post.title}</h1>
                                 <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 w-fit">
-                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-800 border border-white/10">
-                                        {post.author_avatar ? (
-                                            <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-sm font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
-                                                {post.author_name?.[0] || 'U'}
-                                            </div>
-                                        )}
-                                    </div>
+                                    <AvatarWithBorder
+                                        url={post.author_avatar}
+                                        name={post.author_name}
+                                        border={post.author_border}
+                                        size="lg"
+                                        className="w-12 h-12"
+                                    />
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-black text-white uppercase tracking-tight">{post.author_name}</span>
@@ -367,15 +366,13 @@ export default function ForumPost() {
                                         <div className="flex flex-col gap-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 border border-white/10">
-                                                        {reply.author_avatar ? (
-                                                            <img src={reply.author_avatar} className="w-full h-full object-cover" alt="" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-xs font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
-                                                                {reply.author_name?.[0] || 'U'}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <AvatarWithBorder
+                                                        url={reply.author_avatar}
+                                                        name={reply.author_name}
+                                                        border={reply.author_border}
+                                                        size="md"
+                                                        className="w-10 h-10"
+                                                    />
                                                     <div className="flex flex-col">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm font-black text-white uppercase tracking-tight">{reply.author_name}</span>
@@ -450,15 +447,13 @@ export default function ForumPost() {
                         className="max-w-3xl mx-auto pointer-events-auto"
                     >
                         <div className="bg-zinc-900/80 backdrop-blur-2xl border border-white/10 p-3 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0 hidden md:block">
-                                {user.avatar ? (
-                                    <img src={user.avatar} className="w-full h-full object-cover" alt="" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-xs font-black bg-zinc-800 text-zinc-500">
-                                        {user.name?.[0]}
-                                    </div>
-                                )}
-                            </div>
+                            <AvatarWithBorder
+                                url={user?.avatar}
+                                name={user?.name}
+                                border={user?.border}
+                                size="md"
+                                className="w-12 h-12 shrink-0 hidden md:block"
+                            />
                             <input
                                 type="text"
                                 value={replyContent}

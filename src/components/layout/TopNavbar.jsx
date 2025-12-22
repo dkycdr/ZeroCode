@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
+import AvatarWithBorder from '../common/AvatarWithBorder';
 import {
     RiDashboardLine,
     RiBookOpenLine,
@@ -13,7 +14,7 @@ import {
     RiRocketLine
 } from 'react-icons/ri';
 import clsx from 'clsx';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/logo_z.png';
 
 export default function TopNavbar() {
     const { user, logout, isAdmin } = useAuth();
@@ -54,10 +55,12 @@ export default function TopNavbar() {
                 {/* Logo & Main Nav */}
                 <div className="flex items-center gap-8">
                     <button onClick={handleLogoClick} className="flex items-center gap-3 group focus:outline-none">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:border-indigo-500/50 transition-colors">
-                            <img src={logo} alt="ZC" className="w-5 h-5 opacity-90" />
-                        </div>
-                        <span className="font-bold text-lg tracking-tight text-white group-hover:text-indigo-400 transition-colors">
+                        <img
+                            src={logo}
+                            alt="ZeroCode"
+                            className="w-10 h-10 transition-transform group-hover:scale-110"
+                        />
+                        <span className="font-black text-2xl tracking-tighter text-white group-hover:text-zinc-300 transition-colors uppercase">
                             ZeroCode
                         </span>
                     </button>
@@ -111,13 +114,13 @@ export default function TopNavbar() {
                                     {user?.role || 'Cadet'}
                                 </div>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-indigo-500/50 transition-all">
-                                {user?.avatar ? (
-                                    <img src={user.avatar} className="w-full h-full rounded-full object-cover" alt="" />
-                                ) : (
-                                    <span className="font-bold text-xs">{user?.name?.charAt(0) || 'U'}</span>
-                                )}
-                            </div>
+                            <AvatarWithBorder
+                                url={user?.avatar}
+                                name={user?.name}
+                                border={user?.border}
+                                size="md" // 9 is close to 10 (md) or 8 (sm). 9 = 2.25rem = 36px. md is 40px, sm is 32px. Let's use md but adjust class if needed, or rely on size prop. The component uses w-9 h-9 previously. I'll pass className="w-9 h-9" and size="custom" if needed, or just let it be md (w-10). Let's use md.
+                                className="w-9 h-9"
+                            />
                         </button>
 
                         {/* Dropdown */}

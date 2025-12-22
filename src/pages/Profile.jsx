@@ -6,14 +6,14 @@ import { useProgress } from '../contexts/ProgressProvider';
 import { getCourseProgress } from '../data/courses/index';
 import { courses } from '../data/curriculumStructure';
 import AppLayout from '../components/layout/AppLayout';
+import { sql } from '../lib/neon';
 import {
-    RiBookOpenLine, RiTrophyLine, RiAwardLine, RiFundsLine,
-    RiEdit2Line, RiLogoutBoxRLine, RiSave3Line, RiCloseLine,
-    RiVipCrownFill, RiMessage2Line, RiPhoneLine, RiShieldKeyholeLine,
-    RiUser3Line, RiMailLine, RiCalendarLine, RiTimeLine,
-    RiCheckLine
+    RiEdit2Line, RiCameraLine, RiVipCrownLine, RiCheckLine, RiLoader4Line,
+    RiPhoneLine, RiMailLine, RiCalendarLine, RiShieldKeyholeLine, RiLogoutBoxRLine,
+    RiBookOpenLine, RiFundsLine, RiTimeLine, RiTrophyLine, RiAwardLine, RiVipCrownFill
 } from 'react-icons/ri';
 import clsx from 'clsx';
+import AvatarWithBorder from '../components/common/AvatarWithBorder';
 
 const WHATSAPP_NUMBER = '6283875727384';
 
@@ -42,7 +42,8 @@ export default function Profile() {
     const [formData, setFormData] = useState({
         name: user?.name || '',
         phone: user?.phone || '',
-        avatar: user?.avatar || ''
+        avatar: user?.avatar || '',
+        border: user?.border || 'none'
     });
 
     // Update form when user data changes (e.g. after refresh)
@@ -51,7 +52,8 @@ export default function Profile() {
             setFormData({
                 name: user.name || '',
                 phone: user.phone || '',
-                avatar: user.avatar || ''
+                avatar: user.avatar || '',
+                border: user.border || 'none'
             });
         }
     }, [user]);
@@ -74,7 +76,8 @@ export default function Profile() {
         setFormData({
             name: user?.name || '',
             phone: user?.phone || '',
-            avatar: user?.avatar || ''
+            avatar: user?.avatar || '',
+            border: user?.border || 'none'
         });
         setIsEditing(false);
     };
@@ -115,25 +118,21 @@ export default function Profile() {
 
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                         {/* Avatar */}
+
+                        {/* Avatar */}
                         <div className="relative group">
-                            <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-zinc-800 to-black p-1 shadow-2xl">
-                                <div className="w-full h-full rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center overflow-hidden">
-                                    {(formData.avatar || user?.avatar) ? (
-                                        <img src={formData.avatar || user.avatar} className="w-full h-full object-cover" alt="" />
-                                    ) : (
-                                        <span className="text-4xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-                                            {user?.name?.charAt(0) || 'U'}
-                                        </span>
-                                    )}
-                                    {isEditing && (
-                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-xs text-white font-medium backdrop-blur-sm">
-                                            Select Below
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="w-28 h-28">
+                                <AvatarWithBorder
+                                    url={formData.avatar || user?.avatar}
+                                    name={user?.name}
+                                    border={isEditing ? formData.border : user?.border}
+                                    size="custom"
+                                    className="w-full h-full"
+                                />
                             </div>
+
                             {!isEditing && (
-                                <button onClick={() => setIsEditing(true)} className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg">
+                                <button onClick={() => setIsEditing(true)} className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:border-indigo-500 hover:bg-indigo-500 transition-all shadow-lg z-30">
                                     <RiEdit2Line size={14} />
                                 </button>
                             )}
@@ -143,25 +142,131 @@ export default function Profile() {
                         <div className="flex-1 text-center md:text-left space-y-2">
                             {isEditing ? (
                                 <div className="space-y-4 max-w-lg">
+
                                     {/* Avatar Selection */}
-                                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                        {PRESET_AVATARS.map((avatar, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => setFormData({ ...formData, avatar })}
-                                                className={clsx(
-                                                    "relative flex-shrink-0 w-12 h-12 rounded-lg border-2 overflow-hidden transition-all",
-                                                    formData.avatar === avatar ? "border-indigo-500 scale-110 shadow-lg shadow-indigo-500/20" : "border-zinc-700 opacity-60 hover:opacity-100"
-                                                )}
-                                            >
-                                                <img src={avatar} className="w-full h-full object-cover" alt={`Avatar ${idx + 1}`} />
-                                                {formData.avatar === avatar && (
-                                                    <div className="absolute inset-0 bg-indigo-500/20 flex items-center justify-center">
-                                                        <RiCheckLine className="text-white drop-shadow-md" />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ))}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Select Avatar</label>
+                                        <div className="grid grid-cols-5 gap-3">
+                                            {PRESET_AVATARS.map((avatarUrl) => (
+                                                <button
+                                                    key={avatarUrl}
+                                                    onClick={() => setFormData({ ...formData, avatar: avatarUrl })}
+                                                    className={clsx(
+                                                        "relative aspect-square rounded-xl bg-zinc-900 border-2 transition-all overflow-hidden",
+                                                        formData.avatar === avatarUrl
+                                                            ? "border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)] scale-105 z-10"
+                                                            : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
+                                                    )}
+                                                >
+                                                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                                                    {formData.avatar === avatarUrl && (
+                                                        <div className="absolute inset-0 bg-indigo-500/20 flex items-center justify-center">
+                                                            <RiCheckLine className="text-white drop-shadow-md" size={16} />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Border Selection */}
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Select Frame Style</label>
+                                        <div className="grid grid-cols-4 gap-4">
+                                            {[
+                                                { id: 'none', label: 'None', preview: <div className="w-full h-full rounded-2xl bg-zinc-800" /> },
+                                                {
+                                                    id: 'neural',
+                                                    label: 'Neural',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-0 rounded-full border border-dashed border-cyan-500/50 animate-[spin_10s_linear_infinite]" />
+                                                            <div className="w-8 h-8 rounded-full bg-zinc-800 shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'warlord',
+                                                    label: 'Warlord',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-1 bg-gradient-to-br from-yellow-500 to-red-600 clip-hex opacity-50" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }} />
+                                                            <div className="w-8 h-8 bg-zinc-800" style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }} />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'ghost',
+                                                    label: 'Ghost',
+                                                    preview: (
+                                                        <div className="relative w-full h-full bg-purple-900/40 rounded-lg border border-purple-500/50 flex items-center justify-center overflow-hidden">
+                                                            <div className="absolute top-0 w-full h-[1px] bg-purple-400 animate-[scanline_2s_linear_infinite]" />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'operator',
+                                                    label: 'Operator',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-1 border-l border-t border-emerald-500 rounded-tl w-3 h-3" />
+                                                            <div className="absolute inset-1 border-r border-b border-emerald-500 rounded-br w-3 h-3 right-0 bottom-0" />
+                                                            <div className="w-8 h-8 rounded bg-zinc-800 border border-white/10" />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'scanner',
+                                                    label: 'Scanner',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-1 rounded-full border border-emerald-500/30 opacity-50" />
+                                                            <div className="absolute inset-1 rounded-full border-t-2 border-emerald-500 animate-[spin_4s_linear_infinite]" />
+                                                            <div className="w-8 h-8 rounded-full bg-zinc-800/80" />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'crimson',
+                                                    label: 'Crimson',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-1 bg-red-600/20 rounded-lg animate-pulse" />
+                                                            <div className="absolute inset-1 border border-red-500/50 rounded-lg transform rotate-3" />
+                                                            <div className="absolute inset-1 border border-red-500/50 rounded-lg transform -rotate-3" />
+                                                            <div className="w-8 h-8 bg-zinc-900 rounded-sm" />
+                                                        </div>
+                                                    )
+                                                },
+                                                {
+                                                    id: 'synth',
+                                                    label: 'Synth',
+                                                    preview: (
+                                                        <div className="relative w-full h-full flex items-center justify-center">
+                                                            <div className="absolute inset-1 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 animate-[spin_2s_linear_infinite] opacity-70 blur-sm" />
+                                                            <div className="w-8 h-8 rounded-full bg-zinc-900 z-10" />
+                                                        </div>
+                                                    )
+                                                }
+                                            ].map((border) => (
+                                                <button
+                                                    key={border.id}
+                                                    onClick={() => setFormData({ ...formData, border: border.id })}
+                                                    className={clsx(
+                                                        "relative aspect-square rounded-xl bg-zinc-900 border-2 transition-all p-2 overflow-hidden",
+                                                        formData.border === border.id
+                                                            ? "border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)] scale-105 z-10"
+                                                            : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
+                                                    )}
+                                                >
+                                                    {border.preview}
+                                                    {formData.border === border.id && (
+                                                        <div className="absolute inset-0 bg-indigo-500/10 border-2 border-indigo-500 rounded-xl" />
+                                                    )}
+                                                    <span className="absolute bottom-1 left-0 right-0 text-[8px] font-mono text-center text-zinc-500 uppercase">{border.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     <div className="space-y-3 max-w-sm">

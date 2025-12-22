@@ -479,6 +479,7 @@ export default function LearningLayout() {
                 completedItems={completedItems}
             />
 
+            {/* AI Panel - Render outside of resizable panels but inside wrapper */}
             <AIAssistantPanel
                 isOpen={isAIPanelOpen}
                 onClose={() => setIsAIPanelOpen(false)}
@@ -486,17 +487,19 @@ export default function LearningLayout() {
                 taskDescription={item?.content || "No context available."}
             />
 
-            <div className="flex-1 min-h-0 w-full relative pt-16 pb-14">
+            <div className="flex-1 min-h-0 w-full relative pt-16 pb-14 bg-[#050505]">
                 <PanelGroup direction="horizontal" className="h-full w-full">
                     {/* Left Panel: Instructions */}
-                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[var(--bg-panel)] border-r border-[var(--border-subtle)]">
+                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[#0a0a0c] border-r border-white/5 relative z-10">
                         <InstructionPane lesson={lessonData} />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
+                    <PanelResizeHandle className="w-0.5 bg-blue-900/30 hover:bg-blue-500 hover:shadow-[0_0_10px_#3b82f6] transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
+                        <div className="h-8 w-0.5 bg-blue-500/50 group-hover:bg-blue-400 rounded-full" />
+                    </PanelResizeHandle>
 
                     {/* Middle Panel: Editor */}
-                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-[#0a0a0a]">
+                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-[#0a0a0a] relative z-0">
                         <EditorComponent
                             files={files}
                             setFiles={setFiles}
@@ -508,10 +511,12 @@ export default function LearningLayout() {
                         />
                     </Panel>
 
-                    <PanelResizeHandle className="w-1 bg-[var(--bg-primary)] hover:bg-[var(--accent-primary)] transition-colors cursor-col-resize flex items-center justify-center group focus:outline-none z-10" />
+                    <PanelResizeHandle className="w-0.5 bg-blue-900/30 hover:bg-blue-500 hover:shadow-[0_0_10px_#3b82f6] transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
+                        <div className="h-8 w-0.5 bg-blue-500/50 group-hover:bg-blue-400 rounded-full" />
+                    </PanelResizeHandle>
 
                     {/* Right Panel: Dynamic Engine */}
-                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-[#0a0a0a]">
+                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-[#0c0c0c] border-l border-white/5">
                         {activeEngine === 'PYTHON' ? (
                             <PythonTerminal
                                 files={files}

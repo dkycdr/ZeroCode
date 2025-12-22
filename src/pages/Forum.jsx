@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { RiFireLine, RiTimeLine, RiLineChartLine } from 'react-icons/ri';
 import clsx from 'clsx';
+import AvatarWithBorder from '../components/common/AvatarWithBorder';
 
 const CATEGORIES = [
     { id: 'all', label: 'All', color: 'text-gray-400 border-gray-700' },
@@ -53,6 +54,7 @@ export default function Forum() {
                         u.name as author_name,
                         u.email as author_email,
                         u.avatar as author_avatar,
+                        u.border as author_border,
                         u.subscription_tier as author_tier,
                         u.created_at as author_joined,
                         (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
@@ -67,6 +69,7 @@ export default function Forum() {
                         u.name as author_name,
                         u.email as author_email,
                         u.avatar as author_avatar,
+                        u.border as author_border,
                         u.subscription_tier as author_tier,
                         u.created_at as author_joined,
                         (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
@@ -81,6 +84,7 @@ export default function Forum() {
                         u.name as author_name,
                         u.email as author_email,
                         u.avatar as author_avatar,
+                        u.border as author_border,
                         u.subscription_tier as author_tier,
                         u.created_at as author_joined,
                         (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
@@ -328,15 +332,13 @@ export default function Forum() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-wrap items-center gap-4 mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 ring-2 ring-transparent group-hover:ring-indigo-500/30 transition-all">
-                                                        {post.author_avatar ? (
-                                                            <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-xs font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
-                                                                {post.author_name?.[0] || 'U'}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <AvatarWithBorder
+                                                        url={post.author_avatar}
+                                                        name={post.author_name}
+                                                        border={post.author_border}
+                                                        size="md"
+                                                        className="w-10 h-10"
+                                                    />
                                                     <div className="flex flex-col">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">

@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const result = await sql`
-                SELECT id, email, password_hash, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                SELECT id, email, password_hash, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
                 FROM users WHERE email = ${email}
             `;
 
@@ -137,9 +137,10 @@ export const AuthProvider = ({ children }) => {
                 UPDATE users
                 SET name = ${updates.name || user.name}, 
                     phone = ${updates.phone || user.phone || null},
-                    avatar = ${updates.avatar || user.avatar || null}
+                    avatar = ${updates.avatar || user.avatar || null},
+                    border = ${updates.border || user.border || null}
                 WHERE id = ${user.id}
-                RETURNING id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                RETURNING id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
             `;
 
             const updatedUser = result[0];
@@ -158,7 +159,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const result = await sql`
-                SELECT id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                SELECT id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
                 FROM users WHERE id = ${user.id}
             `;
 

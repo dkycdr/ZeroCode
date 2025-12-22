@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthProvider';
 import { ProgressProvider } from './contexts/ProgressProvider';
 import LandingPage from './pages/LandingPage';
@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAccess from './pages/AdminAccess';
 import Library from './pages/Library';
+import Migrate from './pages/Migrate';
 import Forum from './pages/Forum';
 import ForumPost from './pages/ForumPost';
 import Leaderboard from './pages/Leaderboard';
@@ -42,13 +43,27 @@ const PublicRoute = ({ children }) => {
     return children;
 };
 
+import NebulaChatbot from './components/NebulaChatbot';
+
+// Wrapper to conditionally render the Global Chatbot
+const GlobalChatbotWrapper = () => {
+    const location = useLocation();
+    // Hide chatbot on learning pages where specific AI assistant exists
+    if (location.pathname.startsWith('/learn/')) {
+        return null;
+    }
+    return <NebulaChatbot />;
+};
+
 function App() {
     return (
         <Router>
             <AuthProvider>
                 <ProgressProvider>
+                    <GlobalChatbotWrapper />
                     <Routes>
                         {/* Public Routes */}
+
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={
                             <PublicRoute>
@@ -142,6 +157,9 @@ function App() {
                                 <Leaderboard />
                             </ProtectedRoute>
                         } />
+
+                        {/* Temp Migration Route */}
+                        <Route path="/migrate" element={<Migrate />} />
 
                         {/* Catch all */}
                         <Route path="*" element={<Navigate to="/" />} />

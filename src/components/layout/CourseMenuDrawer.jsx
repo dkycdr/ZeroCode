@@ -1,7 +1,7 @@
-import { RiCloseLine, RiArrowLeftSLine, RiCheckboxCircleFill, RiCheckboxBlankCircleLine, RiBookOpenLine, RiCodeBoxLine, RiQuestionAnswerLine } from 'react-icons/ri';
-import clsx from 'clsx';
-import { CONTENT_TYPES } from '../../data/courses/index';
 import { useNavigate } from 'react-router-dom';
+import { X, CheckCircle2, Circle, Lock, ChevronLeft, Map, PlayCircle, FileText, Code } from 'lucide-react';
+import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CourseMenuDrawer({
     isOpen,
@@ -26,94 +26,131 @@ export default function CourseMenuDrawer({
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <>
-            {/* Backdrop */}
-            <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
-                onClick={onClose}
-            />
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+                    />
 
-            {/* Drawer */}
-            <div className="fixed top-0 left-0 h-full w-[400px] max-w-[85vw] bg-[#101010] border-r border-[#27272a] shadow-2xl z-[70] transform transition-transform duration-300 flex flex-col font-sans">
+                    {/* Drawer Panel */}
+                    <motion.div
+                        initial={{ x: '-100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '-100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        className="fixed top-0 left-0 h-full w-80 bg-[#08080a] border-r border-white/10 z-[70] flex flex-col shadow-2xl"
+                    >
+                        {/* Header */}
+                        <div className="p-6 border-b border-white/5 relative overflow-hidden">
+                            {/* Decorative Glow */}
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
 
-                {/* Header */}
-                <div className="p-6 border-b border-[#27272a]">
-                    <div className="flex items-center justify-between mb-6">
-                        <button
-                            onClick={() => navigate(`/course/${courseId}`)} // Go to Course Overview
-                            className="flex items-center text-xs font-bold text-gray-400 hover:text-white transition-colors tracking-wide uppercase"
-                        >
-                            <RiArrowLeftSLine size={16} className="mr-1" />
-                            Back to Course
-                        </button>
-                        <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
-                            <RiCloseLine size={24} />
-                        </button>
-                    </div>
-
-                    <h2 className="text-2xl font-bold text-white mb-2">{unitTitle}</h2>
-
-                    {/* Progress Bar for Unit */}
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="h-1.5 flex-1 bg-[#27272a] rounded-full overflow-hidden">
-                            {/* Calculate unit progress */}
-                            <div
-                                className="h-full bg-[var(--accent-primary)]"
-                                style={{ width: `${(unitItems.filter(i => completedItems.includes(i.id)).length / unitItems.length) * 100}%` }}
-                            />
-                        </div>
-                    </div>
-
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                        {unitDescription || "Master the concepts in this unit to advance your skills."}
-                    </p>
-                </div>
-
-                {/* List */}
-                <div className="flex-1 overflow-y-auto p-2">
-                    {unitItems.map((item, index) => {
-                        const isCompleted = completedItems.includes(item.id);
-                        const isCurrent = item.id === currentItemId;
-                        const Icon = getTypeIcon(item.type);
-
-                        return (
                             <button
-                                key={item.id}
-                                onClick={() => {
-                                    navigate(`/learn/${courseId}/${item.id}`);
-                                    onClose();
-                                }}
-                                className={clsx(
-                                    "w-full flex items-center p-4 rounded-lg mb-1 transition-all group text-left",
-                                    isCurrent ? "bg-[#1f1f23] border border-[#3f3f46]" : "hover:bg-[#18181b] border border-transparent"
-                                )}
+                                onClick={onClose}
+                                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
                             >
-                                <div className={clsx("mr-4 transition-colors", isCompleted ? "text-[var(--accent-primary)]" : "text-gray-600")}>
-                                    {isCompleted ? <RiCheckboxCircleFill size={20} /> : <RiCheckboxBlankCircleLine size={20} />}
-                                </div>
-
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <span className={clsx("text-xs font-bold uppercase tracking-wider", isCurrent ? "text-[var(--accent-primary)]" : "text-gray-500")}>
-                                            {item.type === CONTENT_TYPES.LESSON ? 'Lesson' : item.type}
-                                        </span>
-                                    </div>
-                                    <div className={clsx("text-sm font-medium", isCurrent ? "text-white" : "text-gray-300 group-hover:text-white")}>
-                                        {item.title}
-                                    </div>
-                                </div>
-
-                                <div className={clsx("opacity-0 group-hover:opacity-100 transition-opacity text-gray-500")}>
-                                    {Icon}
-                                </div>
+                                <X size={20} />
                             </button>
-                        );
-                    })}
-                </div>
-            </div>
-        </>
+
+                            <button
+                                onClick={() => navigate(`/course/${courseId}`)}
+                                className="flex items-center gap-2 text-xs font-mono text-gray-400 hover:text-indigo-400 mb-6 transition-colors group"
+                            >
+                                <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                                BACK TO SYLLABUS
+                            </button>
+
+                            <div className="flex items-center gap-2 text-indigo-500 text-[10px] font-mono font-bold uppercase tracking-widest mb-2">
+                                <Map size={12} />
+                                <span>Navigation System</span>
+                            </div>
+                            <h2 className="text-lg font-bold text-white leading-tight">{unitTitle}</h2>
+                            <p className="text-xs text-gray-500 mt-2 line-clamp-2">{unitDescription}</p>
+                        </div>
+
+                        {/* Neural List */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 relative">
+                            {/* Vertical Spine Line */}
+                            <div className="absolute left-[2.5rem] top-6 bottom-6 w-px bg-white/5" />
+
+                            <div className="space-y-6 relative">
+                                {unitItems?.map((item, index) => {
+                                    const isCompleted = completedItems?.includes(item.id);
+                                    const isActive = item.id === currentItemId;
+
+                                    // Determine Icon
+                                    let ItemIcon = Circle;
+                                    if (item.type === 'lesson') ItemIcon = Code;
+                                    if (item.type === 'informational') ItemIcon = FileText;
+                                    if (isCompleted) ItemIcon = CheckCircle2;
+
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            onClick={() => {
+                                                navigate(`/learn/${courseId}/${item.id}`);
+                                                onClose();
+                                            }}
+                                            className="group relative flex items-start gap-4 cursor-pointer"
+                                        >
+                                            {/* Node Point */}
+                                            <div className={clsx(
+                                                "relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 bg-[#08080a]",
+                                                isActive
+                                                    ? "border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)] scale-110"
+                                                    : isCompleted
+                                                        ? "border-emerald-500/50 text-emerald-500"
+                                                        : "border-white/10 text-gray-600 group-hover:border-white/30"
+                                            )}>
+                                                {isActive && (
+                                                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full animate-ping" />
+                                                )}
+                                                <ItemIcon size={isActive ? 16 : 14} />
+                                            </div>
+
+                                            {/* Content */}
+                                            <div className={clsx(
+                                                "flex-1 pt-1 transition-colors duration-300",
+                                                isActive ? "text-white" : "text-gray-500 group-hover:text-gray-300"
+                                            )}>
+                                                <div className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-60 mb-0.5">
+                                                    {item.type}
+                                                </div>
+                                                <div className="text-sm font-medium leading-tight">
+                                                    {item.title}
+                                                </div>
+                                            </div>
+
+                                            {/* Connected Line Highlight (Optional - connects to next) */}
+                                            {index !== unitItems.length - 1 && isActive && (
+                                                <div className="absolute left-[15px] top-8 h-8 w-0.5 bg-gradient-to-b from-indigo-500 to-transparent z-0" />
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Footer Status */}
+                        <div className="p-4 border-t border-white/5 bg-black/20 backdrop-blur">
+                            <div className="flex items-center justify-between text-xs font-mono text-gray-500">
+                                <span>SYSTEM STATUS</span>
+                                <span className="flex items-center gap-1.5 text-emerald-500">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    ONLINE
+                                </span>
+                            </div>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
     );
 }

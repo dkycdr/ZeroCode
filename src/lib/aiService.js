@@ -39,6 +39,35 @@ ${errorMsg ? `I am getting this error: "${errorMsg}"` : ""}
 Please give me a specific hint to help me move forward.
     `.trim();
 
+        return this.fetchGroqResponse(apiKey, systemPrompt, userPrompt);
+    },
+
+    /**
+     * General chat response for the AI Assistant Panel
+     * @param {string} message - User's message
+     * @param {string} context - Optional technical context (code, task, etc.)
+     */
+    async getChatResponse(message, context = "") {
+        const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+        if (!apiKey) throw new Error("Missing Groq API Key.");
+
+        const systemPrompt = `
+You are Nebula, an elite coding assistant powered by Groq (Llama 3).
+Your goal is to assist the user with their coding tasks, explain concepts, and debug issues.
+Be concise, professional, and helpful.
+        `.trim();
+
+        const userPrompt = context
+            ? `${context}\n\nUser Query: ${message}`
+            : message;
+
+        return this.fetchGroqResponse(apiKey, systemPrompt, userPrompt);
+    },
+
+    /**
+     * Internal helper to fetch from Groq
+     */
+    async fetchGroqResponse(apiKey, systemPrompt, userPrompt) {
         try {
             const response = await fetch(GROQ_API_URL, {
                 method: "POST",
@@ -53,7 +82,7 @@ Please give me a specific hint to help me move forward.
                         { role: "user", content: userPrompt }
                     ],
                     temperature: 0.5,
-                    max_tokens: 300
+                    max_tokens: 500
                 })
             });
 
@@ -63,7 +92,7 @@ Please give me a specific hint to help me move forward.
             }
 
             const data = await response.json();
-            return data.choices[0]?.message?.content || "Could not generate a hint.";
+            return data.choices[0]?.message?.content || "No response received.";
 
         } catch (error) {
             console.error("AI Service Error:", error);

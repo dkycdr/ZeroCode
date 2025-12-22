@@ -289,16 +289,19 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
     const fileTree = useMemo(() => buildFileTree(files, folders), [files, folders]);
 
     return (
-        <div className="h-full flex bg-[#0a0a0a] border-r border-white/10 font-sans">
+        <div className="h-full flex bg-[#0a0a0a] border-r border-white/5 font-sans">
             {/* File Explorer Sidebar */}
             {isSidebarOpen && (
                 <div className="w-56 bg-[#050505] border-r border-white/5 flex flex-col flex-shrink-0">
-                    <div className="p-3 text-xs font-bold text-gray-400 tracking-wider flex items-center justify-between border-b border-white/5 bg-[#0a0a0a]">
-                        <span>EXPLORER</span>
+                    <div className="p-3 text-[10px] font-bold text-gray-500 tracking-[0.2em] flex items-center justify-between border-b border-white/5 bg-[#080808]">
+                        <span className="flex items-center gap-2">
+                            <Folder size={12} className="text-blue-500/50" />
+                            SYS.DIRECTORY
+                        </span>
                         <div className="flex gap-1">
                             <button
                                 onClick={() => setIsCreatingFile(true)}
-                                className="hover:text-white hover:bg-white/10 p-1 rounded transition-colors text-blue-400"
+                                className="hover:text-blue-400 hover:bg-blue-500/10 p-1 rounded transition-colors text-gray-500"
                                 title={activeFolder ? `New File in ${activeFolder}` : "New File in Root"}
                             >
                                 <FilePlus size={14} />

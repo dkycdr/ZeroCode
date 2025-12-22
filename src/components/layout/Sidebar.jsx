@@ -37,10 +37,12 @@ export default function Sidebar() {
             {/* Logo Area */}
             <div className="h-16 flex items-center px-6 border-b border-zinc-800/50">
                 <Link to="/dashboard" className="flex items-center gap-3 group">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:border-indigo-500/50 transition-colors">
-                        <img src={logo} alt="ZC" className="w-5 h-5 opacity-90" />
-                    </div>
-                    <span className="font-bold text-lg tracking-tight text-white group-hover:text-indigo-400 transition-colors">
+                    <img
+                        src={logo}
+                        alt="ZeroCode"
+                        className="w-8 h-8 invert brightness-200 contrast-125 transition-transform group-hover:scale-110"
+                    />
+                    <span className="font-black text-xl tracking-tighter text-white group-hover:text-zinc-300 transition-colors uppercase">
                         ZeroCode
                     </span>
                 </Link>

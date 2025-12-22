@@ -34,17 +34,20 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
 
     return (
         <div
-            className="h-full w-full bg-[#0c0c0c] flex flex-col font-mono text-sm p-4 overflow-hidden" // JetBrains Mono font handled by global CSS usually
+            className="h-full w-full bg-[#050505] flex flex-col font-mono text-sm p-4 overflow-hidden relative"
             onClick={handleContainerClick}
         >
+            {/* Subtle Scanline Background */}
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,rgba(255,255,255,0.02)_1px,rgba(255,255,255,0.02)_2px)] pointer-events-none" />
+
             {/* Terminal Header */}
-            <div className="flex items-center justify-between mb-4 select-none opacity-50">
-                <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
+            <div className="flex items-center justify-between mb-4 select-none border-b border-white/5 pb-2">
+                <div className="flex gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
                 </div>
-                <div className="text-xs">bash — 80x24</div>
+                <div className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em]">PROTOCOL_SHELL_V1.0</div>
             </div>
 
             {/* Output Area */}

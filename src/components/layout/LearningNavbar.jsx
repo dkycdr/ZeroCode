@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-import { RiMenu4Fill, RiCloseLine, RiArrowLeftSLine, RiQuestionLine, RiLayoutGridFill, RiUser3Fill } from 'react-icons/ri';
-import { VscCopilot } from 'react-icons/vsc';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Menu, Terminal, Sparkles, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 import logo from '../../assets/logo.png';
 import { useAuth } from '../../contexts/AuthProvider';
+import AvatarWithBorder from '../common/AvatarWithBorder';
 import { CONTENT_TYPES } from '../../data/courses/index';
 
 export default function LearningNavbar({
@@ -19,106 +19,86 @@ export default function LearningNavbar({
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // Helper to get color based on type
-    const getItemColor = (item) => {
-        // If completion logic was passed, we could visually indicate 'completed' vs 'current' vs 'pending'
-        // For now, distinguishing solely by type per user request
-        switch (item.type) {
-            case CONTENT_TYPES.INFORMATIONAL: return "bg-cyan-500";
-            case CONTENT_TYPES.LESSON: return "bg-emerald-500";
-            case CONTENT_TYPES.PROJECT: return "bg-purple-500";
-            case CONTENT_TYPES.QUIZ: return "bg-orange-500";
-            default: return "bg-gray-500";
-        }
-    };
+    // Calculate Progress for the "Loading Bar" effect background
+    const currentIndex = unitItems.findIndex(i => i.id === currentItemId);
+    const progressPercentage = ((currentIndex + 1) / unitItems.length) * 100;
 
     return (
-        <header className="fixed top-0 w-full z-50 bg-[#101010] border-b border-[#27272a] h-16 flex items-center px-4 justify-between font-sans">
-            {/* LEFT: Logo & Context */}
-            <div className="flex items-center gap-4">
+        <header className="fixed top-0 w-full z-50 h-16 bg-[#050505] border-b border-white/5 flex items-center justify-between px-4 font-sans select-none">
+            {/* Background Progress Effect */}
+            <div
+                className="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+                style={{ width: `${progressPercentage}%` }}
+            />
+
+            {/* LEFT: Neural Navigation */}
+            <div className="flex items-center gap-6 relative z-10">
                 <button
                     onClick={onBack}
-                    className="flex items-center justify-center w-8 h-8 rounded hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                    className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 >
-                    <img src={logo} alt="Home" className="w-6 h-6 opacity-80" />
+                    <div className="p-1.5 rounded-md bg-white/5 border border-white/10 group-hover:border-white/30 transition-all">
+                        <ChevronLeft size={16} />
+                    </div>
                 </button>
 
-                <div className="h-6 w-[1px] bg-[#3f3f46]" />
+                <div className="h-8 w-px bg-white/10 rotate-12" />
 
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={onOpenDrawer}
-                        className="flex items-col gap-1 px-3 py-1.5 rounded hover:bg-white/10 transition-colors group text-left"
-                    >
-                        <div className="flex flex-col">
-                            <span className="text-[10px] text-gray-500 font-mono uppercase tracking-widest leading-none mb-1">
-                                {courseTitle}
-                            </span>
-                            <span className="text-sm font-bold text-gray-100 group-hover:text-white transition-colors leading-none">
+                <div
+                    className="flex items-center gap-3 cursor-pointer group"
+                    onClick={onOpenDrawer}
+                >
+                    <div className="flex flex-col">
+                        <span className="text-[9px] font-mono font-bold text-indigo-400 uppercase tracking-[0.2em] mb-0.5 group-hover:text-indigo-300 transition-colors">
+                            {courseTitle}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors tracking-tight">
                                 {lessonTitle}
-                            </span>
+                            </h1>
+                            <Menu size={14} className="text-gray-600 group-hover:text-gray-400 transition-colors" />
                         </div>
-                        <RiMenu4Fill className="ml-3 text-gray-500 group-hover:text-white transition-colors" />
-                    </button>
+                    </div>
                 </div>
             </div>
 
-            {/* CENTER: Syllabus Dots */}
-            {/* Only show if we have unit items */}
-            {unitItems.length > 0 && (
-                <div className="hidden lg:flex items-center gap-1.5 absolute left-1/2 transform -translate-x-1/2">
-                    {unitItems.map((item, idx) => {
-                        const isActive = item.id === currentItemId;
-                        const colorClass = getItemColor(item);
-
-                        return (
-                            <div key={item.id} className="group relative flex items-center py-2 cursor-help">
-                                <div
-                                    className={clsx(
-                                        "rounded-full transition-all duration-300",
-                                        isActive ? "w-8 h-1.5 shadow-[0_0_12px_currentColor] opacity-100" : "w-1.5 h-1.5 opacity-30 hover:opacity-80",
-                                        colorClass
-                                    )}
-                                />
-                                {/* Tooltip */}
-                                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                    <div className="bg-[#18181b] border border-[#27272a] text-[10px] text-gray-200 px-2 py-1 rounded shadow-xl flex flex-col items-center">
-                                        <span className="font-bold text-xs uppercase tracking-wider mb-0.5 text-gray-500">{item.type}</span>
-                                        <span>{item.title}</span>
-                                    </div>
-                                    <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[4px] border-b-[#27272a] absolute -top-1 left-1/2 -translate-x-1/2 rotate-180 transform -translate-y-[1px]"></div>
-                                </div>
-                            </div>
-                        );
-                    })}
+            {/* CENTER: Mission Status (Only visible on large screens) */}
+            <div className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+                <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                    <Activity size={14} className="text-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-mono text-gray-400">
+                        LINK ESTABLISHED
+                    </span>
+                    <span className="w-px h-3 bg-white/10 mx-2" />
+                    <span className="text-[10px] font-mono text-indigo-400">
+                        {unitItems.length > 0 ? `${currentIndex + 1} / ${unitItems.length} NODES` : 'STANDBY'}
+                    </span>
                 </div>
-            )}
+            </div>
 
-            {/* RIGHT: Tools & Profile */}
-            <div className="flex items-center gap-3">
+            {/* RIGHT: Tools & User */}
+            <div className="flex items-center gap-4 relative z-10">
                 <button
                     onClick={onAskAI}
-                    className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#18181b]/50 border border-[#27272a] rounded-full text-xs font-medium text-gray-400 hover:text-white hover:border-[var(--accent-primary)] hover:bg-[#18181b] transition-all group mr-2"
+                    className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-all group"
                 >
-                    <VscCopilot className="text-[var(--accent-primary)] group-hover:text-white transition-colors" />
-                    <span>Ask AI</span>
+                    <Bot size={16} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold text-indigo-100">AI ASSIST</span>
                 </button>
 
-                <div className="h-6 w-[1px] bg-[#3f3f46]" />
+                <div className="h-6 w-px bg-white/10" />
 
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={onAskAI} // "Get Unstuck" now opens AI
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white transition-colors"
-                    >
-                        <RiQuestionLine size={16} />
-                        <span className="hidden sm:inline">Get Unstuck</span>
-                    </button>
-
-                    <button className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--accent-primary)] to-purple-600 flex items-center justify-center text-white font-bold shadow-lg ml-2">
-                        {user?.name?.[0] || 'D'}
-                    </button>
-                </div>
+                <button
+                    className="relative w-8 h-8 rounded-full transition-transform hover:scale-105"
+                >
+                    <AvatarWithBorder
+                        url={user?.avatar}
+                        name={user?.name}
+                        border={user?.border}
+                        size="sm"
+                        className="w-full h-full"
+                    />
+                </button>
             </div>
         </header>
     );

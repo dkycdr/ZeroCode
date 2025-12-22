@@ -13,6 +13,7 @@
     "fix-lessons:html5": "node scripts/fix-lessons-complete.js --course=html5"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@monaco-editor/react": "^4.7.0",
     "@neondatabase/serverless": "^1.0.2",
     "@react-oauth/google": "^0.12.1",
