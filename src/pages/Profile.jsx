@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth, SUBSCRIPTION_TIERS } from '../contexts/AuthProvider';
@@ -34,7 +34,7 @@ const PRESET_AVATARS = [
 ];
 
 export default function Profile() {
-    const { user, logout, updateUser, subscriptionTier, isAdmin } = useAuth();
+    const { user, logout, updateUser, subscriptionTier, isAdmin, refreshUser } = useAuth();
     const { completedCourses, completedItems, userStats } = useProgress(); // userStats from context
     const navigate = useNavigate();
 
@@ -44,6 +44,22 @@ export default function Profile() {
         phone: user?.phone || '',
         avatar: user?.avatar || ''
     });
+
+    // Update form when user data changes (e.g. after refresh)
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                name: user.name || '',
+                phone: user.phone || '',
+                avatar: user.avatar || ''
+            });
+        }
+    }, [user]);
+
+    // Initial refresh to get latest join date and other fields
+    useEffect(() => {
+        refreshUser();
+    }, []);
 
     const handleLogout = () => { logout(); navigate('/login'); };
     const handleSave = async () => {
@@ -82,7 +98,10 @@ export default function Profile() {
     });
 
     const currentTier = TIER_STYLES[subscriptionTier] || TIER_STYLES.free;
-    const joinDate = user?.created_at ? new Date(user.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : 'Unknown';
+    // Fallback if joined_date is missing
+    const joinDate = user?.joined_date
+        ? new Date(user.joined_date).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+        : (user?.created_at ? new Date(user.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : 'Unknown');
 
     return (
         <AppLayout>

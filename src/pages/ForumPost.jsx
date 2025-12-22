@@ -4,8 +4,9 @@ import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../contexts/AuthProvider';
 import { sql } from '../lib/neon';
 import {
-    ArrowLeft, ThumbsUp, MessageCircle, Clock, Send, Trash2, Edit2, X
+    ArrowLeft, ThumbsUp, MessageCircle, Clock, Send, Trash2, Edit2, X, TrendingUp, Zap, Award
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
 const CATEGORIES = [
@@ -45,7 +46,7 @@ export default function ForumPost() {
     const loadPost = async () => {
         try {
             const result = await sql`
-                SELECT p.*, u.name as author_name, u.email as author_email
+                SELECT p.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.subscription_tier as author_tier, u.created_at as author_joined
                 FROM forum_posts p
                 JOIN users u ON p.user_id = u.id
                 WHERE p.id = ${postId}
@@ -68,7 +69,7 @@ export default function ForumPost() {
     const loadReplies = async () => {
         try {
             const result = await sql`
-                SELECT r.*, u.name as author_name, u.email as author_email
+                SELECT r.*, u.name as author_name, u.email as author_email, u.avatar as author_avatar, u.subscription_tier as author_tier, u.created_at as author_joined
                 FROM forum_replies r
                 JOIN users u ON r.user_id = u.id
                 WHERE r.post_id = ${postId}
@@ -205,184 +206,280 @@ export default function ForumPost() {
 
     return (
         <AppLayout>
-            <div className="max-w-4xl mx-auto">
-                {/* Back */}
-                <button
+            <div className="max-w-4xl mx-auto px-4 py-8 relative">
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                {/* Back Link */}
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
                     onClick={() => navigate('/community')}
-                    className="flex items-center gap-2 text-gray-500 hover:text-white mb-8 transition-colors text-xs font-medium group"
+                    className="flex items-center gap-3 text-zinc-500 hover:text-white mb-10 transition-all text-xs font-black uppercase tracking-[0.2em] group"
                 >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Discussions
-                </button>
-
-                {/* Post */}
-                <div className="bg-[#121214] border border-[#27272a] rounded-xl p-8 mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                            <span className={clsx(
-                                "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border",
-                                CATEGORIES.find(c => c.id === post.category)?.color || CATEGORIES[0].color
-                            )}>
-                                {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            {canEditPost && !isEditingPost && (
-                                <button onClick={() => setIsEditingPost(true)} className="text-gray-500 hover:text-white transition-colors">
-                                    <Edit2 size={16} />
-                                </button>
-                            )}
-                            {canDeletePost && (
-                                <button onClick={handleDeletePost} className="text-gray-500 hover:text-red-400 transition-colors">
-                                    <Trash2 size={16} />
-                                </button>
-                            )}
-                        </div>
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5 group-hover:border-white/20 transition-all">
+                        <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
                     </div>
+                    Back to Intelligence Stream
+                </motion.button>
 
-                    {isEditingPost ? (
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                value={editPostTitle}
-                                onChange={(e) => setEditPostTitle(e.target.value)}
-                                className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-xl font-bold text-white focus:border-gray-500 outline-none"
-                            />
-                            <textarea
-                                value={editPostContent}
-                                onChange={(e) => setEditPostContent(e.target.value)}
-                                rows={6}
-                                className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-sm text-gray-200 focus:border-gray-500 outline-none"
-                            />
-                            <div className="flex gap-2 justify-end">
-                                <button onClick={() => setIsEditingPost(false)} className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white">Cancel</button>
-                                <button onClick={handleUpdatePost} className="px-3 py-1.5 bg-white text-black text-xs font-bold rounded hover:bg-gray-200">Save Changes</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <h1 className="text-3xl font-bold text-white mb-6 leading-tight">{post.title}</h1>
-                            <div className="prose prose-invert max-w-none mb-8 text-gray-300 leading-relaxed text-base">
-                                {post.content.split('\n').map((paragraph, idx) => (
-                                    <p key={idx} className="mb-4 last:mb-0">{renderContent(paragraph)}</p>
-                                ))}
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex items-center justify-between pt-6 border-t border-[#27272a]">
-                        <div className="flex items-center gap-6 text-xs text-gray-500 font-medium tracking-tight">
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center text-[10px] text-white font-bold">
-                                    {post.author_name?.[0] || 'U'}
+                {/* Main Post Architecture */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-900 shadow-2xl border border-white/5 rounded-[2.5rem] overflow-hidden mb-12"
+                >
+                    {/* Hero Header */}
+                    <div className="p-8 md:p-12 border-b border-white/5 relative bg-gradient-to-b from-white/[0.02] to-transparent">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                            <div className="flex items-center gap-4">
+                                <span className={clsx(
+                                    "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border",
+                                    CATEGORIES.find(c => c.id === post.category)?.color || CATEGORIES[0].color
+                                )}>
+                                    {CATEGORIES.find(c => c.id === post.category)?.label || post.category}
+                                </span>
+                                <div className="h-px w-8 bg-white/10 hidden md:block"></div>
+                                <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                                    <Clock size={12} />
+                                    {formatDate(post.created_at)}
                                 </div>
-                                <span className="text-gray-400 font-bold">{post.author_name || post.author_email?.split('@')[0]}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <Clock size={14} />
-                                <span>{formatDate(post.created_at)}</span>
+
+                            <div className="flex items-center gap-4">
+                                {canEditPost && !isEditingPost && (
+                                    <button onClick={() => setIsEditingPost(true)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-all border border-white/5">
+                                        <Edit2 size={16} />
+                                    </button>
+                                )}
+                                {canDeletePost && (
+                                    <button onClick={handleDeletePost} className="w-10 h-10 rounded-xl bg-red-500/5 flex items-center justify-center text-zinc-500 hover:text-red-400 transition-all border border-white/5">
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <button
-                            onClick={handleLike}
-                            className="flex items-center gap-2 text-gray-500 hover:text-[var(--accent-primary)] transition-colors group"
-                        >
-                            <ThumbsUp size={18} className="group-hover:scale-110 transition-transform" />
-                            <span className="font-mono text-sm">{post.likes || 0}</span>
-                        </button>
-                    </div>
-                </div>
 
-                {/* Replies */}
-                <div className="mb-8">
-                    <h2 className="text-sm font-semibold text-gray-400 mb-6 flex items-center gap-2 uppercase tracking-wider">
-                        Discussion ({replies.length})
-                    </h2>
-
-                    <div className="space-y-4">
-                        {replies.map((reply) => {
-                            const isEditingThisReply = editingReplyId === reply.id;
-                            const canEditReply = reply.user_id === user.id;
-                            const canDeleteReply = isAdmin || reply.user_id === user.id;
-
-                            return (
-                                <div key={reply.id} className="bg-[#121214] rounded-lg border border-[#27272a] p-5">
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-6 h-6 rounded-full bg-[#18181b] flex items-center justify-center text-[10px] text-gray-400 font-bold border border-[#27272a]">
-                                                    {reply.author_name?.[0] || 'U'}
-                                                </div>
-                                                <span className="text-sm font-semibold text-white">{reply.author_name || reply.author_email?.split('@')[0]}</span>
-                                                <span className="text-xs text-gray-600">{formatDate(reply.created_at)}</span>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                {canEditReply && !isEditingThisReply && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setEditingReplyId(reply.id);
-                                                            setEditReplyContent(reply.content);
-                                                        }}
-                                                        className="text-gray-600 hover:text-white transition-colors"
-                                                    >
-                                                        <Edit2 size={13} />
-                                                    </button>
-                                                )}
-                                                {canDeleteReply && !isEditingThisReply && (
-                                                    <button
-                                                        onClick={() => handleDeleteReply(reply.id)}
-                                                        className="text-gray-600 hover:text-red-400 transition-colors"
-                                                    >
-                                                        <Trash2 size={13} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {isEditingThisReply ? (
-                                            <div className="pl-9 space-y-3">
-                                                <textarea
-                                                    value={editReplyContent}
-                                                    onChange={(e) => setEditReplyContent(e.target.value)}
-                                                    rows={3}
-                                                    className="w-full bg-[#18181b] border border-[#27272a] rounded p-2 text-sm text-gray-300 focus:border-gray-500 outline-none"
-                                                />
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => setEditingReplyId(null)} className="px-2 py-1 text-xs text-gray-500 hover:text-white">Cancel</button>
-                                                    <button onClick={() => handleUpdateReply(reply.id)} className="px-2 py-1 bg-white text-black text-xs font-bold rounded">Save</button>
-                                                </div>
-                                            </div>
+                        {isEditingPost ? (
+                            <div className="space-y-6 animate-fade-in">
+                                <input
+                                    type="text"
+                                    value={editPostTitle}
+                                    onChange={(e) => setEditPostTitle(e.target.value)}
+                                    className="w-full bg-zinc-800/50 border border-white/10 rounded-2xl px-6 py-4 text-2xl font-black text-white focus:border-indigo-500/50 outline-none transition-all"
+                                />
+                                <textarea
+                                    value={editPostContent}
+                                    onChange={(e) => setEditPostContent(e.target.value)}
+                                    rows={8}
+                                    className="w-full bg-zinc-800/50 border border-white/10 rounded-2xl px-6 py-4 text-sm text-zinc-200 focus:border-indigo-500/50 outline-none transition-all font-medium leading-relaxed resize-none"
+                                />
+                                <div className="flex gap-4 justify-end">
+                                    <button onClick={() => setIsEditingPost(false)} className="px-6 py-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                    <button onClick={handleUpdatePost} className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-zinc-200 transition-all">Save Intelligence Changes</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <h1 className="text-3xl md:text-5xl font-black text-white mb-8 leading-[1.1] tracking-tighter">{post.title}</h1>
+                                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 w-fit">
+                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-800 border border-white/10">
+                                        {post.author_avatar ? (
+                                            <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
                                         ) : (
-                                            <p className="text-gray-300 leading-relaxed text-sm pl-9">{renderContent(reply.content)}</p>
+                                            <div className="w-full h-full flex items-center justify-center text-sm font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
+                                                {post.author_name?.[0] || 'U'}
+                                            </div>
                                         )}
                                     </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-black text-white uppercase tracking-tight">{post.author_name}</span>
+                                            <span className={clsx(
+                                                "text-[8px] font-black px-2 py-0.5 rounded-sm border uppercase tracking-widest",
+                                                post.author_tier === 'admin' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" :
+                                                    post.author_tier === 'fullstack' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                                                        "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                                            )}>
+                                                {post.author_tier || 'FREE'}
+                                            </span>
+                                        </div>
+                                        <span className="text-[10px] font-mono text-zinc-500 uppercase">Author / Sector Controller</span>
+                                    </div>
                                 </div>
-                            );
-                        })}
+                            </>
+                        )}
+                    </div>
+
+                    {/* Post Content Body */}
+                    {!isEditingPost && (
+                        <div className="p-8 md:p-12">
+                            <div className="prose prose-invert max-w-none text-zinc-300 leading-relaxed text-lg font-medium selection:bg-indigo-500/30">
+                                {post.content.split('\n').map((paragraph, idx) => (
+                                    <p key={idx} className="mb-6 last:mb-0">{renderContent(paragraph)}</p>
+                                ))}
+                            </div>
+
+                            <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-between">
+                                <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black text-white hover:bg-white/10 transition-all cursor-default">
+                                    <TrendingUp size={14} className="text-zinc-500" />
+                                    Community Intelligence Rating: {post.likes || 0}
+                                </div>
+
+                                <button
+                                    onClick={handleLike}
+                                    className="group flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all shadow-xl active:scale-95 transition-all"
+                                >
+                                    <ThumbsUp size={16} strokeWidth={3} className="group-hover:scale-110 transition-transform" />
+                                    Endorse Wisdom
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+
+                {/* Dynamic Replies Interface */}
+                <div className="mb-32">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-px flex-1 bg-white/5"></div>
+                        <h2 className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] flex items-center gap-3">
+                            <MessageCircle size={14} />
+                            Transmission Logs ({replies.length})
+                        </h2>
+                        <div className="h-px flex-1 bg-white/5"></div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <AnimatePresence mode='popLayout'>
+                            {replies.map((reply, idx) => {
+                                const isEditingThisReply = editingReplyId === reply.id;
+                                const canEditReply = reply.user_id === user.id;
+                                const canDeleteReply = isAdmin || reply.user_id === user.id;
+
+                                return (
+                                    <motion.div
+                                        key={reply.id}
+                                        layout
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.05 }}
+                                        className="relative group bg-zinc-900/40 border border-white/5 rounded-3xl p-6 md:p-8 hover:bg-zinc-900/60 transition-all overflow-hidden"
+                                    >
+                                        <div className="flex flex-col gap-6">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 border border-white/10">
+                                                        {reply.author_avatar ? (
+                                                            <img src={reply.author_avatar} className="w-full h-full object-cover" alt="" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-xs font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
+                                                                {reply.author_name?.[0] || 'U'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-black text-white uppercase tracking-tight">{reply.author_name}</span>
+                                                            <span className={clsx(
+                                                                "text-[8px] font-black px-2 py-0.5 rounded-sm border uppercase tracking-widest",
+                                                                reply.author_tier === 'admin' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" :
+                                                                    reply.author_tier === 'fullstack' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                                                                        "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                                                            )}>
+                                                                {reply.author_tier || 'FREE'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] font-mono text-zinc-600 uppercase">{formatDate(reply.created_at)}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {canEditReply && !isEditingThisReply && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingReplyId(reply.id);
+                                                                setEditReplyContent(reply.content);
+                                                            }}
+                                                            className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white border border-white/5 transition-all"
+                                                        >
+                                                            <Edit2 size={13} />
+                                                        </button>
+                                                    )}
+                                                    {canDeleteReply && !isEditingThisReply && (
+                                                        <button
+                                                            onClick={() => handleDeleteReply(reply.id)}
+                                                            className="w-8 h-8 rounded-lg bg-red-500/5 flex items-center justify-center text-zinc-500 hover:text-red-400 border border-white/5 transition-all"
+                                                        >
+                                                            <Trash2 size={13} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {isEditingThisReply ? (
+                                                <div className="space-y-4 animate-fade-in">
+                                                    <textarea
+                                                        value={editReplyContent}
+                                                        onChange={(e) => setEditReplyContent(e.target.value)}
+                                                        rows={4}
+                                                        className="w-full bg-zinc-800/50 border border-white/10 rounded-2xl p-4 text-sm text-zinc-300 focus:border-indigo-500/50 outline-none transition-all resize-none"
+                                                    />
+                                                    <div className="flex gap-4 justify-end">
+                                                        <button onClick={() => setEditingReplyId(null)} className="text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                                        <button onClick={() => handleUpdateReply(reply.id)} className="px-5 py-2.5 bg-white text-black text-[10px] font-black uppercase rounded-lg hover:bg-zinc-200 transition-all">Update Log</button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-zinc-300 leading-relaxed text-base font-medium selection:bg-indigo-500/20">
+                                                    {renderContent(reply.content)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
                     </div>
                 </div>
 
-                {/* Reply Form */}
-                <form onSubmit={handleReply} className="sticky bottom-6 z-10">
-                    <div className="bg-[#121214]/90 backdrop-blur-md border border-[#27272a] p-1.5 rounded-xl shadow-2xl flex items-center gap-2">
-                        <input
-                            type="text"
-                            value={replyContent}
-                            onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder="Type a reply... Use @ to tag"
-                            className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
-                        />
-                        <button
-                            type="submit"
-                            disabled={submitting || !replyContent.trim()}
-                            className="bg-white text-black p-2.5 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:bg-gray-700"
-                        >
-                            <Send size={16} />
-                        </button>
-                    </div>
-                </form>
+                {/* Protocol Reply Form */}
+                <div className="fixed bottom-10 left-0 right-0 z-[50] px-4 pointer-events-none">
+                    <motion.form
+                        initial={{ y: 100 }}
+                        animate={{ y: 0 }}
+                        onSubmit={handleReply}
+                        className="max-w-3xl mx-auto pointer-events-auto"
+                    >
+                        <div className="bg-zinc-900/80 backdrop-blur-2xl border border-white/10 p-3 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0 hidden md:block">
+                                {user.avatar ? (
+                                    <img src={user.avatar} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-xs font-black bg-zinc-800 text-zinc-500">
+                                        {user.name?.[0]}
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                type="text"
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                placeholder="CONTRIBUTE INTELLIGENCE... (SUPPORTs @MENTIONS)"
+                                className="flex-1 bg-transparent px-4 py-3 text-[10px] font-black tracking-widest text-white placeholder-zinc-700 focus:outline-none uppercase"
+                            />
+                            <button
+                                type="submit"
+                                disabled={submitting || !replyContent.trim()}
+                                className="bg-white text-black w-14 h-14 rounded-[1.8rem] flex items-center justify-center hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:bg-zinc-800 shadow-xl active:scale-90 shrink-0"
+                            >
+                                {submitting ? (
+                                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                                ) : (
+                                    <Send size={18} strokeWidth={3} />
+                                )}
+                            </button>
+                        </div>
+                    </motion.form>
+                </div>
             </div>
         </AppLayout>
     );

@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
             const result = await sql`
                 INSERT INTO users (email, password_hash, name, is_admin, subscription_tier)
                 VALUES (${userData.email}, ${passwordHash}, ${userData.name}, false, 'free')
-                RETURNING id, email, name, is_admin, subscription_tier, joined_date
+                RETURNING id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
             `;
 
             const newUser = result[0];
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const result = await sql`
-                SELECT id, email, password_hash, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date
+                SELECT id, email, password_hash, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
                 FROM users WHERE email = ${email}
             `;
 
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
                     phone = ${updates.phone || user.phone || null},
                     avatar = ${updates.avatar || user.avatar || null}
                 WHERE id = ${user.id}
-                RETURNING id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date
+                RETURNING id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
             `;
 
             const updatedUser = result[0];
@@ -158,7 +158,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const result = await sql`
-                SELECT id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date
+                SELECT id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
                 FROM users WHERE id = ${user.id}
             `;
 
@@ -198,16 +198,29 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const getAllUsers = async () => {
+    const getAllUsers = async (search = '') => {
         if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
 
         try {
-            const result = await sql`
-                SELECT id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
-                FROM users ORDER BY joined_date DESC
-            `;
+            let result;
+            if (search) {
+                const searchPattern = `%${search}%`;
+                result = await sql`
+                    SELECT id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+                    FROM users 
+                    WHERE email ILIKE ${searchPattern} OR name ILIKE ${searchPattern}
+                    ORDER BY joined_date DESC
+                `;
+            } else {
+                result = await sql`
+                    SELECT id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
+                    FROM users 
+                    ORDER BY joined_date DESC
+                `;
+            }
             return { success: true, users: result };
         } catch (error) {
+            console.error('Error fetching users:', error);
             return { success: false, error: error.message };
         }
     };
@@ -216,14 +229,30 @@ export const AuthProvider = ({ children }) => {
         if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
 
         try {
+            const isAdmin = newTier === 'admin';
             const result = await sql`
                 UPDATE users
-                SET subscription_tier = ${newTier}, subscription_date = CURRENT_TIMESTAMP, is_admin = ${newTier === 'admin'}
+                SET subscription_tier = ${newTier}, 
+                    subscription_date = CURRENT_TIMESTAMP, 
+                    is_admin = ${isAdmin}
                 WHERE id = ${userId}
-                RETURNING id, email, name, subscription_tier
+                RETURNING id, email, name, subscription_tier, is_admin, subscription_date
             `;
+
+            if (result.length === 0) {
+                return { success: false, error: 'User not found' };
+            }
+
+            // If updating current logged-in user, refresh their session
+            if (userId === user.id) {
+                const refreshed = { ...user, ...result[0] };
+                localStorage.setItem('zerocode_user', JSON.stringify(refreshed));
+                setUser(refreshed);
+            }
+
             return { success: true, user: result[0] };
         } catch (error) {
+            console.error('Error updating subscription:', error);
             return { success: false, error: error.message };
         }
     };
@@ -474,6 +503,88 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const getAdminAnalytics = async () => {
+        if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
+
+        try {
+            // Tier Distribution
+            const tierDistribution = await sql`
+                SELECT subscription_tier, COUNT(*) as count 
+                FROM users 
+                GROUP BY subscription_tier
+            `;
+
+            // Signup trend (last 7 days)
+            const signupTrend = await sql`
+                SELECT DATE(joined_date) as date, COUNT(*) as count 
+                FROM users 
+                WHERE joined_date > CURRENT_DATE - INTERVAL '7 days'
+                GROUP BY DATE(joined_date)
+                ORDER BY DATE(joined_date) ASC
+            `;
+
+            // Popular Courses
+            const popularCourses = await sql`
+                SELECT course_id, COUNT(*) as enrollments 
+                FROM course_progress 
+                GROUP BY course_id 
+                ORDER BY enrollments DESC 
+                LIMIT 5
+            `;
+
+            return {
+                success: true,
+                analytics: {
+                    tierDistribution,
+                    signupTrend,
+                    popularCourses
+                }
+            };
+        } catch (error) {
+            console.error('Analytics error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const getAdminActivity = async () => {
+        if (!user?.is_admin) return { success: false, error: 'Unauthorized' };
+
+        try {
+            // Since we don't have a centralized logs table, we aggregate latest events
+            const latestUsers = await sql`
+                SELECT id, name, email, joined_date as timestamp, 'USER_JOINED' as type 
+                FROM users 
+                ORDER BY joined_date DESC 
+                LIMIT 10
+            `;
+
+            const latestProgress = await sql`
+                SELECT cp.id, u.name as user_name, cp.course_id, cp.updated_at as timestamp, 'COURSE_PROGRESS' as type 
+                FROM course_progress cp
+                JOIN users u ON cp.user_id = u.id
+                ORDER BY cp.updated_at DESC 
+                LIMIT 10
+            `;
+
+            const latestPosts = await sql`
+                SELECT fp.id, u.name as user_name, fp.title, fp.created_at as timestamp, 'FORUM_POST' as type 
+                FROM forum_posts fp
+                JOIN users u ON fp.user_id = u.id
+                ORDER BY fp.created_at DESC 
+                LIMIT 10
+            `;
+
+            const combined = [...latestUsers, ...latestProgress, ...latestPosts]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 20);
+
+            return { success: true, activity: combined };
+        } catch (error) {
+            console.error('Activity logs error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
     const value = {
         user,
         loading,
@@ -492,6 +603,8 @@ export const AuthProvider = ({ children }) => {
         requestPasswordReset,
         resetPassword,
         getLeaderboard,
+        getAdminAnalytics,
+        getAdminActivity,
         canAccessCourse: (courseId) => canAccessCourse(user?.subscription_tier, courseId),
         isAdmin: user?.is_admin || false,
         subscriptionTier: user?.subscription_tier || 'free',

@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, SUBSCRIPTION_TIERS } from '../contexts/AuthProvider';
-import Header from '../components/Header';
-import { Users, Search, Check, X, Crown, Shield, ArrowLeft, RefreshCw, AlertCircle, ChevronDown } from 'lucide-react';
+import TopNavbar from '../components/layout/TopNavbar';
+import {
+    Users, Search, Check, X, Crown, Shield, ArrowLeft,
+    RefreshCw, AlertCircle, ChevronDown, Activity,
+    BarChart3, Database, HardDrive, Filter, Download
+} from 'lucide-react';
+import {
+    RiUserFollowLine, RiUserStarLine, RiUserSettingsLine,
+    RiArrowRightUpLine, RiGlobalLine, RiTimeLine
+} from 'react-icons/ri';
 import clsx from 'clsx';
 
 const TIER_COLORS = {
@@ -25,58 +33,112 @@ const TIER_OPTIONS = [
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
-    const { isAdmin, getAllUsers, updateUserSubscription } = useAuth();
+    const { isAdmin, getAllUsers, updateUserSubscription, getAdminAnalytics, getAdminActivity } = useAuth();
     const [users, setUsers] = useState([]);
+    const [analytics, setAnalytics] = useState(null);
+    const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTier, setFilterTier] = useState('all');
     const [editingUser, setEditingUser] = useState(null);
     const [newTier, setNewTier] = useState('');
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [pendingUpdate, setPendingUpdate] = useState(null);
     const [updating, setUpdating] = useState(false);
     const [message, setMessage] = useState(null);
+    const [activeTab, setActiveTab] = useState('users'); // users, logs, analytics, settings
+    const [settings, setSettings] = useState({
+        maintenance: false,
+        ai: true,
+        registry: true
+    });
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        if (!isAdmin) {
-            navigate('/dashboard');
-            return;
+    const loadData = async (query = searchQuery) => {
+        // Fix: If called by event handler, query might be an Event object
+        const finalQuery = typeof query === 'string' ? query : searchQuery;
+        
+        // Only set loading true if we don't have users yet (prevent complete UI collapse)
+        if (users.length === 0) {
+            setLoading(true);
+        } else {
+            setRefreshing(true);
         }
-        loadUsers();
-    }, [isAdmin, navigate]);
 
-    const loadUsers = async () => {
-        setLoading(true);
-        const result = await getAllUsers();
-        if (result.success) {
-            setUsers(result.users);
+        try {
+            const [usersRes, analyticsRes, logsRes] = await Promise.allSettled([
+                getAllUsers(finalQuery),
+                getAdminAnalytics(),
+                getAdminActivity()
+            ]);
+
+            if (usersRes.status === 'fulfilled' && usersRes.value.success) {
+                setUsers(usersRes.value.users);
+            }
+
+            if (analyticsRes.status === 'fulfilled' && analyticsRes.value.success) {
+                setAnalytics(analyticsRes.value.analytics);
+            }
+
+            if (logsRes.status === 'fulfilled' && logsRes.value.success) {
+                setLogs(logsRes.value.activity);
+            }
+        } catch (error) {
+            console.error('Critical data load error:', error);
+            setMessage({ type: 'error', text: 'Failed to synchronize with central intelligence.' });
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
         }
-        setLoading(false);
     };
 
-    const handleUpdateTier = async (userId) => {
-        if (!newTier) return;
+    useEffect(() => {
+        if (isAdmin === false) {
+            navigate('/dashboard');
+        } else if (isAdmin === true) {
+            loadData();
+        }
+    }, [isAdmin]);
+
+    // Debounced search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (isAdmin) loadData(searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const confirmUpdateTier = (userId, tier) => {
+        const userObj = users.find(u => u.id === userId);
+        setPendingUpdate({ userId, tier, userName: userObj?.name });
+        setIsConfirmOpen(true);
+    };
+
+    const handleUpdateTier = async () => {
+        if (!pendingUpdate) return;
+        const { userId, tier } = pendingUpdate;
 
         setUpdating(true);
-        const result = await updateUserSubscription(userId, newTier);
+        const result = await updateUserSubscription(userId, tier);
 
         if (result.success) {
-            setMessage({ type: 'success', text: `User upgraded to ${newTier}!` });
+            setMessage({ type: 'success', text: `User ${pendingUpdate.userName} upgraded to ${tier}!` });
             setEditingUser(null);
             setNewTier('');
-            loadUsers();
+            loadData();
         } else {
             setMessage({ type: 'error', text: result.error });
         }
         setUpdating(false);
+        setIsConfirmOpen(false);
+        setPendingUpdate(null);
 
         setTimeout(() => setMessage(null), 3000);
     };
 
     const filteredUsers = users.filter(u => {
-        const matchesSearch =
-            u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesTier = filterTier === 'all' || u.subscription_tier === filterTier;
-        return matchesSearch && matchesTier;
+        return matchesTier;
     });
 
     const stats = {
@@ -86,229 +148,555 @@ export default function AdminDashboard() {
         admin: users.filter(u => u.subscription_tier === 'admin' || u.is_admin).length
     };
 
+    const statsCards = [
+        {
+            label: 'Total Personnel',
+            value: stats.total,
+            icon: <Users size={24} />,
+            color: 'text-indigo-400',
+            trend: '+12%',
+            desc: 'Total registered accounts'
+        },
+        {
+            label: 'Demo Clearance',
+            value: stats.free,
+            icon: <Activity size={24} />,
+            color: 'text-zinc-500',
+            trend: '-2%',
+            desc: 'Standard free access'
+        },
+        {
+            label: 'Elite Access',
+            value: stats.paid,
+            icon: <Crown size={24} />,
+            color: 'text-amber-400',
+            trend: '+24%',
+            desc: 'Premium paid students'
+        },
+        {
+            label: 'System Admins',
+            value: stats.admin,
+            icon: <Shield size={24} />,
+            color: 'text-indigo-500',
+            trend: '0%',
+            desc: 'Operational controllers'
+        }
+    ];
+
     if (!isAdmin) return null;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] font-sans text-gray-100 flex flex-col">
-            <Header />
+        <div className="min-h-screen bg-zinc-950 text-white font-sans flex flex-col">
+            <TopNavbar />
 
-            <main className="flex-1 overflow-y-auto custom-scrollbar p-6">
-                <div className="max-w-7xl mx-auto space-y-8">
-                    {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up">
+            <div className="flex flex-1 pt-16 h-screen overflow-hidden">
+                {/* MODERN SIDEBAR */}
+                <aside className="w-64 border-r border-white/5 bg-zinc-950 hidden md:flex flex-col p-4 shrink-0 overflow-y-auto">
+                    <div className="space-y-6">
                         <div>
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="flex items-center gap-2 text-gray-500 hover:text-[var(--accent-primary)] mb-4 transition-colors text-xs font-mono uppercase tracking-wider group"
-                            >
-                                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                                <span>Back to Dashboard</span>
-                            </button>
-                            <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                                <Shield className="text-[var(--accent-primary)]" size={32} />
-                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                    Command Center
-                                </span>
-                            </h1>
-                            <p className="text-gray-400 mt-1 pl-11">Manage users, access levels, and subscriptions.</p>
+                            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 mb-4 px-2">Operation Modules</h3>
+                            <nav className="space-y-1">
+                                <button
+                                    onClick={() => setActiveTab('users')}
+                                    className={clsx(
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all font-medium text-sm group",
+                                        activeTab === 'users'
+                                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                >
+                                    <RiUserFollowLine size={20} />
+                                    <span>User Registry</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('logs')}
+                                    className={clsx(
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all font-medium text-sm group",
+                                        activeTab === 'logs'
+                                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                >
+                                    <Database size={20} className={activeTab === 'logs' ? "text-indigo-400" : "text-zinc-500 group-hover:text-zinc-300"} />
+                                    <span>Database Logs</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('analytics')}
+                                    className={clsx(
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all font-medium text-sm group",
+                                        activeTab === 'analytics'
+                                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                >
+                                    <BarChart3 size={20} className={activeTab === 'analytics' ? "text-indigo-400" : "text-zinc-500 group-hover:text-zinc-300"} />
+                                    <span>System Analytics</span>
+                                </button>
+                            </nav>
                         </div>
-                        <button
-                            onClick={loadUsers}
-                            className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-lg text-gray-400 hover:text-white hover:border-[var(--accent-primary)] hover:shadow-[0_0_15px_var(--accent-glow)] transition-all duration-300"
-                        >
-                            <RefreshCw size={16} className={clsx({ "animate-spin": loading })} />
-                            <span>Refresh Data</span>
-                        </button>
+
+                        <div>
+                            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 mb-4 px-2">Configuration</h3>
+                            <nav className="space-y-1">
+                                <button
+                                    onClick={() => setActiveTab('settings')}
+                                    className={clsx(
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all font-medium text-sm group",
+                                        activeTab === 'settings'
+                                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                    )}
+                                >
+                                    <RiUserSettingsLine size={20} className={activeTab === 'settings' ? "text-indigo-400" : "text-zinc-500 group-hover:text-zinc-300"} />
+                                    <span>Global Settings</span>
+                                </button>
+                                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all font-medium text-sm group">
+                                    <HardDrive size={20} className="text-zinc-500 group-hover:text-zinc-300" />
+                                    <span>Storage Audit</span>
+                                </button>
+                            </nav>
+                        </div>
                     </div>
 
-                    {/* Notification Message */}
-                    {message && (
-                        <div className={clsx(
-                            "px-4 py-3 rounded-lg flex items-center gap-3 border animate-slide-in",
-                            message.type === 'success'
-                                ? "bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.1)]"
-                                : "bg-red-500/10 border-red-500/30 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.1)]"
-                        )}>
-                            {message.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
-                            <span className="font-medium">{message.text}</span>
+                    <div className="mt-auto p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="flex items-center gap-2 text-indigo-400 mb-1">
+                            <RiGlobalLine size={16} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Server Status</span>
                         </div>
-                    )}
+                        <div className="text-xs text-zinc-500 flex items-center justify-between">
+                            <span>Operational</span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        </div>
+                    </div>
+                </aside>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up delay-100">
-                        {[
-                            { label: 'Total Users', value: stats.total, icon: <Users size={20} />, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-                            { label: 'Free Tier', value: stats.free, icon: <Users size={20} />, color: 'text-gray-400', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
-                            { label: 'Premium', value: stats.paid, icon: <Crown size={20} />, color: 'text-[var(--accent-primary)]', bg: 'bg-[var(--accent-primary)]/10', border: 'border-[var(--accent-primary)]/20' },
-                            { label: 'Admins', value: stats.admin, icon: <Shield size={20} />, color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' }
-                        ].map((stat, i) => (
-                            <div key={i} className={`p-6 rounded-xl border ${stat.border} ${stat.bg} backdrop-blur-md relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300`}>
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    {stat.icon}
+                {/* MAIN CONTENT AREA */}
+                <main className="flex-1 overflow-y-auto custom-scrollbar bg-zinc-950 p-4 md:p-8">
+                    <div className="max-w-6xl mx-auto space-y-10">
+
+                        {/* HEADER & TOP STATS */}
+                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 animate-fade-in">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-indigo-400 font-mono text-[10px] uppercase tracking-[0.3em]">
+                                    <div className="w-8 h-[1px] bg-indigo-500/50"></div>
+                                    <span>System Overview</span>
                                 </div>
-                                <div className="relative z-10">
-                                    <div className={`flex items-center gap-2 ${stat.color} mb-2 font-mono text-xs uppercase tracking-wider`}>
+                                <h1 className="text-4xl font-black text-white tracking-tighter">Command Center</h1>
+                                <p className="text-zinc-500 text-sm max-w-md">Secure gateway for managing ZeroCode intelligence and student clearance levels.</p>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => loadData()}
+                                    className="p-3 bg-zinc-900 border border-white/5 rounded-2xl text-zinc-400 hover:text-white hover:border-white/20 transition-all active:scale-95"
+                                    title="Refresh Data"
+                                    disabled={loading || refreshing}
+                                >
+                                    <RefreshCw size={20} className={loading || refreshing ? "animate-spin" : ""} />
+                                </button>
+                                <button className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-400 transition-all hover:shadow-[0_0_30px_rgba(129,140,248,0.3)]">
+                                    <Download size={16} />
+                                    <span>Export CSV</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* STATS TILES */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up">
+                            {statsCards.map((stat, i) => (
+                                <div key={i} className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+                                    <div className="absolute -right-2 -bottom-2 opacity-5 scale-150 group-hover:scale-125 transition-transform duration-700">
                                         {stat.icon}
-                                        <span>{stat.label}</span>
                                     </div>
-                                    <div className="text-3xl font-bold text-white tracking-tight">{stat.value}</div>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className={clsx("p-3 rounded-2xl bg-zinc-900 border border-white/5", stat.color)}>
+                                            {stat.icon}
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                            <RiArrowRightUpLine />
+                                            {stat.trend}
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl font-black text-white mb-1 tracking-tighter">{stat.value}</div>
+                                    <div className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1">{stat.label}</div>
+                                    <div className="text-[10px] text-zinc-500 font-mono italic">{stat.desc}</div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Filters & Actions */}
-                    <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl p-4 flex flex-col md:flex-row gap-4 shadow-xl animate-fade-in-up delay-200">
-                        <div className="flex-1 relative group">
-                            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[var(--accent-primary)] transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search by email or name..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-[var(--accent-primary)] focus:bg-[#000] focus:shadow-[0_0_15px_var(--accent-glow)] transition-all duration-300"
-                            />
+                            ))}
                         </div>
-                        <div className="relative">
-                            <select
-                                value={filterTier}
-                                onChange={(e) => setFilterTier(e.target.value)}
-                                className="appearance-none pl-4 pr-10 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-xl text-white focus:outline-none focus:border-[var(--accent-primary)] focus:shadow-[0_0_15px_var(--accent-glow)] cursor-pointer transition-all min-w-[180px]"
-                            >
-                                <option value="all">All Tiers</option>
-                                {TIER_OPTIONS.map(t => (
-                                    <option key={t.value} value={t.value}>{t.label}</option>
-                                ))}
-                            </select>
-                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                        </div>
-                    </div>
 
-                    {/* Users Table */}
-                    <div className="bg-[var(--bg-panel)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up delay-300">
-                        {loading ? (
-                            <div className="p-20 text-center flex flex-col items-center justify-center">
-                                <div className="w-12 h-12 border-4 border-[var(--accent-primary)]/30 border-t-[var(--accent-primary)] rounded-full animate-spin mb-4"></div>
-                                <p className="text-gray-400 font-mono text-sm animate-pulse">Scanning database...</p>
-                            </div>
-                        ) : filteredUsers.length === 0 ? (
-                            <div className="p-20 text-center text-gray-500">
-                                <Search size={48} className="mx-auto mb-4 opacity-20" />
-                                <p>No users found matching your criteria.</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b border-[var(--border-subtle)] bg-white/5">
-                                            <th className="text-left px-6 py-4 text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">User Identity</th>
-                                            <th className="text-left px-6 py-4 text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">Access Level</th>
-                                            <th className="text-left px-6 py-4 text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">Join Date</th>
-                                            <th className="text-right px-6 py-4 text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">Controls</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-[var(--border-subtle)]">
-                                        {filteredUsers.map((u) => (
-                                            <tr key={u.id} className="group hover:bg-[var(--accent-primary)]/5 transition-colors duration-200">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-white group-hover:text-[var(--accent-primary)] transition-colors">{u.name}</div>
-                                                    <div className="text-sm text-gray-500">{u.email}</div>
-                                                    {u.phone && <div className="text-xs text-gray-600 font-mono mt-0.5">{u.phone}</div>}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {editingUser === u.id ? (
-                                                        <div className="relative animate-fade-in">
-                                                            <select
-                                                                value={newTier}
-                                                                onChange={(e) => setNewTier(e.target.value)}
-                                                                className="w-full px-3 py-1.5 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-lg text-white text-sm focus:outline-none focus:border-[var(--accent-primary)] focus:shadow-[0_0_10px_var(--accent-glow)]"
-                                                                autoFocus
-                                                            >
-                                                                <option value="">Select tier...</option>
-                                                                {TIER_OPTIONS.map(t => (
-                                                                    <option key={t.value} value={t.value}>{t.label}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    ) : (
-                                                        <span className={clsx(
-                                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-sm",
-                                                            TIER_COLORS[u.subscription_tier] || TIER_COLORS.free
-                                                        )}>
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_5px_currentColor]"></span>
-                                                            {SUBSCRIPTION_TIERS[u.subscription_tier]?.label || 'Free'}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 font-mono">
-                                                    {new Date(u.joined_date).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    {editingUser === u.id ? (
-                                                        <div className="flex items-center justify-end gap-2 animate-fade-in-left">
-                                                            <button
-                                                                onClick={() => handleUpdateTier(u.id)}
-                                                                disabled={!newTier || updating}
-                                                                className="p-2 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/30 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                title="Save Changes"
-                                                            >
-                                                                <Check size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => { setEditingUser(null); setNewTier(''); }}
-                                                                className="p-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] transition-all"
-                                                                title="Cancel"
-                                                            >
-                                                                <X size={16} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => { setEditingUser(u.id); setNewTier(u.subscription_tier || 'free'); }}
-                                                            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[var(--accent-primary)] hover:border-[var(--accent-primary)] hover:shadow-[0_0_15px_var(--accent-glow)] transition-all duration-300 transform hover:-translate-y-0.5"
-                                                        >
-                                                            Change Tier
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
+                        {/* MODULE CONTENT */}
+                        {activeTab === 'users' && (
+                            <>
+                                <div className="space-y-6 animate-fade-in-up delay-200">
+                                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <RiUserStarLine className="text-indigo-400" size={24} />
+                                            <h2 className="text-xl font-bold tracking-tight">Active Registrations</h2>
+                                        </div>
+
+                                        <div className="flex gap-2 w-full md:w-auto">
+                                            <div className="relative group flex-1 md:w-64">
+                                                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Quick scan (email/name)..."
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="w-full pl-11 pr-4 py-2.5 bg-zinc-900 border border-white/5 rounded-2xl text-sm focus:outline-none focus:border-indigo-500/50 transition-all font-mono"
+                                                />
+                                            </div>
+                                            <div className="relative">
+                                                <select
+                                                    value={filterTier}
+                                                    onChange={(e) => setFilterTier(e.target.value)}
+                                                    className="appearance-none pl-4 pr-10 py-2.5 bg-zinc-900 border border-white/5 rounded-2xl text-xs font-bold text-zinc-400 uppercase tracking-widest focus:outline-none focus:border-indigo-500/50 cursor-pointer min-w-[140px]"
+                                                >
+                                                    <option value="all">ALL TIERS</option>
+                                                    {TIER_OPTIONS.map(t => (
+                                                        <option key={t.value} value={t.value}>{t.label.toUpperCase()}</option>
+                                                    ))}
+                                                </select>
+                                                <Filter size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* DATA TABLE */}
+                                    <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl backdrop-blur-sm">
+                                        {loading ? (
+                                            <div className="py-32 flex flex-col items-center justify-center space-y-4">
+                                                <div className="relative">
+                                                    <div className="w-16 h-16 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin"></div>
+                                                    <Shield className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-500 opacity-50" size={24} />
+                                                </div>
+                                                <p className="text-xs font-mono text-zinc-500 uppercase tracking-[0.4em] animate-pulse">Syncing Intel...</p>
+                                            </div>
+                                        ) : (
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-white/5 border-b border-white/5">
+                                                            <th className="px-8 py-5 text-left text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Personnel Information</th>
+                                                            <th className="px-8 py-5 text-left text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Clearance Level</th>
+                                                            <th className="px-8 py-5 text-left text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Activity Date</th>
+                                                            <th className="px-8 py-5 text-right text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-white/5">
+                                                        {filteredUsers.map((u) => (
+                                                            <tr key={u.id} className="group hover:bg-white/[0.02] transition-colors">
+                                                                <td className="px-8 py-6">
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="w-10 h-10 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center font-black text-xs text-indigo-400 group-hover:bg-indigo-500/10 transition-all">
+                                                                            {u.name?.[0] || 'U'}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="font-bold text-white tracking-tight">{u.name}</div>
+                                                                            <div className="text-xs text-zinc-500 font-mono">{u.email}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-8 py-6">
+                                                                    {editingUser === u.id ? (
+                                                                        <select
+                                                                            value={newTier}
+                                                                            onChange={(e) => setNewTier(e.target.value)}
+                                                                            className="w-full bg-zinc-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-indigo-400 focus:outline-none"
+                                                                            autoFocus
+                                                                        >
+                                                                            <option value="">Select Level...</option>
+                                                                            {TIER_OPTIONS.map(t => (
+                                                                                <option key={t.value} value={t.value}>{t.label}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                    ) : (
+                                                                        <div className={clsx(
+                                                                            "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest",
+                                                                            u.subscription_tier === 'admin' ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]" :
+                                                                                u.subscription_tier === 'fullstack' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                                                                                    "bg-zinc-900 border-white/10 text-zinc-400"
+                                                                        )}>
+                                                                            <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                                                                            {u.subscription_tier}
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-8 py-6">
+                                                                    <div className="flex items-center gap-2 text-zinc-400 text-xs font-mono">
+                                                                        <RiTimeLine className="text-zinc-600" />
+                                                                        {new Date(u.joined_date).toLocaleDateString()}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-8 py-6 text-right">
+                                                                    {editingUser === u.id ? (
+                                                                        <div className="flex items-center justify-end gap-2 shrink-0">
+                                                                            <button
+                                                                                onClick={() => confirmUpdateTier(u.id, newTier)}
+                                                                                className="p-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 transition-all"
+                                                                            >
+                                                                                <Check size={18} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => setEditingUser(null)}
+                                                                                className="p-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all"
+                                                                            >
+                                                                                <X size={18} />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => { setEditingUser(u.id); setNewTier(u.subscription_tier); }}
+                                                                            className="px-4 py-2 bg-zinc-900 border border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white hover:border-white/20 transition-all"
+                                                                        >
+                                                                            Modify
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* SYSTEM PROTOCOL INFO */}
+                                <div className="p-8 bg-indigo-600/5 border border-indigo-500/10 rounded-[2.5rem] relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-12 text-indigo-500/10 animate-pulse pointer-events-none">
+                                        <Shield size={160} />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                                        <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                                            <AlertCircle size={20} />
+                                        </div>
+                                        Operational Protocols
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {[
+                                            { step: '01', title: 'Verify', text: 'Confirm payment receipt via external secure channels.' },
+                                            { step: '02', title: 'Locate', text: 'Use server-side scan to find the unique personnel entry.' },
+                                            { step: '03', title: 'Update', text: 'Re-assign clearance level to match the transaction.' },
+                                            { step: '04', title: 'Status', text: 'Clearance is granted instantly upon confirmation.' }
+                                        ].map((step, i) => (
+                                            <div key={i} className="relative z-10">
+                                                <div className="text-[10px] font-black text-indigo-500 mb-2 font-mono">STEP_{step.step}</div>
+                                                <div className="font-bold text-white mb-1 uppercase tracking-tight">{step.title}</div>
+                                                <p className="text-xs text-zinc-500 font-mono leading-relaxed">{step.text}</p>
+                                            </div>
                                         ))}
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === 'logs' && (
+                            <div className="space-y-6 animate-fade-in-up">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Database className="text-indigo-400" size={24} />
+                                        <h2 className="text-xl font-bold tracking-tight">Database Activity Stream</h2>
+                                    </div>
+                                    <div className="text-[10px] font-mono text-zinc-500 uppercase flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        Live Feed Active
+                                    </div>
+                                </div>
+                                <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
+                                    <div className="divide-y divide-white/5">
+                                        {logs.length > 0 ? logs.map((log, i) => (
+                                            <div key={i} className="p-6 hover:bg-white/[0.02] transition-all flex items-center justify-between group">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={clsx(
+                                                        "w-12 h-12 rounded-2xl flex items-center justify-center border",
+                                                        log.type === 'USER_JOINED' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                                                            log.type === 'FORUM_POST' ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400" :
+                                                                "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                                                    )}>
+                                                        {log.type === 'USER_JOINED' ? <Users size={20} /> :
+                                                            log.type === 'FORUM_POST' ? <Activity size={20} /> :
+                                                                <Shield size={20} />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors">
+                                                            {log.type === 'USER_JOINED' ? `Personnel registration authorized: ${log.name}` :
+                                                                log.type === 'FORUM_POST' ? `Intelligence shared: "${log.title}" by ${log.user_name}` :
+                                                                    `Module progress: ${log.user_name} advanced to ${log.course_id}`}
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[10px] font-mono text-zinc-500">
+                                                            <span className="uppercase tracking-widest px-2 py-0.5 bg-white/5 rounded-md border border-white/5">{log.type}</span>
+                                                            <span>•</span>
+                                                            <span className="flex items-center gap-1"><RiTimeLine /> {new Date(log.timestamp).toLocaleString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button className="p-2 text-zinc-600 hover:text-white transition-colors">
+                                                    <RiArrowRightUpLine size={20} />
+                                                </button>
+                                            </div>
+                                        )) : (
+                                            <div className="py-20 text-center">
+                                                <div className="text-zinc-500 font-mono text-sm animate-pulse">Scanning database for activity...</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
-                    </div>
 
-                    {/* Pro Tip Section */}
-                    <div className="p-6 bg-gradient-to-r from-[var(--bg-panel)] to-[var(--bg-primary)] rounded-2xl border border-[var(--border-subtle)] relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Shield size={100} />
+                        {activeTab === 'analytics' && (
+                            <div className="space-y-6 animate-fade-in-up">
+                                <div className="flex items-center gap-3">
+                                    <BarChart3 className="text-indigo-400" size={24} />
+                                    <h2 className="text-xl font-bold tracking-tight">System Intelligence</h2>
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* TIER DISTRIBUTION (REAL) */}
+                                    <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] p-8 flex flex-col justify-between h-80">
+                                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-6">Clearance Distribution</div>
+                                        <div className="flex-1 flex items-end gap-3 px-4">
+                                            {analytics?.tierDistribution?.map((t, i) => (
+                                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                                                    <div className="text-[10px] font-mono text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
+                                                        {t.count}
+                                                    </div>
+                                                    <div
+                                                        className="w-full bg-indigo-500/20 border-t-2 border-indigo-500 rounded-t-lg transition-all hover:bg-indigo-500/40 cursor-help"
+                                                        style={{ height: `${Math.max(10, (t.count / users.length) * 100)}%` }}
+                                                    ></div>
+                                                    <div className="text-[8px] font-black text-zinc-600 uppercase tracking-tighter truncate w-full text-center">
+                                                        {t.subscription_tier}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* POPULAR COURSES (REAL) */}
+                                    <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] p-8 flex flex-col h-80">
+                                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-6 px-2">Knowledge Hotspots</div>
+                                        <div className="space-y-4 flex-1">
+                                            {analytics?.popularCourses?.map((course, i) => (
+                                                <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5 group hover:border-indigo-500/30 transition-all">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-[10px] font-black text-indigo-400 border border-white/5">
+                                                            {i + 1}
+                                                        </div>
+                                                        <span className="text-sm font-bold text-zinc-300 group-hover:text-white transition-colors">{course.course_id.toUpperCase()}</span>
+                                                    </div>
+                                                    <div className="text-xs font-mono text-zinc-500">
+                                                        {course.enrollments} ENROLLED
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SIGNUP TREND (REAL) */}
+                                <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] p-8">
+                                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-8 px-2 text-center">7-Day Personnel Growth Matrix</div>
+                                    <div className="h-40 flex items-end gap-2">
+                                        {analytics?.signupTrend?.map((day, i) => (
+                                            <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                                                <div className="text-[10px] font-mono text-emerald-400 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{day.count}</div>
+                                                <div
+                                                    className="w-full bg-emerald-500/20 border-t-2 border-emerald-500 rounded-t-sm transition-all hover:bg-emerald-500/40"
+                                                    style={{ height: `${Math.min(100, (day.count * 20) + 10)}%` }}
+                                                ></div>
+                                                <div className="text-[8px] font-bold text-zinc-700 font-mono mt-2">
+                                                    {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'settings' && (
+                            <div className="space-y-6 animate-fade-in-up">
+                                <div className="flex items-center gap-3">
+                                    <RiUserSettingsLine className="text-indigo-400" size={24} />
+                                    <h2 className="text-xl font-bold tracking-tight">Global Configurations</h2>
+                                </div>
+                                <div className="bg-zinc-900/30 border border-white/5 rounded-[2rem] p-8 space-y-6">
+                                    {[
+                                        { id: 'maintenance', title: 'Maintenance Mode', desc: 'Seal the platform for deep-space updates.', active: settings.maintenance },
+                                        { id: 'ai', title: 'AI Overdrive', desc: 'Enable maximum intelligence for student assistance.', active: settings.ai },
+                                        { id: 'registry', title: 'Public Registry', desc: 'Allows search engines to crawl student success stories.', active: settings.registry }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                            <div>
+                                                <div className="font-bold text-sm uppercase tracking-tight">{item.title}</div>
+                                                <div className="text-xs text-zinc-500 font-mono italic">{item.desc}</div>
+                                            </div>
+                                            <div
+                                                onClick={() => {
+                                                    setSettings(prev => ({ ...prev, [item.id]: !item.active }));
+                                                    setMessage({ type: 'success', text: `${item.title} ${!item.active ? 'ENABLED' : 'DISABLED'}` });
+                                                    setTimeout(() => setMessage(null), 2000);
+                                                }}
+                                                className={clsx(
+                                                    "w-12 h-6 rounded-full p-1 transition-all cursor-pointer",
+                                                    item.active ? "bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)]" : "bg-zinc-800"
+                                                )}
+                                            >
+                                                <div className={clsx("w-4 h-4 bg-white rounded-full transition-all shadow-sm", item.active ? "translate-x-6" : "translate-x-0")}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+                </main>
+            </div>
+
+            {/* CONFIRMATION OVERLAY */}
+            {isConfirmOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-xl animate-fade-in px-4">
+                    <div className="bg-zinc-900 border border-white/10 rounded-[3rem] p-12 max-w-md w-full shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-scale-in relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 text-amber-500/5 -rotate-12">
+                            <Shield size={200} />
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                            <span className="text-[var(--accent-primary)]">⚡</span>
-                            <span>Admin Protocols</span>
-                        </h3>
-                        <ol className="space-y-3 text-sm text-gray-400 font-mono relative z-10">
-                            <li className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] border border-white/10">01</span>
-                                <span>Verify payment receipt from user via external channel.</span>
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] border border-white/10">02</span>
-                                <span>Locate user via Email search function.</span>
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] border border-white/10">03</span>
-                                <span>Modify subscription tier to match purchased plan.</span>
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] border border-white/10">04</span>
-                                <span>Confirm upgrade. Access is granted instantaneously.</span>
-                            </li>
-                        </ol>
+                        <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-amber-500/20 shadow-[0_0_40px_rgba(245,158,11,0.1)]">
+                            <RiUserSettingsLine size={40} />
+                        </div>
+                        <h2 className="text-2xl font-black text-center text-white mb-2 tracking-tighter uppercase">Initialize Upgrade</h2>
+                        <p className="text-zinc-500 text-center text-xs mb-10 leading-relaxed font-mono px-4">
+                            Authorized personnel: <span className="text-white font-bold">{pendingUpdate?.userName}</span> will be granted <span className="text-amber-400 font-bold uppercase tracking-widest">{pendingUpdate?.tier}</span> level clearance.
+                        </p>
+                        <div className="grid grid-cols-1 gap-3">
+                            <button
+                                onClick={handleUpdateTier}
+                                disabled={updating}
+                                className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-400 transition-all active:scale-95 shadow-xl disabled:opacity-50"
+                            >
+                                {updating ? 'EXECUTING...' : 'Authorize Clearance'}
+                            </button>
+                            <button
+                                onClick={() => setIsConfirmOpen(false)}
+                                className="w-full py-4 bg-transparent text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:text-white transition-all"
+                            >
+                                Abort Mission
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </main>
+            )}
+
+            {/* MESSAGE FEEDBACK */}
+            {message && (
+                <div className={clsx(
+                    "fixed bottom-8 right-8 z-[110] px-6 py-4 rounded-2xl border flex items-center gap-4 animate-slide-in-right shadow-2xl backdrop-blur-md",
+                    message.type === 'success' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                )}>
+                    {message.type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
+                    <div className="text-xs font-bold uppercase tracking-widest">{message.text}</div>
+                </div>
+            )}
         </div>
     );
 }

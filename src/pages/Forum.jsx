@@ -7,8 +7,10 @@ import { getOverallProgress } from '../data/curriculumStructure';
 import { sql } from '../lib/neon';
 import {
     MessageSquare, Plus, Search, ThumbsUp, MessageCircle,
-    Clock, User, X, Send, ChevronRight, Hash
+    Clock, User, X, Send, ChevronRight, Hash, TrendingUp, Zap, Award
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RiFireLine, RiTimeLine, RiLineChartLine } from 'react-icons/ri';
 import clsx from 'clsx';
 
 const CATEGORIES = [
@@ -31,26 +33,62 @@ export default function Forum() {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState('latest'); // latest, top, active
     const [showNewPost, setShowNewPost] = useState(false);
     const [newPost, setNewPost] = useState({ title: '', content: '', category: 'general' });
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        loadPosts();
-    }, []);
+        fetchIntelligenceStream();
+    }, [sortBy]);
 
-    const loadPosts = async () => {
+    const fetchIntelligenceStream = async () => {
+        console.log("FETCHING INTELLIGENCE STREAM - CACHE BUST v2 - THE RAW IS GONE");
         try {
-            const result = await sql`
-                SELECT 
-                    p.*,
-                    u.name as author_name,
-                    u.email as author_email,
-                    (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
-                FROM forum_posts p
-                JOIN users u ON p.user_id = u.id
-                ORDER BY p.created_at DESC
-            `;
+            let result;
+            if (sortBy === 'top') {
+                result = await sql`
+                    SELECT 
+                        p.*,
+                        u.name as author_name,
+                        u.email as author_email,
+                        u.avatar as author_avatar,
+                        u.subscription_tier as author_tier,
+                        u.created_at as author_joined,
+                        (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
+                    FROM forum_posts p
+                    JOIN users u ON p.user_id = u.id
+                    ORDER BY p.likes DESC
+                `;
+            } else if (sortBy === 'active') {
+                result = await sql`
+                    SELECT 
+                        p.*,
+                        u.name as author_name,
+                        u.email as author_email,
+                        u.avatar as author_avatar,
+                        u.subscription_tier as author_tier,
+                        u.created_at as author_joined,
+                        (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
+                    FROM forum_posts p
+                    JOIN users u ON p.user_id = u.id
+                    ORDER BY reply_count DESC
+                `;
+            } else {
+                result = await sql`
+                    SELECT 
+                        p.*,
+                        u.name as author_name,
+                        u.email as author_email,
+                        u.avatar as author_avatar,
+                        u.subscription_tier as author_tier,
+                        u.created_at as author_joined,
+                        (SELECT COUNT(*) FROM forum_replies WHERE post_id = p.id) as reply_count
+                    FROM forum_posts p
+                    JOIN users u ON p.user_id = u.id
+                    ORDER BY p.created_at DESC
+                `;
+            }
             setPosts(result);
         } catch (error) {
             console.error('Error loading posts:', error);
@@ -71,7 +109,7 @@ export default function Forum() {
             `;
             setNewPost({ title: '', content: '', category: 'general' });
             setShowNewPost(false);
-            loadPosts();
+            fetchIntelligenceStream();
         } catch (error) {
             console.error('Error creating post:', error);
             alert('Failed to create post');
@@ -93,7 +131,7 @@ export default function Forum() {
                 await sql`INSERT INTO forum_likes (post_id, user_id) VALUES (${postId}, ${user.id})`;
                 await sql`UPDATE forum_posts SET likes = likes + 1 WHERE id = ${postId}`;
             }
-            loadPosts();
+            fetchIntelligenceStream();
         } catch (error) {
             console.error('Error toggling like:', error);
         }
@@ -142,183 +180,315 @@ export default function Forum() {
 
     return (
         <AppLayout>
-            <div className="max-w-5xl mx-auto">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                    <div>
-                        <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">Discussions</h1>
-                        <p className="text-gray-500">Join the conversation with the ZeroCode community.</p>
+            <div className="max-w-6xl mx-auto px-4 py-8">
+                {/* Elite Header Section */}
+                <div className="relative mb-16">
+                    <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                    <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 relative z-10">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+                                <TrendingUp size={12} />
+                                Intelligence Hub
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                                COMMUNITY <span className="text-indigo-400">DISCUSSIONS</span>
+                            </h1>
+                            <p className="text-zinc-500 font-mono text-sm max-w-xl">
+                                Synchronize with elite developers, share architectural insights, and navigate the neural networks of code.
+                            </p>
+
+                            <div className="flex items-center gap-8 pt-4">
+                                {[
+                                    { label: 'Threads', value: posts.length, icon: <MessageSquare size={14} /> },
+                                    { label: 'Intelligence', value: posts.reduce((acc, p) => acc + (p.likes || 0), 0), icon: <ThumbsUp size={14} /> },
+                                    { label: 'Active', value: '2.4K', icon: <RiFireLine size={14} /> }
+                                ].map((stat, i) => (
+                                    <div key={i} className="flex flex-col gap-1">
+                                        <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest flex items-center gap-1.5">
+                                            {stat.icon} {stat.label}
+                                        </div>
+                                        <div className="text-xl font-black text-white tabular-nums">{stat.value}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setShowNewPost(true)}
+                            className="group relative flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-200 transition-all shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)] active:scale-95 overflow-hidden"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                            <Plus size={18} strokeWidth={3} />
+                            Start Discussion
+                        </button>
                     </div>
-                    <button
-                        onClick={() => setShowNewPost(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg font-medium text-sm hover:bg-gray-200 transition-colors shadow-sm"
-                    >
-                        <Plus size={16} />
-                        New Discussion
-                    </button>
                 </div>
 
-                {/* Filters Row */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                    <div className="relative flex-1">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                {/* Navigation & Filters */}
+                <div className="flex flex-col lg:flex-row gap-6 mb-8">
+                    {/* Search Component */}
+                    <div className="relative flex-1 group">
+                        <div className="absolute inset-0 bg-indigo-500/5 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+                        <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors" />
                         <input
                             type="text"
-                            placeholder="Search topics..."
+                            placeholder="Filter by keyword, @user, or #topic..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-[#18181b] border border-[#27272a] rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 transition-colors"
+                            className="w-full pl-14 pr-6 py-5 bg-zinc-900/50 border border-white/5 rounded-2xl text-sm text-white placeholder-zinc-600 shadow-2xl focus:outline-none focus:border-white/20 focus:bg-zinc-900 transition-all font-mono"
                         />
                     </div>
 
-                    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                        {CATEGORIES.map(cat => (
+                    {/* Sorting Controls */}
+                    <div className="flex bg-zinc-900/50 border border-white/5 p-1.5 rounded-2xl shadow-xl">
+                        {[
+                            { id: 'latest', label: 'Latest', icon: <RiTimeLine /> },
+                            { id: 'top', label: 'Top Intelligence', icon: <Award /> },
+                            { id: 'active', label: 'Hot Discussion', icon: <RiFireLine /> }
+                        ].map(s => (
                             <button
-                                key={cat.id}
-                                onClick={() => setSelectedCategory(cat.id)}
+                                key={s.id}
+                                onClick={() => setSortBy(s.id)}
                                 className={clsx(
-                                    "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors whitespace-nowrap",
-                                    selectedCategory === cat.id
-                                        ? "bg-white text-black border-white"
-                                        : "bg-transparent text-gray-500 border-[#27272a] hover:text-gray-300 hover:border-gray-600"
+                                    "flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                    sortBy === s.id ? "bg-white text-black shadow-lg" : "text-zinc-500 hover:text-white"
                                 )}
                             >
-                                {cat.label}
+                                {s.icon} {s.label}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Posts Grid */}
-                <div className="space-y-3">
-                    {filteredPosts.length === 0 ? (
-                        <div className="text-center py-24 border border-dashed border-[#27272a] rounded-xl">
-                            <MessageSquare size={32} className="text-gray-700 mx-auto mb-3" />
-                            <p className="text-gray-500 text-sm">No discussions found.</p>
-                        </div>
-                    ) : (
-                        filteredPosts.map((post) => (
-                            <div
-                                key={post.id}
-                                onClick={() => navigate(`/forum/${post.id}`)}
-                                className="group bg-[#121214] border border-[#27272a] p-5 rounded-lg hover:border-gray-700 transition-colors cursor-pointer flex flex-col sm:flex-row gap-6"
-                            >
-                                {/* Vote Column */}
-                                <div className="hidden sm:flex flex-col items-center gap-1 min-w-[40px] pt-1">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleLike(post.id); }}
-                                        className="text-gray-500 hover:text-[var(--accent-primary)] transition-colors"
-                                    >
-                                        <ThumbsUp size={16} />
-                                    </button>
-                                    <span className="text-xs font-mono font-medium text-gray-400">{post.likes || 0}</span>
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="w-5 h-5 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center text-[10px] text-white font-bold">
-                                            {post.author_name?.[0] || 'U'}
-                                        </span>
-                                        <span className="text-xs text-gray-400 hover:text-white transition-colors">{post.author_name}</span>
-                                        <span className="text-gray-600 text-[10px]">•</span>
-                                        <span className="text-xs text-gray-600">{formatDate(post.created_at)}</span>
-
-                                        <span className={clsx(
-                                            "ml-auto text-[10px] px-2 py-0.5 rounded border uppercase tracking-wider",
-                                            CATEGORIES.find(c => c.id === post.category)?.color || CATEGORIES[0].color
-                                        )}>
-                                            {CATEGORIES.find(c => c.id === post.category)?.label}
-                                        </span>
-                                    </div>
-
-                                    <h3 className="text-lg font-semibold text-gray-100 mb-1.5 group-hover:text-blue-400 transition-colors">{post.title}</h3>
-
-                                    <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-2">
-                                        {renderPreview(post.content)}
-                                    </p>
-
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 sm:hidden">
-                                        <div className="flex items-center gap-1">
-                                            <ThumbsUp size={12} />
-                                            <span>{post.likes || 0}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <MessageCircle size={12} />
-                                            <span>{post.reply_count || 0}</span>
-                                        </div>
-                                    </div>
-                                    <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 mt-2">
-                                        <MessageCircle size={12} />
-                                        <span>{post.reply_count || 0} replies</span>
-                                    </div>
-                                </div>
+                {/* Categories Scroll */}
+                <div className="flex gap-3 overflow-x-auto pb-6 no-scrollbar mask-fade-right">
+                    {CATEGORIES.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setSelectedCategory(cat.id)}
+                            className={clsx(
+                                "group relative px-6 py-4 rounded-2xl border transition-all whitespace-nowrap overflow-hidden",
+                                selectedCategory === cat.id
+                                    ? "bg-indigo-500/10 border-indigo-500/30 text-white"
+                                    : "bg-zinc-900/30 border-white/5 text-zinc-500 hover:border-white/10"
+                            )}
+                        >
+                            {selectedCategory === cat.id && (
+                                <motion.div layoutId="cat-glow" className="absolute inset-0 bg-indigo-500/20 blur-xl"></motion.div>
+                            )}
+                            <div className="relative z-10 flex flex-col items-start gap-1">
+                                <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-50 group-hover:opacity-100 transition-opacity">Sector</span>
+                                <span className="text-xs font-bold uppercase tracking-tight">{cat.label}</span>
                             </div>
-                        ))
-                    )}
+                        </button>
+                    ))}
                 </div>
 
-                {/* Elegant Create Post Modal */}
-                {showNewPost && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-[#09090b] rounded-xl border border-[#27272a] w-full max-w-lg shadow-2xl overflow-hidden">
-                            <div className="flex items-center justify-between p-5 border-b border-[#27272a]">
-                                <h2 className="text-sm font-semibold text-white">Start a Discussion</h2>
-                                <button onClick={() => setShowNewPost(false)} className="text-gray-500 hover:text-white transition-colors">
-                                    <X size={18} />
-                                </button>
-                            </div>
-                            <form onSubmit={handleCreatePost} className="p-5 space-y-4">
-                                <div>
-                                    <select
-                                        value={newPost.category}
-                                        onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                                        className="w-full px-4 py-2.5 bg-[#18181b] border border-[#27272a] rounded-lg text-sm text-gray-200 focus:outline-none focus:border-gray-500 transition-colors"
-                                    >
-                                        {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.label}</option>
-                                        ))}
-                                    </select>
+                {/* Posts Dynamic Grid */}
+                <div className="grid grid-cols-1 gap-4">
+                    <AnimatePresence mode='popLayout'>
+                        {filteredPosts.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex flex-col items-center justify-center py-32 bg-zinc-900/20 border border-dashed border-white/5 rounded-3xl"
+                            >
+                                <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
+                                    <MessageSquare size={24} className="text-zinc-700" />
                                 </div>
-                                <div>
-                                    <input
-                                        type="text"
-                                        value={newPost.title}
-                                        onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                                        placeholder="Title of your discussion"
-                                        className="w-full px-4 py-2.5 bg-[#18181b] border border-[#27272a] rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 transition-colors"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <textarea
-                                        value={newPost.content}
-                                        onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                                        placeholder="What's on your mind? Use @ to mention users..."
-                                        rows={6}
-                                        className="w-full px-4 py-3 bg-[#18181b] border border-[#27272a] rounded-lg text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 resize-none"
-                                        required
-                                    />
-                                </div>
-                                <div className="flex justify-end gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowNewPost(false)}
-                                        className="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white transition-colors"
-                                    >
-                                        Cancel
+                                <h3 className="text-lg font-black text-white uppercase tracking-tighter">Null Result Detected</h3>
+                                <p className="text-zinc-500 text-sm font-mono mt-2 italic px-8 text-center max-w-sm">"The intelligence database yielded no results for the current filter parameters."</p>
+                            </motion.div>
+                        ) : (
+                            filteredPosts.map((post, idx) => (
+                                <motion.div
+                                    key={post.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    onClick={() => navigate(`/forum/${post.id}`)}
+                                    className="group relative bg-zinc-900/40 border border-white/5 p-6 md:p-8 rounded-[2rem] hover:bg-zinc-900/60 hover:border-indigo-500/30 transition-all cursor-pointer overflow-hidden shadow-2xl"
+                                >
+                                    {/* Gradient Accent */}
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/5 to-transparent pointer-events-none"></div>
+
+                                    <div className="flex flex-col md:flex-row gap-8 relative z-10">
+                                        {/* Status Column */}
+                                        <div className="hidden md:flex flex-col items-center justify-center gap-2 min-w-[60px] border-r border-white/5 pr-8">
+                                            <div className="text-2xl font-black text-white tabular-nums">{post.likes || 0}</div>
+                                            <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Intelligence</div>
+                                            <div className="w-px h-8 bg-white/5 my-2"></div>
+                                            <div className="text-xl font-bold text-zinc-500 tabular-nums">{post.reply_count || 0}</div>
+                                            <div className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Reports</div>
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-4 mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 ring-2 ring-transparent group-hover:ring-indigo-500/30 transition-all">
+                                                        {post.author_avatar ? (
+                                                            <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-xs font-black bg-gradient-to-tr from-zinc-800 to-zinc-700">
+                                                                {post.author_name?.[0] || 'U'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">
+                                                                {post.author_name}
+                                                            </span>
+                                                            <span className={clsx(
+                                                                "text-[8px] font-black px-2 py-0.5 rounded-sm border uppercase tracking-widest",
+                                                                post.author_tier === 'admin' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" :
+                                                                    post.author_tier === 'fullstack' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" :
+                                                                        "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                                                            )}>
+                                                                {post.author_tier || 'FREE'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] font-mono text-zinc-600 flex items-center gap-1">
+                                                            <Clock size={10} /> {formatDate(post.created_at)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <span className={clsx(
+                                                    "ml-auto text-[10px] px-3 py-1 rounded-full border uppercase tracking-widest font-black",
+                                                    CATEGORIES.find(c => c.id === post.category)?.color || CATEGORIES[0].color
+                                                )}>
+                                                    #{CATEGORIES.find(c => c.id === post.category)?.label}
+                                                </span>
+                                            </div>
+
+                                            <h3 className="text-xl md:text-2xl font-black text-white mb-3 group-hover:translate-x-1 transition-transform inline-block">
+                                                {post.title}
+                                            </h3>
+
+                                            <p className="text-zinc-500 text-sm leading-relaxed mb-6 line-clamp-2 font-medium">
+                                                {post.content}
+                                            </p>
+
+                                            <div className="flex items-center gap-6 md:hidden">
+                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-xl border border-white/5 text-[10px] font-black text-white">
+                                                    <ThumbsUp size={12} /> {post.likes || 0}
+                                                </div>
+                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-xl border border-white/5 text-[10px] font-black text-white">
+                                                    <MessageCircle size={12} /> {post.reply_count || 0}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="hidden lg:flex items-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all border border-white/10 shadow-xl">
+                                                <ChevronRight size={24} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Elite Create Post Modal */}
+                <AnimatePresence>
+                    {showNewPost && (
+                        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowNewPost(false)}
+                                className="absolute inset-0 bg-zinc-950/80 backdrop-blur-xl"
+                            ></motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                                className="bg-zinc-900 border border-white/5 w-full max-w-2xl rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden relative z-10"
+                            >
+                                <div className="flex items-center justify-between p-8 border-b border-white/5">
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Iniate Discussion</h2>
+                                        <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest mt-1">Protocol: Public Intelligence Sharing</p>
+                                    </div>
+                                    <button onClick={() => setShowNewPost(false)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors border border-white/5">
+                                        <X size={20} />
                                     </button>
-                                    <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        className="px-6 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-                                    >
-                                        {submitting ? 'Publishing...' : 'Publish'}
-                                    </button>
                                 </div>
-                            </form>
+                                <form onSubmit={handleCreatePost} className="p-8 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Target Sector</label>
+                                            <select
+                                                value={newPost.category}
+                                                onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
+                                                className="w-full px-5 py-4 bg-zinc-800/50 border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                {CATEGORIES.filter(c => c.id !== 'all').map(cat => (
+                                                    <option key={cat.id} value={cat.id} className="bg-zinc-900">{cat.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Topic Identifier</label>
+                                            <input
+                                                type="text"
+                                                value={newPost.title}
+                                                onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                                                placeholder="Subject line..."
+                                                className="w-full px-5 py-4 bg-zinc-800/50 border border-white/5 rounded-2xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-all font-bold"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Intelligence Content</label>
+                                        <textarea
+                                            value={newPost.content}
+                                            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                                            placeholder="Broadcast your architectural insights... (Supports @mentions)"
+                                            rows={8}
+                                            className="w-full px-5 py-5 bg-zinc-800/50 border border-white/5 rounded-2xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500/50 transition-all resize-none font-medium leading-relaxed"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="flex justify-end gap-4 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPost(false)}
+                                            className="px-8 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors"
+                                        >
+                                            Abort
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="px-10 py-4 bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-all disabled:opacity-50 shadow-[0_20px_40px_-15px_rgba(255,255,255,0.2)] active:scale-95 flex items-center gap-3"
+                                        >
+                                            {submitting ? (
+                                                <>
+                                                    <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                                                    UPLOADING...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Send size={14} strokeWidth={3} />
+                                                    PUBLISH STREAM
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </AnimatePresence>
             </div>
         </AppLayout>
     );
