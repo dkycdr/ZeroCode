@@ -12,7 +12,8 @@ import InformationalPane from '../components/InformationalPane';
 import Footer from '../components/Footer';
 import LearningNavbar from '../components/layout/LearningNavbar';
 import CourseMenuDrawer from '../components/layout/CourseMenuDrawer';
-import AIAssistantPanel from '../components/layout/AIAssistantPanel'; // UPDATED IMPORTS
+import AIAssistantPanel from '../components/layout/AIAssistantPanel';
+import VaultOverlay from '../components/neural-vault/VaultOverlay'; // NEW IMPORT
 import { useProgress } from '../contexts/ProgressProvider';
 import { getItem, getNextItem, getUnit, getCourseProgress, CONTENT_TYPES, courses as courseMetaMap } from '../data/courses/index';
 import { evaluateCode } from '../utils/validator';
@@ -39,6 +40,7 @@ export default function LearningLayout() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     // New State for AI
     const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
+    const [isVaultOpen, setIsVaultOpen] = useState(false); // NEW STATE
 
     // Terminal State for Git Course
     const [virtualGitState, setVirtualGitState] = useState(null);
@@ -136,6 +138,7 @@ export default function LearningLayout() {
                 progress={progress}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
                 onAskAI={() => setIsAIPanelOpen(!isAIPanelOpen)} // Toggle Panel
+                onOpenVault={() => setIsVaultOpen(true)} // Pass Handler
                 onBack={() => navigate(`/course/${courseId}`)}
             />
 
@@ -157,6 +160,12 @@ export default function LearningLayout() {
                 onClose={() => setIsAIPanelOpen(false)}
                 currentCode={files.map(f => `// File: ${f.name}\n${f.content}`).join('\n\n')}
                 taskDescription={item?.content || "No context available."}
+            />
+
+            {/* VAULT OVERLAY (NEW) */}
+            <VaultOverlay
+                isOpen={isVaultOpen}
+                onClose={() => setIsVaultOpen(false)}
             />
 
             <div className="flex-1 min-h-0 overflow-hidden pt-16">
@@ -601,7 +610,7 @@ export default function LearningLayout() {
                 progress={progress}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
                 onAskAI={() => setIsAIPanelOpen(!isAIPanelOpen)}
-                onBack={() => navigate(`/ course / ${courseId} `)}
+                onBack={() => navigate(`/course/${courseId}`)}
             />
 
             <CourseMenuDrawer
@@ -625,19 +634,19 @@ export default function LearningLayout() {
                 }
             />
 
-            < div className="flex-1 min-h-0 w-full relative pt-16 pb-14 bg-[#050505]" >
+            <div className="flex-1 min-h-0 w-full relative pt-16 pb-10 bg-black">
                 <PanelGroup direction="horizontal" className="h-full w-full">
                     {/* Left Panel: Instructions */}
-                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-[#0a0a0c] border-r border-white/5 relative z-10">
+                    <Panel defaultSize={25} minSize={20} className="h-full flex flex-col bg-black border-r border-cyan-500/10 relative z-10">
                         <InstructionPane lesson={lessonData} />
                     </Panel>
 
-                    <PanelResizeHandle className="w-0.5 bg-blue-900/30 hover:bg-blue-500 hover:shadow-[0_0_10px_#3b82f6] transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
-                        <div className="h-8 w-0.5 bg-blue-500/50 group-hover:bg-blue-400 rounded-full" />
+                    <PanelResizeHandle className="w-1.5 bg-[#050505] border-x border-white/5 hover:border-cyan-500/50 hover:bg-cyan-900/20 transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
+                        <div className="h-12 w-0.5 bg-zinc-800 group-hover:bg-cyan-500 group-hover:shadow-[0_0_8px_cyan] rounded-full transition-all duration-300" />
                     </PanelResizeHandle>
 
                     {/* Middle Panel: Editor */}
-                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-[#0a0a0a] relative z-0">
+                    <Panel defaultSize={40} minSize={30} className="h-full flex flex-col bg-black relative z-0">
                         <EditorComponent
                             files={files}
                             setFiles={setFiles}
@@ -649,12 +658,12 @@ export default function LearningLayout() {
                         />
                     </Panel>
 
-                    <PanelResizeHandle className="w-0.5 bg-blue-900/30 hover:bg-blue-500 hover:shadow-[0_0_10px_#3b82f6] transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
-                        <div className="h-8 w-0.5 bg-blue-500/50 group-hover:bg-blue-400 rounded-full" />
+                    <PanelResizeHandle className="w-1.5 bg-[#050505] border-x border-white/5 hover:border-cyan-500/50 hover:bg-cyan-900/20 transition-all cursor-col-resize flex items-center justify-center group focus:outline-none z-50">
+                        <div className="h-12 w-0.5 bg-zinc-800 group-hover:bg-cyan-500 group-hover:shadow-[0_0_8px_cyan] rounded-full transition-all duration-300" />
                     </PanelResizeHandle>
 
                     {/* Right Panel: Dynamic Engine */}
-                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-[#0c0c0c] border-l border-white/5">
+                    <Panel defaultSize={35} minSize={20} className="h-full flex flex-col bg-black border-l border-cyan-500/10">
                         {activeEngine === 'PYTHON' ? (
                             <PythonTerminal
                                 files={files}
@@ -677,7 +686,7 @@ export default function LearningLayout() {
                         )}
                     </Panel>
                 </PanelGroup>
-            </div >
+            </div>
 
             <Footer
                 onRun={handleRun}

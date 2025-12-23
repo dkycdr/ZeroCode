@@ -6,7 +6,7 @@ import { unit4Compose } from './unit-4-compose.js';
 import { unit5Deploy } from './unit-5-deploy.js';
 import { unit6Project } from './unit-6-project.js';
 
-export default {
+export const cicdCourse = {
     id: 'cicd',
     title: 'CI/CD & DevOps',
     description: 'Automate testing, building, and deployment with GitHub Actions and Docker.',

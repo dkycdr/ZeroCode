@@ -5,9 +5,9 @@ import { unit3Joins } from './unit-3-joins.js';
 import { unit4Design } from './unit-4-design.js';
 import { unit5Project } from './unit-5-project.js';
 
-export default {
+export const mysqlCourse = {
     id: 'mysql',
-    title: 'MySQL (SQL)',
+    title: 'MySQL - Relational Database Fundamentals',
     description: 'Master relational databases with MySQL for data storage and retrieval.',
     units: [
         unit1Intro,

@@ -12,6 +12,9 @@ export default {
                     maroon: '#800000',
                     light: '#F5F5F5',
                 }
+            },
+            animation: {
+                'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             }
         },
     },

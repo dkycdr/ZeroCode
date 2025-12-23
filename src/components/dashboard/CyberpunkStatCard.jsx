@@ -162,89 +162,101 @@ export default function CyberpunkStatCard({ userStats, isExpanded, onToggle, lay
             layout
             initial={false}
             animate={{
-                borderRadius: isExpanded ? 16 : 24, // Slightly rounded corners even when expanded
+                clipPath: isExpanded
+                    ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+                    : "polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 20px 100%, 0 calc(100% - 20px))" // Tech Shape for Compact
             }}
-            transition={{ type: "spring", stiffness: 180, damping: 24 }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
             className={clsx(
-                "relative w-full h-full bg-[#050505] overflow-hidden isolate shadow-2xl group",
-                // Flex items stretch is critical for equal heights
-                isExpanded ? "p-6 flex items-stretch gap-6 border border-white/10" : "flex flex-col items-center justify-center text-center p-6 border border-white/10"
+                "relative w-full h-full bg-[#030303] overflow-hidden isolate shadow-2xl group border border-zinc-800",
+                isExpanded ? "p-6 flex items-stretch gap-6" : "flex flex-col items-center justify-between p-1"
             )}
         >
-            {/* Holographic Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-[#050505] to-purple-900/10 pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('/assets/grid-pattern.svg')] opacity-[0.03] pointer-events-none" />
+            {/* Tech Decoration Layer */}
+            <div className="absolute inset-0 pointer-events-none z-0">
+                {/* Hazard Stripes (Subtle) */}
+                <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] bg-[repeating-linear-gradient(45deg,white,white_1px,transparent_1px,transparent_10px)]" />
+                {/* Grid */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px]" />
 
-
+                {/* Cyber Corners */}
+                {!isExpanded && (
+                    <>
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-zinc-700" />
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-zinc-700" />
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-zinc-700" />
+                        {/* Cut corner visual fix */}
+                        <div className="absolute bottom-[20px] left-0 w-2 h-0.5 bg-zinc-700" />
+                        <div className="absolute bottom-0 left-[20px] w-0.5 h-2 bg-zinc-700" />
+                    </>
+                )}
+            </div>
 
             {/* Expand/Collapse Trigger */}
             <button
                 onClick={(e) => { e.stopPropagation(); onToggle(); }}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors z-40 group/btn"
+                className={clsx(
+                    "absolute p-1.5 transition-all z-40 group/btn bg-black border border-zinc-800 hover:border-white/50 text-zinc-500 hover:text-white",
+                    isExpanded ? "top-4 right-4 rounded-full" : "top-2 right-2 rounded-sm"
+                )}
             >
-                {isExpanded ? <RiFullscreenExitLine size={18} /> : <RiFullscreenLine size={18} />}
+                {isExpanded ? <RiFullscreenExitLine size={18} /> : <RiFullscreenLine size={14} />}
             </button>
 
             {/* Content Container */}
             <AnimatePresence mode="wait">
                 {isExpanded ? (
-                    /* EXPANDED VIEW */
+                    /* EXPANDED VIEW - Keeping relatively clean for readability but improved */
                     <motion.div
                         key="expanded"
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2, delay: 0.1 }}
-                        // Grid Layout: 2 Columns, strictly confined to height
-                        className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full h-full z-10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full h-full z-10 relative"
                     >
                         {/* Left Column: Big Stats - Centered vertically */}
                         <div className="flex flex-col items-center justify-center h-full min-h-0 relative">
-                            {/* Decorative divider */}
-                            <div className="absolute right-0 top-4 bottom-4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
-
-                            <motion.div layoutId="level-ring" className="relative w-36 h-36 flex items-center justify-center mb-4 shrink-0">
-                                <div className="absolute inset-0 border border-white/5 rounded-full border-t-white/10 animate-spin-slow" />
-                                <div className="absolute inset-2 border border-indigo-500/5 rounded-full border-b-indigo-500/20 animate-reverse-spin-slow" />
+                            <motion.div layoutId="level-ring" className="relative w-40 h-40 flex items-center justify-center mb-6 shrink-0">
+                                {/* Tech Rings */}
+                                <div className="absolute inset-0 border border-zinc-800 rounded-full" />
+                                <div className={clsx("absolute inset-[-10px] border border-dashed rounded-full animate-spin-slow opacity-30", currentRank.color.replace('text-', 'border-'))} style={{ animationDuration: '20s' }} />
 
                                 <svg className="w-full h-full -rotate-90 transform drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                                    <circle cx="72" cy="72" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" className="text-white/5" />
-                                    <circle cx="72" cy="72" r={radius} stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" className={clsx("transition-all duration-1000 ease-out", currentRank.color)} />
+                                    <circle cx="80" cy="80" r={radius} stroke="currentColor" strokeWidth="2" fill="transparent" className="text-zinc-900" />
+                                    <circle cx="80" cy="80" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={2 * Math.PI * radius} strokeDashoffset={2 * Math.PI * radius - (levelProgress / 100) * (2 * Math.PI * radius)} strokeLinecap="round" className={clsx("transition-all duration-1000 ease-out", currentRank.color)} />
                                 </svg>
 
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-[9px] text-zinc-500 font-mono tracking-widest uppercase mb-0.5">Level</span>
-                                    <span className={clsx("text-4xl font-bold font-mono leading-none", currentRank.color)}>{level}</span>
+                                    <span className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase mb-1">LVL_ID</span>
+                                    <span className={clsx("text-6xl font-black font-mono leading-none tracking-tighter drop-shadow-xl", currentRank.color)}>{level}</span>
                                 </div>
                             </motion.div>
 
-                            <div className="text-center mb-6">
-                                <h2 className={clsx("text-xl font-bold uppercase tracking-[0.2em] mb-1.5", currentRank.color)}>
+                            <div className="text-center w-full">
+                                <h2 className={clsx("text-2xl font-black uppercase tracking-[0.2em] mb-2 font-mono glitch-text", currentRank.color)}>
                                     {currentRank.name}
                                 </h2>
-                                <div className="inline-flex items-center gap-2 px-2 py-0.5 rounded bg-white/5 border border-white/5">
-                                    <span className={clsx("w-1 h-1 rounded-full animate-pulse", currentRank.bg)} />
-                                    <span className="text-[9px] font-mono text-zinc-400">{currentRank.access} CLEARED</span>
-                                </div>
-                            </div>
+                                <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent mb-4" />
 
-                            {/* HUD Style Stats Grid */}
-                            <div className="grid grid-cols-3 gap-2 w-full max-w-[90%]">
-                                <StatItem label="Data Mined" value={xp?.toLocaleString()} icon={RiCpuLine} delay={0.2} />
-                                <StatItem label="Neural Sync" value={`${streak}d`} icon={RiFlashlightFill} delay={0.3} />
-                                <StatItem label="Core Saturation" value={completedModules || 0} icon={RiFocus2Line} delay={0.4} />
+                                <div className="grid grid-cols-3 gap-2 w-full">
+                                    <StatItem label="DATA[XP]" value={xp?.toLocaleString()} icon={RiCpuLine} delay={0.2} />
+                                    <StatItem label="SYNC[D]" value={`${streak}`} icon={RiMeteorLine} delay={0.3} />
+                                    <StatItem label="CORE[N]" value={completedModules || 0} icon={RiFocus2Line} delay={0.4} />
+                                </div>
                             </div>
                         </div>
 
                         {/* Right Column: Rank Ladder */}
-                        <div className="flex flex-col h-full min-h-0 bg-white/[0.02] rounded-xl border border-white/5 overflow-hidden">
-                            <h3 className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest px-4 py-3 flex items-center gap-2 bg-[#080808] border-b border-white/5 shrink-0">
-                                <RiArrowRightSLine className="text-indigo-500" />
-                                Clearance Levels
+                        <div className="flex flex-col h-full min-h-0 bg-black rounded-sm border border-zinc-800 overflow-hidden relative">
+                            {/* Scanning Line */}
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-cyan-500/20 animate-scanline z-20 pointer-events-none" />
+
+                            <h3 className="text-[10px] font-black font-mono text-zinc-400 uppercase tracking-widest px-4 py-3 flex items-center justify-between bg-zinc-900/50 border-b border-zinc-800 shrink-0">
+                                <span>// ACCESS_LADDER</span>
+                                <span className={clsx("w-2 h-2 rounded-full", currentRank.bg, "animate-pulse")} />
                             </h3>
 
-                            {/* Scrollable Container */}
-                            <div className="overflow-y-auto p-2 flex-1 scrollbar-hide space-y-1">
+                            <div className="overflow-y-auto p-2 flex-1 scrollbar-hide space-y-1 relative z-10">
                                 {RANKS.map((rank) => (
                                     <RankListItem
                                         key={rank.name}
@@ -254,67 +266,78 @@ export default function CyberpunkStatCard({ userStats, isExpanded, onToggle, lay
                                     />
                                 ))}
                             </div>
-
-                            {/* Decorative footer */}
-                            <div className="h-1 w-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-50 shrink-0" />
                         </div>
                     </motion.div>
                 ) : (
-                    /* COMPACT VIEW REDESIGN V4 (Clean Core) */
+                    /* COMPACT VIEW REDESIGN V5 (Extreme Cyberpunk) */
                     <motion.div
                         key="compact"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="w-full h-full flex flex-col items-center justify-between py-8 px-6 cursor-pointer group relative"
+                        className="w-full h-full flex flex-col relative z-20 p-4"
                         onClick={onToggle}
                     >
-                        {/* Top: Rank Badge - Centered */}
-                        <div className="flex flex-col items-center gap-2 z-10">
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 box-border">
-                                <RiVipCrownFill size={10} className={currentRank.color} />
-                                <span className={clsx("text-[10px] font-bold uppercase tracking-[0.15em]", currentRank.color)}>{currentRank.name}</span>
+                        {/* Top: Header Bar */}
+                        <div className="flex items-center justify-between mb-4 border-b border-dashed border-zinc-800 pb-2">
+                            <div className="flex items-center gap-2">
+                                <RiVipCrownFill size={12} className={currentRank.color} />
+                                <span className={clsx("text-[9px] font-black font-mono uppercase tracking-widest", currentRank.color)}>
+                                    {currentRank.name.split(' ')[0]}
+                                </span>
+                            </div>
+                            <div className="flex gap-0.5">
+                                {[...Array(3)].map((_, i) => <div key={i} className={clsx("w-3 h-1 rounded-sm", i === 0 ? currentRank.bg : "bg-zinc-800")} />)}
                             </div>
                         </div>
 
-                        {/* Center: Hero Ring - Simplified */}
-                        <div className="relative flex-1 flex flex-col items-center justify-center min-h-[120px]">
-                            <motion.div layoutId="level-ring" className="relative w-28 h-28 flex items-center justify-center">
-                                {/* Base Ring */}
-                                <div className="absolute inset-0 rounded-full border border-zinc-800" />
+                        {/* Center: Tech Ring */}
+                        <div className="flex-1 flex items-center justify-center relative my-2">
+                            <motion.div layoutId="level-ring" className="relative w-24 h-24 flex items-center justify-center">
+                                {/* CYBER BORDER ROTATING */}
+                                <div className={clsx("absolute inset-[-12px] rounded-full border border-dashed border-opacity-40 animate-spin-slow", currentRank.color.replace('text-', 'border-'))} style={{ animationDuration: '8s' }} />
+                                <div className={clsx("absolute inset-[-6px] rounded-full border-2 border-dotted border-opacity-60 animate-reverse-spin", currentRank.color.replace('text-', 'border-'))} style={{ animationDuration: '12s' }} />
+
+                                {/* Target Crosshairs */}
+                                <div className="absolute top-0 left-1/2 w-0.5 h-2 -translate-x-1/2 bg-zinc-700" />
+                                <div className="absolute bottom-0 left-1/2 w-0.5 h-2 -translate-x-1/2 bg-zinc-700" />
+                                <div className="absolute left-0 top-1/2 h-0.5 w-2 -translate-y-1/2 bg-zinc-700" />
+                                <div className="absolute right-0 top-1/2 h-0.5 w-2 -translate-y-1/2 bg-zinc-700" />
 
                                 {/* Progress Arc */}
-                                <svg className="w-full h-full -rotate-90 transform drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
-                                    <circle cx="56" cy="56" r="48" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-zinc-900" />
-                                    <circle cx="56" cy="56" r="48" stroke="currentColor" strokeWidth="3" fill="transparent" strokeDasharray={2 * Math.PI * 48} strokeDashoffset={2 * Math.PI * 48 - (levelProgress / 100) * (2 * Math.PI * 48)} strokeLinecap="round" className={clsx("transition-all duration-1000 ease-out", currentRank.color)} />
+                                <svg className="w-full h-full -rotate-90 transform drop-shadow-[0_0_10px_currentColor]" style={{ color: currentRank.color }}>
+                                    <circle cx="48" cy="48" r="40" stroke="#18181b" strokeWidth="4" fill="transparent" />
+                                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={2 * Math.PI * 40} strokeDashoffset={2 * Math.PI * 40 - (levelProgress / 100) * (2 * Math.PI * 40)} strokeLinecap="round" className={clsx("transition-all duration-1000 ease-out", currentRank.color)} />
                                 </svg>
 
-                                {/* Inner Text */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest mb-0.5">Level</span>
-                                    <span className="text-3xl font-bold font-mono leading-none tracking-tighter text-white">{level}</span>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                                    <span className="text-[8px] text-zinc-600 font-mono font-bold tracking-widest">LVL</span>
+                                    <span className="text-3xl font-black font-mono leading-none tracking-tighter text-white drop-shadow-md">{level}</span>
                                 </div>
                             </motion.div>
                         </div>
 
-                        {/* Bottom: Clean Stats Row */}
-                        <div className="w-full flex items-center justify-between px-2 mt-4">
-                            <div className="flex flex-col items-center">
-                                <span className="text-xs font-bold text-white font-mono">{xp?.toLocaleString()}</span>
-                                <span className="text-[8px] text-zinc-500 uppercase tracking-widest mt-0.5">XP</span>
+                        {/* Bottom: Data Block */}
+                        <div className="grid grid-cols-3 gap-px bg-zinc-900 border border-zinc-800 p-1 rounded-sm mt-auto">
+                            <div className="bg-black p-2 flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-mono text-white font-bold">{xp?.toLocaleString().slice(0, 3)}k</span>
+                                <span className="text-[7px] text-zinc-600 font-mono tracking-wider">XP</span>
                             </div>
-                            <div className="w-px h-6 bg-zinc-800" />
-                            <div className="flex flex-col items-center">
-                                <span className="text-xs font-bold text-white font-mono">{streak}d</span>
-                                <span className="text-[8px] text-zinc-500 uppercase tracking-widest mt-0.5">Streak</span>
+                            <div className="bg-black p-2 flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-mono text-white font-bold">{streak}D</span>
+                                <span className="text-[7px] text-zinc-600 font-mono tracking-wider">SYNC</span>
                             </div>
-                            <div className="w-px h-6 bg-zinc-800" />
-                            <div className="flex flex-col items-center">
-                                <span className="text-xs font-bold text-white font-mono">{completedModules || '0'}</span>
-                                <span className="text-[8px] text-zinc-500 uppercase tracking-widest mt-0.5">Core</span>
+                            <div className="bg-black p-2 flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-mono text-white font-bold">{completedModules}</span>
+                                <span className="text-[7px] text-zinc-600 font-mono tracking-wider">CORE</span>
                             </div>
                         </div>
+
+                        {/* Decorative Screw Heads */}
+                        <div className="absolute top-2 left-2 w-1 h-1 rounded-full bg-zinc-800" />
+                        <div className="absolute bottom-2 left-2 w-1 h-1 rounded-full bg-zinc-800" />
+                        <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-zinc-800" />
                     </motion.div>
                 )}
             </AnimatePresence>

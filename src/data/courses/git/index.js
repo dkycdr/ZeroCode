@@ -12,7 +12,7 @@ import { unit11AdvancedWorkflows } from './unit-11-advanced-workflows';
 
 export const gitCourse = {
     id: 'git',
-    title: 'Git Version Control',
+    title: 'Git & GitHub - Professional Version Control',
     description: 'Master the industry standard for version control. From basic commits to advanced rebasing workflows.',
     icon: 'git',
     difficulty: 'Beginner',

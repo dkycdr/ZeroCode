@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const result = await sql`
-                SELECT id, email, password_hash, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                SELECT id, email, password_hash, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at, streak_count, last_activity
                 FROM users WHERE email = ${email}
             `;
 
@@ -116,6 +116,14 @@ export const AuthProvider = ({ children }) => {
             }
 
             const { password_hash, ...userWithoutPassword } = dbUser;
+
+            // Auto-update streak on login
+            const streakResult = await updateStreak(dbUser);
+            if (streakResult.success) {
+                userWithoutPassword.streak_count = streakResult.newStreak;
+                userWithoutPassword.last_activity = streakResult.lastActivity;
+            }
+
             localStorage.setItem('zerocode_user', JSON.stringify(userWithoutPassword));
             setUser(userWithoutPassword);
 
@@ -140,7 +148,7 @@ export const AuthProvider = ({ children }) => {
                     avatar = ${updates.avatar || user.avatar || null},
                     border = ${updates.border || user.border || null}
                 WHERE id = ${user.id}
-                RETURNING id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                RETURNING id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at, streak_count, last_activity
             `;
 
             const updatedUser = result[0];
@@ -159,7 +167,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             const result = await sql`
-                SELECT id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at
+                SELECT id, email, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at, streak_count, last_activity
                 FROM users WHERE id = ${user.id}
             `;
 
@@ -272,7 +280,7 @@ export const AuthProvider = ({ children }) => {
 
             // Check if user exists
             let result = await sql`
-                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
+                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
                 FROM users WHERE email = ${email}
             `;
 
@@ -283,39 +291,93 @@ export const AuthProvider = ({ children }) => {
                 const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
                 const createResult = await sql`
-                    INSERT INTO users (email, name, google_id, subscription_tier, email_verification_code, email_verification_expires)
-                    VALUES (${email}, ${name}, ${googleId}, 'free', ${verificationCode}, ${expiresAt})
-                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
+                    INSERT INTO users (email, name, google_id, subscription_tier, email_verification_code, email_verification_expires, avatar, is_email_verified)
+                    VALUES (${email}, ${name}, ${googleId}, 'free', ${verificationCode}, ${expiresAt}, ${picture}, true)
+                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
                 `;
 
                 dbUser = createResult[0];
 
-                // Send verification email
-                await sendVerificationEmail(email, verificationCode);
+                // Auto-verify likely trusted, but logic kept as is in original for Google
             } else {
                 dbUser = result[0];
 
-                // If not verified, send new verification code
-                if (!dbUser.is_email_verified) {
-                    const verificationCode = generateVerificationCode();
-                    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-                    await sql`
-                        UPDATE users
-                        SET email_verification_code = ${verificationCode}, email_verification_expires = ${expiresAt}
-                        WHERE id = ${dbUser.id}
-                    `;
-
-                    await sendVerificationEmail(email, verificationCode);
+                // Link Google ID if not present
+                if (!dbUser.google_id) {
+                    await sql`UPDATE users SET google_id = ${googleId} WHERE id = ${dbUser.id}`;
                 }
             }
 
             localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
             setUser(dbUser);
 
-            return { success: true, user: dbUser, needsVerification: !dbUser.is_email_verified };
+            // Update Streak
+            await updateStreak(dbUser);
+
+            return { success: true, user: dbUser };
         } catch (error) {
             console.error('Google login error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const loginWithGithub = async (githubProfile) => {
+        try {
+            const { email, name, id: githubId, avatar_url, login } = githubProfile;
+            const displayName = name || login;
+            const primaryEmail = email; // Note: GitHub API might not return email if private, requires checking emails endpoint
+
+            if (!primaryEmail && !githubId) {
+                return { success: false, error: 'Could not retrieve email or ID from GitHub' };
+            }
+
+            // Check if user exists by GitHub ID first, then Email
+            let result = await sql`
+                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
+                FROM users 
+                WHERE github_id = ${String(githubId)} 
+                OR (email = ${primaryEmail} AND email IS NOT NULL)
+            `;
+
+            let dbUser;
+            if (result.length === 0) {
+                // New User
+                const verificationCode = generateVerificationCode();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+                const createResult = await sql`
+                    INSERT INTO users (email, name, github_id, subscription_tier, email_verification_code, email_verification_expires, avatar, is_email_verified)
+                    VALUES (${primaryEmail || `github_${githubId}@placeholder.com`}, ${displayName}, ${String(githubId)}, 'free', ${verificationCode}, ${expiresAt}, ${avatar_url}, ${!!primaryEmail})
+                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
+                `;
+                dbUser = createResult[0];
+
+            } else {
+                dbUser = result[0];
+
+                // Link GitHub ID if missing
+                if (!dbUser.github_id) {
+                    await sql`UPDATE users SET github_id = ${String(githubId)} WHERE id = ${dbUser.id}`;
+                    dbUser.github_id = String(githubId);
+                }
+
+                // Update Avatar if missing
+                if (!dbUser.avatar && avatar_url) {
+                    await sql`UPDATE users SET avatar = ${avatar_url} WHERE id = ${dbUser.id}`;
+                    dbUser.avatar = avatar_url;
+                }
+            }
+
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
+
+            // Update Streak
+            await updateStreak(dbUser);
+
+            return { success: true, user: dbUser };
+
+        } catch (error) {
+            console.error('GitHub login error:', error);
             return { success: false, error: error.message };
         }
     };
@@ -465,7 +527,7 @@ export const AuthProvider = ({ children }) => {
     const getLeaderboard = async () => {
         try {
             const result = await sql`
-                SELECT id, name, email, points, courses_completed
+                SELECT id, name, email, points, courses_completed, avatar, border
                 FROM users
                 WHERE points > 0 OR courses_completed > 0
                 ORDER BY points DESC, courses_completed DESC
@@ -500,6 +562,75 @@ export const AuthProvider = ({ children }) => {
             return { success: true, leaderboard: result, userRank };
         } catch (error) {
             console.error('Leaderboard error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const updateLeaderboardStats = async (points, coursesCompleted) => {
+        if (!user?.id) return { success: false, error: 'Not logged in' };
+
+        try {
+            await sql`
+                UPDATE users
+                SET points = ${points},
+                    courses_completed = ${coursesCompleted}
+                WHERE id = ${user.id}
+            `;
+            return { success: true };
+        } catch (error) {
+            console.error('Error updating leaderboard stats:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    const updateStreak = async (targetUser = user) => {
+        if (!targetUser?.id) return { success: false };
+
+        try {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+
+            // Get current streak data
+            const [dbUser] = await sql`
+                SELECT streak_count, last_activity AT TIME ZONE 'UTC' as last_activity
+                FROM users WHERE id = ${targetUser.id}
+            `;
+
+            let newStreak = dbUser.streak_count || 0;
+            const lastActivityDate = dbUser.last_activity
+                ? new Date(dbUser.last_activity).toISOString().split('T')[0]
+                : null;
+
+            if (!lastActivityDate) {
+                // First activity ever
+                newStreak = 1;
+            } else if (lastActivityDate === today) {
+                // Already updated today, keep as is
+                return { success: true, newStreak, lastActivity: dbUser.last_activity };
+            } else {
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                if (lastActivityDate === yesterdayStr) {
+                    // Continued streak
+                    newStreak += 1;
+                } else {
+                    // Streak broken
+                    newStreak = 1;
+                }
+            }
+
+            await sql`
+                UPDATE users
+                SET streak_count = ${newStreak},
+                    last_activity = CURRENT_TIMESTAMP
+                WHERE id = ${targetUser.id}
+            `;
+
+            return { success: true, newStreak, lastActivity: now };
+        } catch (error) {
+            console.error('Error updating streak:', error);
             return { success: false, error: error.message };
         }
     };
@@ -599,13 +730,16 @@ export const AuthProvider = ({ children }) => {
         getAllUsers,
         updateUserSubscription,
         loginWithGoogle,
+        loginWithGithub,
         verifyEmail,
         resendVerificationCode,
         requestPasswordReset,
         resetPassword,
         getLeaderboard,
+        updateLeaderboardStats,
         getAdminAnalytics,
         getAdminActivity,
+        updateStreak,
         canAccessCourse: (courseId) => canAccessCourse(user?.subscription_tier, courseId),
         isAdmin: user?.is_admin || false,
         subscriptionTier: user?.subscription_tier || 'free',

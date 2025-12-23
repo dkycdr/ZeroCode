@@ -2,7 +2,7 @@
 import { unit1Intro } from './unit-01-intro';
 import { unit2Advanced } from './unit-02-advanced';
 
-const expressCourse = {
+export const expressCourse = {
     id: 'express',
     title: 'Express.js Framework',
     description: 'Build robust web servers and REST APIs with Node.js most popular framework',
@@ -15,4 +15,4 @@ const expressCourse = {
     ]
 };
 
-export default expressCourse;
+

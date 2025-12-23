@@ -13,10 +13,39 @@ const Changelog = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        localStorage.setItem('last_viewed_update', '2.5.5');
+        localStorage.setItem('last_viewed_update', '2.6.0-beta.1');
     }, []);
 
     const updates = [
+        {
+            version: "2.7.0-beta.1",
+            date: "Today",
+            type: "major",
+            title: "Cyberpunk Authentication Protocol",
+            icon: <FaShieldAlt className="text-purple-400 text-xl" />,
+            color: "border-purple-500/50 bg-purple-500/10 text-purple-400",
+            changes: [
+                "New Login/Register Experience: 'Neural Handshake' DNA Interface.",
+                "Global Aesthetic Refinement: Darker backgrounds and sharper contrasts.",
+                "Syllabus Update: Enhanced DNA Background visibility and 'Data Panel' containers.",
+                "Security: Visual enhancements for authentication terminals."
+            ]
+        },
+        {
+            version: "2.6.0-beta.1",
+            date: "Today",
+            type: "major",
+            title: "Cyberpunk Evolution & Beta Launch",
+            icon: <FaRocket className="text-cyan-400 text-xl" />,
+            color: "border-cyan-500/50 bg-cyan-500/10 text-cyan-400",
+            changes: [
+                "OFFICIAL BETA RELEASE: ZeroCode Platform is now in Public Beta.",
+                "New 'Neural Access' DNA Pricing Engine: 3D Canvas Helix with Infinite Scroll.",
+                "Landing Page Overhaul: Cyberpunk HUD Navbar & 'Code Evolution' Hero.",
+                "Visual Upgrade: Neon Grid Systems, Glitch Typography, and Holo-Terminal Previews.",
+                "Performance: Optimized Canvas rendering for smooth 60fps animations."
+            ]
+        },
         {
             version: "2.5.5",
             date: "Today",
@@ -176,7 +205,7 @@ const Changelog = () => {
                             <div className="hidden md:block">
                                 <div className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900/50 text-right">
                                     <p className="text-xs text-slate-500 font-mono uppercase">Current Version</p>
-                                    <p className="text-xl font-bold text-green-400 font-mono">v2.5.5</p>
+                                    <p className="text-xl font-bold text-cyan-400 font-mono">v2.7.0-beta.1</p>
                                 </div>
                             </div>
                         </div>

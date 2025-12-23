@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { RiShieldStarLine, RiCpuLine, RiTerminalBoxLine, RiFileList3Line } from 'react-icons/ri';
 import AppLayout from '../components/layout/AppLayout';
 import WelcomeHero from '../components/dashboard/WelcomeHero';
 import StatsOverview from '../components/dashboard/StatsOverview';
 import CourseCard from '../components/dashboard/CourseCard';
+import ResumeProtocol from '../components/dashboard/ResumeProtocol';
+import ResourceMonitor from '../components/dashboard/ResourceMonitor';
+import ArchivesWidget from '../components/dashboard/ArchivesWidget';
+import { SkillAnalyticsWidget } from '../components/dashboard/SkillAnalyticsWidget';
+import CyberDeckWidget from '../components/dashboard/CyberDeckWidget';
 
 import { useProgress } from '../contexts/ProgressProvider';
 import { useAuth } from '../contexts/AuthProvider';
@@ -30,101 +36,144 @@ export default function Dashboard() {
         : [LEVELS[selectedLevel.toUpperCase()]];
 
     return (
-        <AppLayout>
-            {/* Hero Section */}
-            <WelcomeHero user={user} subscriptionTier={subscriptionTier} />
+        <AppLayout fullWidth={true}>
+            <div className="min-h-screen bg-[#050505] p-6 lg:p-8">
 
-            {/* Stats Overview */}
-            <StatsOverview progress={progress} stats={userStats} />
+                <div className="w-full">
 
-            {/* Main Course Content */}
-            <div className="space-y-8">
-                {/* Filter Tabs - Premium Sliding Segmented Control */}
-                <div className="flex justify-center mb-10">
-                    <div className="relative inline-flex items-center p-1.5 rounded-full bg-[#0a0a0a] border border-white/5 shadow-2xl shadow-black/50 backdrop-blur-xl">
-                        {/* Option: "All Levels" */}
-                        <button
-                            onClick={() => setSelectedLevel('all')}
-                            className={clsx(
-                                "relative z-10 px-6 py-2.5 text-sm font-bold transition-colors duration-300",
-                                selectedLevel === 'all' ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                            )}
-                        >
-                            {selectedLevel === 'all' && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute inset-0 bg-white/10 border border-white/5 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.05)] backdrop-blur-lg"
-                                    initial={false}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                />
-                            )}
-                            <span className="relative z-10">All Levels</span>
-                        </button>
+                    {/* COMMAND GRID LAYOUT (Main Top Section) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
 
-                        {/* Options: Dynamic Levels */}
-                        {Object.values(LEVELS).map(level => (
-                            <button
-                                key={level.id}
-                                onClick={() => setSelectedLevel(level.id)}
-                                className={clsx(
-                                    "relative z-10 px-6 py-2.5 text-sm font-bold transition-colors duration-300",
-                                    selectedLevel === level.id ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                                )}
-                            >
-                                {selectedLevel === level.id && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-zinc-800/50 border border-white/10 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.02)]"
-                                        initial={false}
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    >
-                                        <div className={clsx("absolute inset-0 rounded-full opacity-20 bg-gradient-to-r", level.color)} />
-                                    </motion.div>
-                                )}
-                                <span className="relative z-10 flex items-center gap-2">
-                                    {level.label.en}
-                                </span>
-                            </button>
-                        ))}
+                        {/* LEFT COLUMN: Tactical Sidebar */}
+                        <div className="lg:col-span-1 space-y-6">
+                            <ResourceMonitor />
+                            <SkillAnalyticsWidget />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2"><ArchivesWidget /></div>
+                                <div className="col-span-2"><CyberDeckWidget /></div>
+                            </div>
+                        </div>
+
+                        {/* CENTER/RIGHT COLUMN: Hero & Learning */}
+                        <div className="lg:col-span-3 space-y-8">
+                            {/* 1. Welcome Hero (Context) */}
+                            <WelcomeHero user={user} subscriptionTier={subscriptionTier} />
+
+                            {/* 2. Resume Protocol (High Priority) */}
+                            <ResumeProtocol />
+
+                            {/* 3. Stats Overview (Metrics) */}
+                            <StatsOverview progress={progress} stats={userStats} />
+                        </div>
                     </div>
-                </div>
 
-                {/* Course Grid */}
-                <div className="space-y-12">
-                    {filteredLevels.map((level) => {
-                        const levelCourses = getCoursesByLevel(level.id);
 
-                        return (
-                            <section key={level.id} className="animate-fade-in-up">
-                                <div className="flex items-end justify-between mb-6">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                            <span>{level.icon}</span>
-                                            {level.label.en}
-                                        </h2>
-                                        <p className="text-sm text-zinc-500 mt-1 font-medium">{level.tagline.en}</p>
-                                    </div>
-                                </div>
+                    {/* COURSE GIRD (The "Library") */}
+                    <div className="space-y-8">
+                        <h2 className="text-xl font-black text-white uppercase tracking-widest flex items-center gap-4">
+                            <span className="w-8 h-px bg-zinc-800" />
+                            Curriculum_Database
+                            <span className="flex-1 h-px bg-zinc-800" />
+                        </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                                    {levelCourses.map(course => {
-                                        const isCompleted = completedCourses.includes(course.id);
-                                        const hasAccess = canAccessCourse(course.id);
+                        {/* Filter Tabs - Cyberpunk Segmented Control */}
+                        <div className="flex justify-start mb-10 overflow-x-auto pb-4 scrollbar-hide">
+                            <div className="relative inline-flex items-center p-1 bg-black/80 border border-white/10 shadow-lg backdrop-blur-xl">
+                                {/* Option: "All Levels" */}
+                                <button
+                                    onClick={() => setSelectedLevel('all')}
+                                    className={clsx(
+                                        "relative z-10 px-8 py-2 text-xs font-black font-mono uppercase tracking-widest transition-all duration-300",
+                                        selectedLevel === 'all' ? "text-black" : "text-zinc-500 hover:text-zinc-300"
+                                    )}
+                                >
+                                    {selectedLevel === 'all' && (
+                                        <motion.div
+                                            layoutId="activeTab"
+                                            className="absolute inset-0 bg-white"
+                                            initial={false}
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">All_Sectors</span>
+                                </button>
 
-                                        return (
-                                            <CourseCard
-                                                key={course.id}
-                                                course={course}
-                                                isCompleted={isCompleted}
-                                                hasAccess={hasAccess}
-                                                isLocked={!hasAccess}
+                                {/* Options: Dynamic Levels */}
+                                {Object.values(LEVELS).map(level => (
+                                    <button
+                                        key={level.id}
+                                        onClick={() => setSelectedLevel(level.id)}
+                                        className={clsx(
+                                            "relative z-10 px-8 py-2 text-xs font-black font-mono uppercase tracking-widest transition-all duration-300",
+                                            selectedLevel === level.id ? "text-black" : "text-zinc-500 hover:text-zinc-300"
+                                        )}
+                                    >
+                                        {selectedLevel === level.id && (
+                                            <motion.div
+                                                layoutId="activeTab"
+                                                className="absolute inset-0 bg-white"
+                                                initial={false}
+                                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                             />
-                                        );
-                                    })}
-                                </div>
-                            </section>
-                        );
-                    })}
+                                        )}
+                                        <span className="relative z-10">
+                                            {level.label.en}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Course Grid Content */}
+                        <div className="space-y-12">
+                            {filteredLevels.map((level) => {
+                                const levelCourses = getCoursesByLevel(level.id);
+
+                                return (
+                                    <section key={level.id} className="animate-fade-in-up">
+                                        <div className="flex items-end justify-between mb-8 border-b border-white/5 pb-4 relative">
+                                            <div className="absolute bottom-0 left-0 w-32 h-0.5 bg-gradient-to-r from-zinc-500 to-transparent" />
+                                            <div>
+                                                <h2 className="text-2xl font-black text-white flex items-center gap-3 font-mono uppercase tracking-tighter">
+                                                    <span className={clsx("text-zinc-500")}>
+                                                        {level.id === 'beginner' && <RiShieldStarLine size={24} />}
+                                                        {level.id === 'intermediate' && <RiCpuLine size={24} />}
+                                                        {level.id === 'advanced' && <RiTerminalBoxLine size={24} />}
+                                                    </span>
+                                                    <span>
+                                                        {level.id === 'beginner' && "SECTOR_01: RECRUIT"}
+                                                        {level.id === 'intermediate' && "SECTOR_02: ENGINEER"}
+                                                        {level.id === 'advanced' && "SECTOR_03: ARCHITECT"}
+                                                    </span>
+                                                </h2>
+                                                <p className="text-xs text-zinc-600 mt-1 font-mono tracking-[0.2em] flex items-center gap-2">
+                                                    <span>// {level.tagline.en}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                            {levelCourses.map(course => {
+                                                const isCompleted = completedCourses.includes(course.id);
+                                                const hasAccess = canAccessCourse(course.id);
+
+                                                return (
+                                                    <CourseCard
+                                                        key={course.id}
+                                                        course={course}
+                                                        isCompleted={isCompleted}
+                                                        hasAccess={hasAccess}
+                                                        isLocked={!hasAccess}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </section>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </AppLayout>

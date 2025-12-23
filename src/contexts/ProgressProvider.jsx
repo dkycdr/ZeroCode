@@ -16,9 +16,10 @@ const ITEM_XP = {
 };
 
 export const ProgressProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, updateLeaderboardStats, updateStreak } = useAuth();
     const [completedCourses, setCompletedCourses] = useState([]);
     const [completedItems, setCompletedItems] = useState([]);
+    const [recentActivity, setRecentActivity] = useState([]); // Array of { item_id, completed_at, ... }
     const [reward, setReward] = useState(null);
     const [rewardCallback, setRewardCallback] = useState(null); // callback function
     const [loading, setLoading] = useState(true);
@@ -205,6 +206,7 @@ export const ProgressProvider = ({ children }) => {
 
             setCompletedCourses(courses.map(c => c.course_id));
             setCompletedItems(items.map(i => i.item_id));
+            setRecentActivity(items);
 
             // Enhance items with XP calculation capability
             // We need to lookup types. This is heavy if done entirely client side without a cache.
@@ -278,7 +280,7 @@ export const ProgressProvider = ({ children }) => {
             const { level, nextLevelXp, progress } = calculateLevel(calculatedXp);
 
             setUserStats({
-                streak,
+                streak: user?.streak_count || 0,
                 focusTime,
                 modulesCleared: courses.length,
                 totalFocusMinutes: totalMinutes,
@@ -287,6 +289,9 @@ export const ProgressProvider = ({ children }) => {
                 nextLevelXp,
                 levelProgress: progress
             });
+
+            // SYNC TO LEADERBOARD
+            updateLeaderboardStats(calculatedXp, courses.length);
 
         } catch (error) {
             console.error('Error loading progress:', error);
@@ -308,6 +313,9 @@ export const ProgressProvider = ({ children }) => {
 
             const newCourses = [...new Set([...completedCourses, courseId])];
             setCompletedCourses(newCourses);
+
+            // SYNC TO LEADERBOARD
+            updateLeaderboardStats(userStats.xp, newCourses.length);
         } catch (error) {
             console.error('Error marking course complete:', error);
         }
@@ -327,7 +335,9 @@ export const ProgressProvider = ({ children }) => {
 
             if (!completedItems.includes(itemId)) {
                 const newItems = [...completedItems, itemId];
+                const newActivity = [...recentActivity, { item_id: itemId, completed_at: new Date().toISOString() }];
                 setCompletedItems(newItems);
+                setRecentActivity(newActivity);
 
                 // Calculate gained XP
                 let gainedXp = 50;
@@ -336,6 +346,9 @@ export const ProgressProvider = ({ children }) => {
                 else if (id.includes('project') || id.includes('capstone')) gainedXp = ITEM_XP[CONTENT_TYPES.PROJECT];
                 else if (id.includes('info') || id.includes('dive')) gainedXp = ITEM_XP[CONTENT_TYPES.INFORMATIONAL];
                 else if (id.includes('lab')) gainedXp = ITEM_XP[CONTENT_TYPES.LESSON];
+
+                // Update streak in DB via AuthProvider
+                const streakResult = await updateStreak();
 
                 // Get current stats
                 const currentStats = userStats;
@@ -362,16 +375,17 @@ export const ProgressProvider = ({ children }) => {
 
                 setUserStats(prev => ({
                     ...prev,
+                    streak: streakResult?.newStreak || prev.streak,
                     totalFocusMinutes: newMins,
                     focusTime: `${h}h ${m}m`,
                     xp: newXp,
                     level: newLevel,
                     nextLevelXp,
-                    xp: newXp,
-                    level: newLevel,
-                    nextLevelXp,
                     levelProgress: newProgress
                 }));
+
+                // SYNC TO LEADERBOARD
+                updateLeaderboardStats(newXp, currentStats.modulesCleared);
                 return true; // Reward earned
             } else {
                 // ALREADY COMPLETED - BUT TRIGGER REWARD ANYWAY (User Requirement)
@@ -488,6 +502,7 @@ export const ProgressProvider = ({ children }) => {
     const value = {
         completedCourses,
         completedItems,
+        recentActivity,
         userStats,
         loading,
         reward,

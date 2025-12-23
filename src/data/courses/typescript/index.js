@@ -6,7 +6,7 @@ import { unit5React } from './unit-5-react';
 import { unit6Advanced } from './unit-6-advanced';
 import { unit7Capstone } from './unit-7-capstone';
 
-const typescriptCourse = {
+export const typescriptCourse = {
     id: 'typescript',
     title: 'TypeScript Masterclass',
     description: 'Master static typing in JavaScript. Build robust, error-free applications with TypeScript 5+.',
@@ -24,5 +24,5 @@ const typescriptCourse = {
     ]
 };
 
-export default typescriptCourse;
+
 

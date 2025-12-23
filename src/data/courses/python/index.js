@@ -6,9 +6,9 @@ import { unit5Functions } from './unit-5-functions';
 import { unit6OOP } from './unit-6-oop';
 import { unit7Capstone } from './unit-7-capstone';
 
-const pythonCourse = {
+export const pythonCourse = {
     id: 'python',
-    title: 'Python Mastery',
+    title: 'Python - Complete Automation & Backend Mastery',
     description: 'Learn the world\'s most popular language. Master automation, data analysis, and backend logic.',
     icon: 'py', // Need to ensure icon support in UI
     difficulty: 'Beginner to Intermediate',
@@ -24,5 +24,5 @@ const pythonCourse = {
     ]
 };
 
-export default pythonCourse;
+
 

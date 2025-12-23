@@ -11,7 +11,7 @@ import { unit10FrameworksIntegration } from './unit-10-frameworks-integration';
 
 export const tailwindCourse = {
     id: 'tailwind',
-    title: 'Tailwind CSS',
+    title: 'Tailwind CSS - Rapid UI Development',
     description: 'Master utility-first CSS framework for rapid UI development.',
     units: [
         unit1Introduction,

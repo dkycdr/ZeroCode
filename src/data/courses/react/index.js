@@ -19,7 +19,7 @@ import { unit16Capstone } from './unit-16-capstone-project.js';
 
 export const reactCourse = {
     id: 'react',
-    title: 'React.js Fundamentals',
+    title: 'React.js - Complete Frontend Architecture',
     description: 'Build modern user interfaces with React - the most popular JavaScript library for building UIs.',
     units: [
         unit1Introduction,

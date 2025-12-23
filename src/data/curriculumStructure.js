@@ -247,7 +247,7 @@ export const courses = {
         prerequisites: [],
         shortDesc: 'SQL, Relations, Transactions, Performance',
         icon: 'postgresql',
-        totalUnits: 1
+        totalUnits: 2
     }
 };
 

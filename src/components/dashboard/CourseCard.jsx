@@ -64,74 +64,110 @@ export default function CourseCard({ course, isCompleted, isLocked, hasAccess })
         <div
             onClick={() => !isLocked && navigate(`/course/${course.id}`)}
             className={clsx(
-                "group relative p-6 rounded-3xl border transition-all duration-500 flex flex-col h-full bg-zinc-900/50 hover:bg-zinc-900 overflow-hidden isolate",
-                isLocked
-                    ? "border-white/5 opacity-60 cursor-not-allowed"
-                    : "border-white/10 hover:border-indigo-500/20 cursor-pointer hover:shadow-2xl hover:shadow-indigo-500/10"
+                "group relative flex flex-col h-full transition-all duration-300 isolate",
+                isLocked ? "cursor-not-allowed grayscale opacity-60" : "cursor-pointer hover:-translate-y-1"
             )}
         >
-            {/* Artistic Background Icon (Clipped) */}
-            <div className={clsx(
-                "absolute -bottom-8 -right-8 text-[10rem] opacity-[0.05] transform rotate-12 transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 group-hover:opacity-[0.15] pointer-events-none z-0",
-                colorClass
-            )}>
-                {Icon}
-            </div>
+            {/* Main Card Shell */}
+            <div
+                className={clsx(
+                    "relative flex-1 bg-[#121214] border border-white/5 overflow-hidden transition-all duration-300",
+                    !isLocked && "group-hover:border-white/20 group-hover:shadow-[0_0_30px_-10px_rgba(0,0,0,0.5)] group-hover:bg-[#18181b]"
+                )}
+                style={{
+                    clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%)"
+                }}
+            >
+                {/* Colored Top Border (Tech Line) */}
+                <div className={clsx("absolute top-0 left-0 w-full h-1 transition-all duration-500", !isLocked ? colorClass.replace('text-', 'bg-') : "bg-zinc-800", "opacity-50 group-hover:opacity-100")} />
 
-            {/* Content Container (z-10 to stay above background) */}
-            <div className="relative z-10 flex flex-col h-full">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                    <div className={clsx(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300 shadow-lg",
-                        isLocked
-                            ? "bg-zinc-900 border border-white/5 text-zinc-600"
-                            : `bg-zinc-900 border border-white/10 group-hover:border-white/20 ${colorClass}`
-                    )}>
-                        {Icon}
-                    </div>
+                {/* Tech Grid Background */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20 pointer-events-none" />
 
-                    {isCompleted ? (
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 shadow-lg shadow-emerald-500/10">
-                            <RiCheckboxCircleFill size={12} />
-                            <span>MASTERY</span>
-                        </div>
-                    ) : isLocked ? (
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-600 bg-zinc-900 px-3 py-1.5 rounded-full border border-zinc-800">
-                            <RiLock2Line size={12} />
-                            <span>LOCKED</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-white bg-white/5 px-3 py-1.5 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                            <span>START</span>
-                            <RiArrowRightLine />
-                        </div>
-                    )}
+                {/* Giant Background Icon (Restored Overflow Effect) */}
+                <div className={clsx(
+                    "absolute -bottom-10 -right-10 text-[12rem] transition-all duration-700 pointer-events-none group-hover:scale-110 group-hover:opacity-[0.15] group-hover:-rotate-12 z-0",
+                    colorClass,
+                    // Use opacity only, no mix-blend if colors are dark, or screen if neon
+                    "opacity-[0.1] mix-blend-screen"
+                )}>
+                    {Icon}
                 </div>
 
-                {/* Info */}
-                <div className="mb-auto">
-                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors leading-tight">
-                        {course.title}
-                    </h3>
-                    <p className="text-sm text-zinc-500 line-clamp-2 leading-relaxed font-medium">
-                        {course.shortDesc}
-                    </p>
-                </div>
+                <div className="p-6 relative z-10 flex flex-col h-full">
+                    {/* Header Row: Icon + Status */}
+                    <div className="flex items-start justify-between mb-6">
+                        {/* Tech Icon Box */}
+                        <div className={clsx(
+                            "w-12 h-12 flex items-center justify-center text-2xl relative border transition-all duration-300",
+                            isLocked
+                                ? "bg-black border-zinc-800 text-zinc-600"
+                                : `bg-black border-white/10 group-hover:border-white/30 text-white shadow-lg`
+                        )}>
+                            {/* Inner colored glow for active */}
+                            {!isLocked && <div className={clsx("absolute inset-0 opacity-20 blur-md group-hover:opacity-40 transition-opacity", colorClass.replace('text-', 'bg-'))} />}
+                            <div className="relative z-10">{Icon}</div>
 
-                {/* Dynamic Footer Line */}
-                <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                    <div className="flex items-center gap-2">
-                        <RiTimeLine className="text-zinc-600" />
-                        <span>{course.duration}</span>
+                            {/* Corner Accents */}
+                            <div className="absolute -top-px -left-px w-1.5 h-1.5 border-t border-l border-white/30" />
+                            <div className="absolute -bottom-px -right-px w-1.5 h-1.5 border-b border-r border-white/30" />
+                        </div>
+
+                        {/* Status Badge */}
+                        {isCompleted ? (
+                            <div className="flex items-center gap-1.5 text-[9px] font-black font-mono text-emerald-400 bg-emerald-950/20 px-2 py-1 border border-emerald-500/20">
+                                <RiCheckboxCircleFill />
+                                <span>MASTERED</span>
+                            </div>
+                        ) : isLocked ? (
+                            <div className="flex items-center gap-1.5 text-[9px] font-black font-mono text-zinc-500 bg-zinc-900/50 px-2 py-1 border border-zinc-800">
+                                <RiLock2Line />
+                                <span>LOCKED</span>
+                            </div>
+                        ) : (
+                            <div className={clsx(
+                                "flex items-center gap-1.5 text-[9px] font-black font-mono px-2 py-1 border transition-all opacity-0 group-hover:opacity-100",
+                                colorClass === 'text-white' ? "text-zinc-300 border-zinc-500" : `${colorClass} border-current opacity-50`
+                            )}>
+                                <span>ACCESS</span>
+                                <RiArrowRightLine />
+                            </div>
+                        )}
                     </div>
-                    {hasAccess && !isCompleted && (
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400 font-bold">
-                            RESUME &gt;
+
+                    {/* Content */}
+                    <div className="mb-6 flex-1">
+                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors uppercase tracking-tight line-clamp-1">
+                            {course.title}
+                        </h3>
+                        {/* Tech Separator */}
+                        <div className="w-8 h-0.5 bg-white/10 mb-3 group-hover:w-full group-hover:bg-white/20 transition-all duration-500" />
+
+                        <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed font-mono">
+                            {course.shortDesc}
+                        </p>
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                        <div className="flex items-center gap-2">
+                            <RiTimeLine className="text-zinc-600" />
+                            <span>{course.duration}</span>
+                        </div>
+                        <span className="group-hover:text-white transition-colors">
+                            ID_#{course.id.substring(0, 3).toUpperCase()}
                         </span>
-                    )}
+                    </div>
                 </div>
             </div>
+
+            {/* Decoration: Tab sticking out if unlocked */}
+            {!isLocked && (
+                <div className={clsx(
+                    "absolute -right-1 top-6 w-1 h-8 transition-all duration-300 opacity-0 group-hover:opacity-100",
+                    colorClass.replace('text-', 'bg-')
+                )} />
+            )}
         </div>
     );
 }

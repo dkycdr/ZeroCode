@@ -6,7 +6,7 @@ import { unit5AuthMiddleware } from './unit-5-auth-middleware';
 import { unit6OptimizationDeploy } from './unit-6-optimization-deploy';
 import { unit7CapstoneProject } from './unit-7-capstone-project';
 
-const nextjsCourse = {
+export const nextjsCourse = {
     id: 'nextjs',
     title: 'Next.js 14+ Ultimate Masterclass',
     description: 'Master the React Framework for Production. Build full-stack applications with App Router, Server Components, Server Actions, and NextAuth.js.',
@@ -25,4 +25,4 @@ const nextjsCourse = {
 };
 
 
-export default nextjsCourse;
+

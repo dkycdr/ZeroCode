@@ -210,30 +210,33 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
         return () => clearTimeout(timeout);
     }, [isEditorReady]);
 
-    // ZeroCode Dark Theme
+    // ZeroCode Cyber Theme
     useEffect(() => {
         if (monaco) {
-            monaco.editor.defineTheme('zerocode-dark', {
+            monaco.editor.defineTheme('zerocode-cyber', {
                 base: 'vs-dark',
                 inherit: true,
                 rules: [
-                    { token: 'comment', foreground: '6b7280', fontStyle: 'italic' },
-                    { token: 'keyword', foreground: 'c084fc' },
-                    { token: 'identifier', foreground: '67e8f9' },
-                    { token: 'string', foreground: 'a3e635' },
-                    { token: 'number', foreground: 'fb923c' },
+                    { token: 'comment', foreground: '52525b', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: 'c084fc' },      // Purple
+                    { token: 'identifier', foreground: '22d3ee' },   // Cyan
+                    { token: 'string', foreground: '4ade80' },       // Green
+                    { token: 'number', foreground: 'f472b6' },       // Pink
+                    { token: 'type', foreground: 'fbbf24' },         // Amber
                 ],
                 colors: {
-                    'editor.background': '#09090b',
+                    'editor.background': '#000000',
                     'editor.foreground': '#e5e5e5',
-                    'editorCursor.foreground': '#3b82f6',
-                    'editor.lineHighlightBackground': '#18181b',
-                    'editorLineNumber.foreground': '#52525b',
+                    'editorCursor.foreground': '#22d3ee',         // Cyan Cursor
+                    'editor.lineHighlightBackground': '#18181b', // ZeroCode Zinc
+                    'editorLineNumber.foreground': '#3f3f46',
                     'editor.selectionBackground': '#27272a',
-                    'editor.inactiveSelectionBackground': '#27272a'
+                    'editor.inactiveSelectionBackground': '#27272a',
+                    'editorWidget.background': '#09090b',
+                    'editorWidget.border': '#27272a'
                 }
             });
-            monaco.editor.setTheme('zerocode-dark');
+            monaco.editor.setTheme('zerocode-cyber');
 
             // Configure TypeScript Compiler Options for React support
             monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -290,19 +293,19 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
     const fileTree = useMemo(() => buildFileTree(files, folders), [files, folders]);
 
     return (
-        <div className="h-full flex bg-[#0a0a0a] border-r border-white/5 font-sans">
+        <div className="h-full flex bg-black border-r border-cyan-500/10 font-sans">
             {/* File Explorer Sidebar */}
             {isSidebarOpen && (
-                <div className="w-56 bg-[#050505] border-r border-white/5 flex flex-col flex-shrink-0">
-                    <div className="p-3 text-[10px] font-bold text-gray-500 tracking-[0.2em] flex items-center justify-between border-b border-white/5 bg-[#080808]">
+                <div className="w-56 bg-black border-r border-cyan-500/10 flex flex-col flex-shrink-0">
+                    <div className="p-3 text-[10px] font-bold text-cyan-500/70 tracking-[0.2em] flex items-center justify-between border-b border-cyan-500/10 bg-black/50">
                         <span className="flex items-center gap-2">
-                            <Folder size={12} className="text-blue-500/50" />
-                            SYS.DIRECTORY
+                            <Folder size={12} className="text-cyan-500" />
+                            SYS_DIRECTORY
                         </span>
                         <div className="flex gap-1">
                             <button
                                 onClick={() => setIsCreatingFile(true)}
-                                className="hover:text-blue-400 hover:bg-blue-500/10 p-1 rounded transition-colors text-gray-500"
+                                className="hover:text-cyan-400 hover:bg-cyan-500/10 p-1 rounded transition-colors text-cyan-500/50"
                                 title={activeFolder ? `New File in ${activeFolder}` : "New File in Root"}
                             >
                                 <FilePlus size={14} />
@@ -312,7 +315,7 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
 
                     {/* New File Input */}
                     {isCreatingFile && (
-                        <div className="p-2 bg-[#1a1a1a] border-b border-blue-500/30">
+                        <div className="p-2 bg-zinc-900/50 border-b border-cyan-500/30">
                             <div className="text-[10px] text-gray-500 mb-1 flex items-center gap-1">
                                 <Folder size={10} />
                                 {activeFolder || 'root'} /
@@ -330,7 +333,7 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                                         }, 200)
                                     }}
                                     placeholder="filename.js"
-                                    className="w-full bg-black text-white text-xs px-2 py-1.5 rounded border border-blue-500/50 outline-none focus:border-blue-500"
+                                    className="w-full bg-black text-white text-xs px-2 py-1.5 rounded-sm border border-cyan-500/50 outline-none focus:border-cyan-500 font-mono"
                                 />
                             </form>
                         </div>
@@ -361,15 +364,22 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
             {/* Editor Area */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Simplified Tabs / Breadcrumbs */}
-                <div className="flex bg-[#0a0a0a] border-b border-white/5 h-9 items-center px-4 justify-between select-none">
-                    <div className="text-xs text-gray-400 flex items-center gap-2 overflow-hidden">
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="hover:text-white mr-2 flex-shrink-0">
-                            {isSidebarOpen ? <ChevronDown size={14} className="rotate-90" /> : <ChevronRight size={14} />}
-                        </button>
-                        <span className="flex items-center gap-1 truncate">
-                            <FileCode size={12} className="text-blue-400" />
-                            {activeFile}
-                        </span>
+                <div className="flex bg-black border-b border-cyan-500/10 h-10 items-end px-2 gap-2 select-none">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="mb-2 text-cyan-500/50 hover:text-cyan-400 mr-2 flex-shrink-0 transition-colors">
+                        {isSidebarOpen ? <ChevronDown size={14} className="rotate-90" /> : <ChevronRight size={14} />}
+                    </button>
+
+                    {/* Active File Tab "Cartridge" */}
+                    <div className="relative group">
+                        <div className="absolute inset-x-0 top-0 h-[2px] bg-cyan-500 shadow-[0_0_10px_cyan]" />
+                        <div className="px-4 py-2 bg-zinc-900/50 border-x border-cyan-500/10 text-xs font-mono text-cyan-400 flex items-center gap-2 relative z-10">
+                            <FileCode size={12} className={clsx(
+                                pathEndsWith(activeFile, 'html') ? 'text-orange-400' :
+                                    pathEndsWith(activeFile, 'css') ? 'text-blue-400' :
+                                        pathEndsWith(activeFile, 'js') ? 'text-yellow-400' : 'text-cyan-400'
+                            )} />
+                            <span className="tracking-wide">{activeFile}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -378,14 +388,14 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                         <textarea
                             value={files.find(f => f.name === activeFile)?.content || ''}
                             onChange={handleTextareaChange}
-                            className="w-full h-full p-4 bg-[#0a0a0a] text-white font-mono text-sm resize-none focus:outline-none"
+                            className="w-full h-full p-4 bg-black text-white font-mono text-sm resize-none focus:outline-none"
                             spellCheck="false"
                             style={{ tabSize: 2, lineHeight: '1.6' }}
                         />
                     ) : (
                         <Editor
                             height="100%"
-                            theme="zerocode-dark"
+                            theme="zerocode-cyber"
                             path={activeFile}
                             defaultLanguage={getLanguageFromPath(activeFile)}
                             defaultValue={files.find(f => f.name === activeFile)?.content || ''}
@@ -393,10 +403,10 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                             onChange={handleEditorChange}
                             onMount={() => setIsEditorReady(true)}
                             loading={
-                                <div className="h-full flex items-center justify-center bg-[#0a0a0a] text-gray-400">
+                                <div className="h-full flex items-center justify-center bg-black text-cyan-500/50 font-mono">
                                     <div className="text-center">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                                        <p className="text-sm">Loading Editor...</p>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+                                        <p className="text-xs tracking-widest uppercase">Initializing_Matrix...</p>
                                     </div>
                                 </div>
                             }
@@ -416,7 +426,8 @@ export default function EditorComponent({ files, setFiles, folders, setFolders, 
                                 scrollBeyondLastLine: false,
                                 cursorBlinking: 'smooth',
                                 cursorSmoothCaretAnimation: 'on',
-                                smoothScrolling: true
+                                smoothScrolling: true,
+                                renderLineHighlight: 'all'
                             }}
                         />
                     )}
