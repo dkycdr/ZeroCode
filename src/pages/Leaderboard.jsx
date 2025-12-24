@@ -6,7 +6,7 @@ import AppLayout from '../components/layout/AppLayout';
 import clsx from 'clsx';
 import { useProgress } from '../contexts/ProgressProvider';
 import AvatarWithBorder from '../components/common/AvatarWithBorder';
-import RealisticDNA from '../components/RealisticDNA';
+
 
 export default function Leaderboard() {
     const { user, getLeaderboard } = useAuth();
@@ -42,9 +42,7 @@ export default function Leaderboard() {
             <div className="max-w-6xl mx-auto space-y-12 pb-20 animate-fade-in">
                 {/* CYBER HEADER */}
                 <div className="relative rounded-sm bg-black border border-white/10 overflow-hidden isolate shadow-2xl">
-                    <div className="absolute inset-0 z-0 opacity-20 mix-blend-screen pointer-events-none">
-                        <RealisticDNA />
-                    </div>
+
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] z-0" />
 
                     <div className="relative z-10 px-8 py-12 text-center space-y-4">

@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RiCpuLine, RiFullscreenLine, RiCloseLine, RiFocus2Line, RiDatabase2Line, RiCodeBoxLine, RiGitMergeLine, RiCheckDoubleLine, RiLoader4Line } from 'react-icons/ri';
+import { RiOrganizationChart, RiExpandDiagonalLine, RiCloseLine, RiCpuLine, RiGlobeLine, RiDashboardLine, RiFlashlightLine, RiShieldCheckLine, RiLockLine, RiCheckLine, RiDatabase2Line, RiFocus2Line, RiCodeBoxLine, RiGitMergeLine, RiCheckDoubleLine } from 'react-icons/ri';
 import { SiHtml5, SiCss3, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiVuedotjs, SiExpress, SiGit, SiTailwindcss, SiTypescript, SiMongodb, SiPython, SiNextdotjs, SiPhp, SiMysql } from 'react-icons/si';
-import SidebarWidgetFrame from './SidebarWidgetFrame';
 import { useProgress } from '../../contexts/ProgressProvider';
 import { getCourse } from '../../data/courses';
 
@@ -38,17 +37,232 @@ const getRank = (percentage) => {
     return { label: 'TRAINEE', color: 'text-zinc-500', border: 'border-zinc-700' };
 };
 
-// ------------------------------------------------------------------
-// WIDGET COMPONENT
-// ------------------------------------------------------------------
+const NeuralCanvas = ({ isExpanded, nodes, connections }) => {
+    const canvasRef = useRef(null);
 
-export function SkillAnalyticsWidget() {
-    const { completedItems, completedCourses } = useProgress();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+
+        let pulses = [];
+
+        const spawnPulse = () => {
+            if (pulses.length < 5) {
+                const conn = connections[Math.floor(Math.random() * connections.length)];
+                const startNode = nodes.find(n => n.id === conn.from);
+                const endNode = nodes.find(n => n.id === conn.to);
+
+                if (startNode?.status !== 'locked') {
+                    pulses.push({
+                        ...conn,
+                        progress: 0,
+                        speed: 0.02 + Math.random() * 0.03
+                    });
+                }
+            }
+            setTimeout(spawnPulse, Math.random() * 2000);
+        };
+        spawnPulse();
+
+        const render = () => {
+            const scaleX = isExpanded ? rect.width / 300 : 1;
+            const scaleY = isExpanded ? rect.height / 300 : 1;
+
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            // Draw Connections
+            connections.forEach(conn => {
+                const start = nodes.find(n => n.id === conn.from);
+                const end = nodes.find(n => n.id === conn.to);
+
+                if (!start || !end) return;
+
+                const x1 = isExpanded ? (start.x * 2.5 + 100) : start.x;
+                const y1 = isExpanded ? (start.y * 2 + 100) : start.y;
+                const x2 = isExpanded ? (end.x * 2.5 + 100) : end.x;
+                const y2 = isExpanded ? (end.y * 2 + 100) : end.y;
+
+                const isLocked = start.status === 'locked' || end.status === 'locked';
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = isLocked ? 'rgba(50, 50, 50, 0.5)' : (isExpanded ? 'rgba(6, 182, 212, 0.4)' : 'rgba(6, 182, 212, 0.2)');
+                ctx.lineWidth = isExpanded ? 3 : 2;
+                ctx.stroke();
+            });
+
+            // Draw Pulses
+            pulses.forEach((pulse, index) => {
+                const start = nodes.find(n => n.id === pulse.from);
+                const end = nodes.find(n => n.id === pulse.to);
+
+                if (!start || !end) return;
+
+                const x1 = isExpanded ? (start.x * 2.5 + 100) : start.x;
+                const y1 = isExpanded ? (start.y * 2 + 100) : start.y;
+                const x2 = isExpanded ? (end.x * 2.5 + 100) : end.x;
+                const y2 = isExpanded ? (end.y * 2 + 100) : end.y;
+
+                pulse.progress += pulse.speed;
+                if (pulse.progress >= 1) {
+                    pulses.splice(index, 1);
+                    return;
+                }
+
+                const currentX = x1 + (x2 - x1) * pulse.progress;
+                const currentY = y1 + (y2 - y1) * pulse.progress;
+
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, isExpanded ? 6 : 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#06b6d4';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#06b6d4';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Nodes
+            nodes.forEach(node => {
+                const nx = isExpanded ? (node.x * 2.5 + 100) : node.x;
+                const ny = isExpanded ? (node.y * 2 + 100) : node.y;
+
+                ctx.beginPath();
+                ctx.arc(nx, ny, isExpanded ? 14 : 6, 0, Math.PI * 2);
+
+                if (node.status === 'mastered') {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#f59e0b';
+                } else if (node.status === 'unlocked') {
+                    ctx.fillStyle = '#10b981';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#10b981';
+                } else if (node.status === 'active') {
+                    ctx.fillStyle = '#06b6d4';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#06b6d4';
+                } else {
+                    ctx.fillStyle = '#27272a';
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.fill();
+
+                if (node.status === 'active' || node.status === 'mastered') {
+                    ctx.beginPath();
+                    ctx.arc(nx, ny, isExpanded ? 24 : 10, 0, Math.PI * 2);
+                    ctx.strokeStyle = node.status === 'mastered' ? 'rgba(245, 158, 11, 0.5)' : 'rgba(6, 182, 212, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = node.status === 'locked' ? '#52525b' : '#e4e4e7';
+                ctx.font = isExpanded ? 'bold 14px monospace' : '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, nx, ny + (isExpanded ? 35 : 20));
+            });
+
+            animationFrameId = requestAnimationFrame(render);
+        };
+
+        render();
+
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [isExpanded, nodes, connections]);
+
+    return <canvas ref={canvasRef} className="w-full h-full" />;
+};
+
+export default function NeuralTechTreeWidget() {
+    const { completedCourses, completedItems } = useProgress();
+    const [isExpanded, setIsExpanded] = useState(false);
     const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-    // --- DATA PROCESSING (MEMOIZED) ---
-    const stats = useMemo(() => {
+    // Dynamic Node Calculation (Graph View)
+    const { nodes, connections, stats } = useMemo(() => {
+        const baseNodes = [
+            { id: 'html', courseId: 'web-development-html', x: 50, y: 50, label: 'HTML', status: 'locked', fullName: 'Web Development HTML' },
+            { id: 'css', courseId: 'web-development-css', x: 150, y: 50, label: 'CSS', status: 'locked', fullName: 'Web Development CSS' },
+            { id: 'js', courseId: 'javascript-basics', x: 100, y: 120, label: 'JS', status: 'locked', fullName: 'JavaScript Basics' },
+            { id: 'react', courseId: 'react-fundamentals', x: 50, y: 190, label: 'REACT', status: 'locked', fullName: 'React Fundamentals' },
+            { id: 'node', courseId: 'nodejs-fundamentals', x: 150, y: 190, label: 'NODE', status: 'locked', fullName: 'Node.js Fundamentals' },
+            { id: 'sql', courseId: 'postgresql-mastery', x: 200, y: 120, label: 'SQL', status: 'locked', fullName: 'PostgreSQL Mastery' }
+        ];
+
+        const baseConnections = [
+            { from: 'html', to: 'css' },
+            { from: 'html', to: 'js' },
+            { from: 'css', to: 'js' },
+            { from: 'js', to: 'react' },
+            { from: 'js', to: 'node' },
+            { from: 'node', to: 'sql' }
+        ];
+
+        let masteredCount = 0;
+        let activeUnlockedCount = 0;
+        let lockedCount = 0;
+
+        // Apply proper status logic
+        const updatedNodes = baseNodes.map(node => {
+            const isCompleted = completedCourses.includes(node.courseId);
+
+            if (isCompleted) {
+                masteredCount++;
+                return { ...node, status: 'mastered' };
+            }
+
+            // HTML is always available to start
+            if (node.id === 'html') {
+                activeUnlockedCount++;
+                return { ...node, status: 'active' };
+            }
+
+            // Find prerequisites
+            const prereqConnections = baseConnections.filter(c => c.to === node.id);
+            const prereqNodes = baseNodes.filter(n => prereqConnections.some(c => c.from === n.id));
+
+            // Check if all prerequisites are completed
+            const allPrereqsDone = prereqNodes.length > 0 && prereqNodes.every(p => completedCourses.includes(p.courseId));
+
+            if (allPrereqsDone) {
+                activeUnlockedCount++;
+                return { ...node, status: 'unlocked' };
+            }
+
+            lockedCount++;
+            return node; // remains locked
+        });
+
+        const mastery = Math.round((masteredCount / baseNodes.length) * 100);
+        const availability = Math.round(((masteredCount + activeUnlockedCount) / baseNodes.length) * 100);
+
+        return {
+            nodes: updatedNodes,
+            connections: baseConnections,
+            stats: {
+                mastery,
+                availability,
+                active: activeUnlockedCount,
+                mastered: masteredCount,
+                locked: lockedCount,
+                total: baseNodes.length
+            }
+        };
+
+    }, [completedCourses]);
+
+    // Skill Analytics Calculation (Fullscreen View)
+    const skillStats = useMemo(() => {
         const calculated = [];
         let totalItemsGlobal = 0;
         let completedItemsGlobal = 0;
@@ -102,58 +316,48 @@ export function SkillAnalyticsWidget() {
                     }
                 });
                 unitsData.push({
-                    id: `${courseId}-virtual-unit`,
-                    title: 'Core Competencies',
+                    id: 'tasks',
+                    title: 'Core Tasks',
                     total: unitTotal,
                     completed: unitCompleted,
                     progress: unitTotal > 0 ? Math.round((unitCompleted / unitTotal) * 100) : 0
                 });
             }
 
-            // Global force complete override
-            if (completedCourses.includes(courseId) && courseTotal > 0) {
-                courseCompleted = courseTotal;
-                unitsData.forEach(u => { u.completed = u.total; u.progress = 100; });
-            }
-
-            if (courseTotal === 0) return;
-
-            const percentage = Math.round((courseCompleted / courseTotal) * 100);
-
+            const progress = courseTotal > 0 ? Math.round((courseCompleted / courseTotal) * 100) : 0;
             totalItemsGlobal += courseTotal;
             completedItemsGlobal += courseCompleted;
 
             calculated.push({
-                id: courseId,
                 ...meta,
-                progress: percentage,
-                completed: courseCompleted,
+                id: courseId,
+                progress,
                 total: courseTotal,
-                rank: getRank(percentage),
-                units: unitsData
+                completed: courseCompleted,
+                units: unitsData,
+                rank: getRank(progress)
             });
         });
 
-        const overallPercent = totalItemsGlobal > 0 ? Math.round((completedItemsGlobal / totalItemsGlobal) * 100) : 0;
+        const overall = totalItemsGlobal > 0 ? Math.round((completedItemsGlobal / totalItemsGlobal) * 100) : 0;
+        const sortedSkills = calculated.sort((a, b) => b.progress - a.progress);
 
         return {
-            skills: calculated.sort((a, b) => b.progress - a.progress),
-            overall: overallPercent,
-            overallPoints: completedItemsGlobal * 50 // Rough XP estimate
+            overall,
+            skills: sortedSkills
         };
-    }, [completedItems, completedCourses]);
+    }, [completedItems]);
 
-    const topSkills = stats.skills.slice(0, 5);
-
-    // --- HANDLERS ---
-    const openModal = (courseId = null) => {
-        setSelectedCourseId(courseId || stats.skills[0]?.id);
-        setIsModalOpen(true);
-    };
+    // Initialize selection when opening
+    useEffect(() => {
+        if (isExpanded && !selectedCourseId && skillStats.skills.length > 0) {
+            setSelectedCourseId(skillStats.skills[0].id);
+        }
+    }, [isExpanded, skillStats, selectedCourseId]);
 
     // Lock Body Scroll
-    React.useEffect(() => {
-        if (isModalOpen) {
+    useEffect(() => {
+        if (isExpanded) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -161,88 +365,70 @@ export function SkillAnalyticsWidget() {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isModalOpen]);
-
-    const MiniStat = (
-        <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500 font-mono">GLOBAL SYNC</span>
-            <div className="flex items-center gap-1.5 px-1.5 py-0.5 border border-green-500/30 rounded bg-green-500/10">
-                <span className="text-xs font-bold text-green-400">{stats.overall}%</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            </div>
-        </div>
-    );
+    }, [isExpanded]);
 
     return (
         <>
-            <SidebarWidgetFrame
-                title="Skill_Matrix"
-                icon={RiDatabase2Line}
-                subtitle="Proficiency_Check"
-                miniStat={MiniStat}
-                onFullscreen={() => openModal()}
-            >
-                {/* --- COMPACT LIST CONTENT --- */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between pb-4 border-b border-zinc-900">
-                        <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
-                            // HEURISTIC ANALYSIS
-                        </span>
+            {/* WIDGET CONTAINER - SIDEBAR VIEW (NEURAL MESH) */}
+            <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-black via-cyan-950/20 to-black border border-cyan-900/30 rounded-lg transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]" />
+
+                <div
+                    className="absolute inset-0 opacity-5 pointer-events-none rounded-lg"
+                    style={{
+                        backgroundImage: 'linear-gradient(rgba(6,182,212,0.1) 1px, transparent 1px)',
+                        backgroundSize: '100% 4px'
+                    }}
+                />
+
+                <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-cyan-500/50 rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-cyan-500/50 rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br-lg" />
+
+                <div className="relative z-20 p-5">
+                    <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-zinc-400 font-mono">{stats.overall}% INTEGRITY</span>
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                            <RiOrganizationChart className="text-cyan-400" size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.6)]">NEURAL_GRID</span>
                         </div>
+                        <div className="text-[9px] font-mono text-cyan-600/60">V.2.0.1</div>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                        {topSkills.length > 0 ? (
-                            topSkills.map((skill) => {
-                                const Icon = skill.icon;
-                                return (
-                                    <button
-                                        key={skill.id}
-                                        onClick={() => openModal(skill.id)}
-                                        className="w-full flex items-center gap-3 p-2 rounded hover:bg-white/5 border border-transparent hover:border-cyan-500/20 transition-all text-left group/item"
-                                    >
-                                        <div className="shrink-0 text-zinc-500 group-hover/item:text-cyan-400 transition-colors">
-                                            <Icon size={14} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-zinc-300 group-hover/item:text-white truncate">
-                                                    {skill.name}
-                                                </span>
-                                                <span className="text-[10px] font-mono text-cyan-500">
-                                                    {skill.progress}%
-                                                </span>
-                                            </div>
-                                            <div className="h-0.5 w-full bg-zinc-800 rounded-full mt-1.5 overflow-hidden">
-                                                <div
-                                                    className="h-full bg-cyan-500/50 group-hover/item:bg-cyan-400 transition-colors relative"
-                                                    style={{ width: `${skill.progress}%` }}
-                                                >
-                                                    <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/50 blur-[2px]" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })
-                        ) : (
-                            <div className="py-8 flex flex-col items-center justify-center text-zinc-600 gap-2 opacity-50">
-                                <RiLoader4Line className="animate-spin" size={20} />
-                                <span className="text-[10px] font-mono uppercase">Initializing...</span>
-                            </div>
-                        )}
+                    <div className="relative h-[220px] w-full flex items-center justify-center mb-4 border border-cyan-900/30 bg-black/60 rounded overflow-hidden">
+                        <div
+                            className="absolute inset-0 opacity-10"
+                            style={{
+                                backgroundImage: 'linear-gradient(rgba(6,182,212,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.2) 1px, transparent 1px)',
+                                backgroundSize: '20px 20px'
+                            }}
+                        />
+                        <NeuralCanvas isExpanded={false} nodes={nodes} connections={connections} />
+                    </div>
+
+                    <div className="flex justify-between items-end">
+                        <div className="text-[8px] font-mono text-zinc-500 uppercase flex flex-col gap-0.5">
+                            <span className="text-cyan-600/70">Topology: <span className="text-zinc-400">Mesh</span></span>
+                            <span className="text-cyan-600/70">Mastery: <span className="text-cyan-400 font-bold">{stats.mastery}%</span></span>
+                        </div>
+
+                        <button
+                            onClick={() => setIsExpanded(true)}
+                            className="relative group/btn bg-cyan-950/30 hover:bg-cyan-600 border border-cyan-600/50 text-cyan-400 hover:text-black px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 rounded overflow-hidden hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-500" />
+                            <RiExpandDiagonalLine size={14} />
+                            <span className="relative">Access_Map</span>
+                        </button>
                     </div>
                 </div>
-            </SidebarWidgetFrame>
+            </div>
 
-            {/* --- FULL SCREEN MODAL (Existing) --- */}
+            {/* EXPANDED MODAL - SKILL MATRIX VIEW */}
             <AnimatePresence>
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-                        <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
+                {isExpanded && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-6">
+                        <div className="absolute inset-0" onClick={() => setIsExpanded(false)} />
 
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
@@ -263,7 +449,7 @@ export function SkillAnalyticsWidget() {
                                     </h2>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-zinc-700">
-                                    {stats.skills.map(skill => {
+                                    {skillStats.skills.map(skill => {
                                         const isActive = selectedCourseId === skill.id;
                                         const Icon = skill.icon;
                                         return (
@@ -311,7 +497,7 @@ export function SkillAnalyticsWidget() {
                                         </span>
                                     </div>
                                     <button
-                                        onClick={() => setIsModalOpen(false)}
+                                        onClick={() => setIsExpanded(false)}
                                         className="p-2 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors"
                                     >
                                         <RiCloseLine size={24} />
@@ -321,7 +507,7 @@ export function SkillAnalyticsWidget() {
                                 {/* Content */}
                                 <div className="flex-1 overflow-y-auto p-8 relative">
                                     {selectedCourseId ? (() => {
-                                        const activeSkill = stats.skills.find(s => s.id === selectedCourseId);
+                                        const activeSkill = skillStats.skills.find(s => s.id === selectedCourseId);
                                         const Icon = activeSkill.icon;
 
                                         return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthProvider';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import {
     RiMailFill, RiLockPasswordFill, RiEyeFill, RiEyeOffFill,
     RiLoginCircleFill, RiArrowLeftLine, RiGithubFill
@@ -27,12 +27,18 @@ export default function Login() {
         setGoogleClientId(import.meta.env.VITE_GOOGLE_CLIENT_ID || '');
     }, []);
 
-    const handleGoogleSuccess = async (credentialResponse) => {
+    const handleGoogleSuccess = async (tokenResponse) => {
         setError('');
         setIsLoading(true);
 
         try {
-            const result = await loginWithGoogle(credentialResponse.credential);
+            // Fetch User Info using Access Token
+            const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+            });
+            const userInfo = await userInfoRes.json();
+
+            const result = await loginWithGoogle(userInfo);
 
             if (result.success) {
                 if (result.needsVerification) {
@@ -264,33 +270,11 @@ export default function Login() {
                         {googleClientId && (
                             <div className="space-y-3">
                                 <GoogleOAuthProvider clientId={googleClientId}>
-                                    <div className="google-login-wrapper opacity-80 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-                                        <GoogleLogin
-                                            onSuccess={handleGoogleSuccess}
-                                            onError={handleGoogleError}
-                                            theme="filled_black"
-                                            size="large"
-                                            width="100%"
-                                            text="signin_with"
-                                            shape="rect"
-                                        />
-                                    </div>
+                                    <SocialLoginButtons
+                                        onGoogleSuccess={handleGoogleSuccess}
+                                        onGoogleError={handleGoogleError}
+                                    />
                                 </GoogleOAuthProvider>
-
-                                <button
-                                    onClick={() => {
-                                        const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-                                        if (!clientId) {
-                                            alert("GitHub Client ID not configured (VITE_GITHUB_CLIENT_ID)");
-                                            return;
-                                        }
-                                        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=read:user user:email`;
-                                    }}
-                                    className="w-full py-2.5 bg-[#24292e] hover:bg-[#2f363d] text-white flex items-center justify-center gap-3 border border-gray-700 transition-all text-sm font-medium rounded-sm group"
-                                >
-                                    <RiGithubFill size={20} className="group-hover:scale-110 transition-transform" />
-                                    <span>Sign in with GitHub</span>
-                                </button>
                             </div>
                         )}
 
@@ -306,3 +290,60 @@ export default function Login() {
         </div >
     );
 }
+
+function SocialLoginButtons({ onGoogleSuccess, onGoogleError }) {
+    const loginGoogle = useGoogleLogin({
+        onSuccess: onGoogleSuccess,
+        onError: onGoogleError,
+    });
+
+    return (
+        <div className="grid grid-cols-2 gap-3">
+            {/* GOOGLE CYBERPUNK BUTTON */}
+            <button
+                type="button"
+                onClick={() => loginGoogle()}
+                className="relative group h-12 overflow-hidden"
+                style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}
+            >
+                <div className="absolute inset-0 bg-white/5 border border-white/10 group-hover:border-white/30 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-white group-hover:bg-cyan-400 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+
+                <div className="relative flex items-center justify-center gap-2 h-full">
+                    <div className="p-1 bg-white rounded-full group-hover:bg-transparent transition-colors">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="G" />
+                    </div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">
+                        Google
+                    </span>
+                </div>
+            </button>
+
+            {/* GITHUB CYBERPUNK BUTTON */}
+            <button
+                type="button"
+                onClick={() => {
+                    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+                    if (!clientId) {
+                        alert("GitHub Client ID not configured");
+                        return;
+                    }
+                    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=read:user user:email`;
+                }}
+                className="relative group h-12 overflow-hidden"
+                style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}
+            >
+                <div className="absolute inset-0 bg-white/5 border border-white/10 group-hover:border-white/30 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-white group-hover:bg-cyan-400 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+
+                <div className="relative flex items-center justify-center gap-2 h-full">
+                    <RiGithubFill size={20} className="text-white group-hover:text-black transition-colors" />
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">
+                        GitHub
+                    </span>
+                </div>
+            </button>
+        </div>
+    );
+}
+

@@ -182,7 +182,7 @@ export default function WelcomeHero({ user, subscriptionTier }) {
                 )}
             </AnimatePresence>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes scan {
                     0%, 100% { transform: translateY(-100%); }
                     50% { transform: translateY(100%); }

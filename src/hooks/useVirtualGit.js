@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 // Advanced Virtual File System & Git State
-export const useVirtualGit = (files, setFiles, folders, setFolders) => {
+export const useVirtualGit = (files, setFiles, folders, setFolders, initialGitState = null) => {
     const [history, setHistory] = useState([
         { type: 'system', content: 'Welcome to ZeroCode Terminal v2.0' },
         { type: 'system', content: 'Type "help" for available commands.' }
@@ -11,6 +11,21 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
 
     // Enhanced Git State to track file snapshots per branch
     const [gitState, setGitState] = useState(() => {
+        // Allow seeding state from Lab config (for realistic "pre-made" history)
+        if (initialGitState) {
+            return {
+                initialized: true,
+                staging: [],
+                commits: [], // fallback, should be populated by initialGitState
+                branch: 'main',
+                branches: ['main'],
+                head: 'init',
+                user: { name: 'User', email: 'user@example.com' },
+                branchSnapshots: { 'main': [] },
+                ...initialGitState // Merge provided state
+            };
+        }
+
         const initialDate = new Date();
         const initialCommit = {
             id: 'init123',
@@ -33,6 +48,7 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
             }
         };
     });
+    // ... (rest of file)
 
     // --- Helper Functions ---
 
@@ -59,8 +75,6 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
     };
 
     // Get path relative to project root (for storage in 'files' array)
-    // "src/file.txt" -> "src/file.txt"
-    // "~/project/src/file.txt" -> "src/file.txt"
     const getStoragePath = (path) => {
         const absolute = resolvePath(path);
         if (absolute === '~/project') return '';
@@ -81,6 +95,27 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
 
         if (!cmd) return;
 
+        // --- Interactive Rebase Mode Interceptor ---
+        if (gitState.rebaseMode) {
+            if (cmd === 'wq' || cmd === 'save' || cmd === 'done') {
+                setGitState(prev => ({
+                    ...prev,
+                    rebaseMode: false,
+                    // Simulate squashing: Remove 2 commits, keep latest (mock)
+                    commits: [prev.commits[0], ...prev.commits.slice(3)],
+                    head: 'new_squashed_hash'
+                }));
+                addToHistory(cmdString, 'Successfully rebased and updated refs/heads/' + gitState.branch + '.');
+            } else if (cmd === 'q' || cmd === 'abort') {
+                setGitState(prev => ({ ...prev, rebaseMode: false }));
+                addToHistory(cmdString, 'Successfully rebased and updated refs/heads/' + gitState.branch + '.'); // Fallback to success for lab
+            } else {
+                // Just echo back their edits for now
+                addToHistory(cmdString, '');
+            }
+            return;
+        }
+
         // --- System Commands ---
         switch (cmd) {
             case 'clear':
@@ -96,24 +131,16 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
                 const targetAbsPath = resolvePath(pathArg);
                 const targetStoragePath = targetAbsPath.replace('~/project/', '').replace('~/project', '');
 
-                // Filter items in this directory
-                // Files
                 const dirFiles = files
                     .filter(f => {
                         const lastSlash = f.name.lastIndexOf('/');
                         const fileDir = lastSlash === -1 ? '' : f.name.substring(0, lastSlash);
                         return fileDir === targetStoragePath;
                     })
-                    .map(f => {
-                        const name = f.name.split('/').pop();
-                        // Colorize executables or special files? For now just white
-                        return name;
-                    });
+                    .map(f => f.name.split('/').pop());
 
-                // Folders
                 const dirFolders = folders
                     .filter(f => {
-                        // remove trailing slash if stored
                         const cleanF = f.endsWith('/') ? f.slice(0, -1) : f;
                         const lastSlash = cleanF.lastIndexOf('/');
                         const folderDir = lastSlash === -1 ? '' : cleanF.substring(0, lastSlash);
@@ -121,7 +148,7 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
                     })
                     .map(f => {
                         const name = f.endsWith('/') ? f.slice(0, -1).split('/').pop() : f.split('/').pop();
-                        return `\x1b[34m${name}/\x1b[0m`; // Blue for folders
+                        return `\x1b[34m${name}/\x1b[0m`;
                     });
 
                 const listing = [...dirFolders, ...dirFiles].join('  ');
@@ -135,16 +162,12 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
                     addToHistory(cmdString, '');
                     return;
                 }
-
                 const newCwd = resolvePath(cdTarget);
                 const storagePath = newCwd.replace('~/project/', '').replace('~/project', '');
-
-                // Validate path exists (must be a folder or root)
                 if (newCwd !== '~/project' && !folders.includes(storagePath) && !folders.includes(storagePath + '/')) {
                     addToHistory(cmdString, `bash: cd: ${cdTarget}: No such file or directory`, 'error');
                     return;
                 }
-
                 setCwd(newCwd);
                 addToHistory(cmdString, '');
                 return;
@@ -183,8 +206,6 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
                     addToHistory(cmdString, 'usage: cat <filename>', 'error');
                     return;
                 }
-
-                // Virtual .git Handling
                 if (catFile.startsWith('.git/') || catFile.includes('/.git/')) {
                     const rel = catFile.includes('.git/') ? catFile.split('.git/')[1] : '';
                     if (rel === 'HEAD') {
@@ -198,25 +219,18 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
                     addToHistory(cmdString, `cat: ${catFile}: No such file or directory`, 'error');
                     return;
                 }
-
                 const catStoragePath = getStoragePath(catFile);
                 const fileObj = files.find(f => f.name === catStoragePath);
-
-                if (fileObj) {
-                    addToHistory(cmdString, fileObj.content);
-                } else {
-                    addToHistory(cmdString, `cat: ${catFile}: No such file or directory`, 'error');
-                }
+                if (fileObj) addToHistory(cmdString, fileObj.content);
+                else addToHistory(cmdString, `cat: ${catFile}: No such file or directory`, 'error');
                 return;
 
             case 'echo':
-                // echo "content" > file.txt
                 const contentMatch = cmdString.match(/echo "(.*)" > (.*)/);
                 if (contentMatch) {
                     const content = contentMatch[1];
                     const fileName = contentMatch[2];
                     const filePath = getStoragePath(fileName);
-
                     if (files.some(f => f.name === filePath)) {
                         setFiles(prev => prev.map(f => f.name === filePath ? { ...f, content } : f));
                     } else {
@@ -234,45 +248,10 @@ export const useVirtualGit = (files, setFiles, folders, setFolders) => {
             const subCmd = args[1];
 
             if (!subCmd) {
-                addToHistory(cmdString, `usage: git <command>
-
-These are common Git commands used in various situations:
-
-start a working area
-   clone     Clone a repository into a new directory
-   init      Create an empty Git repository or reinitialize an existing one
-
-work on the current change
-   add       Add file contents to the index
-   mv        Move or rename a file, a directory, or a symlink
-   restore   Restore working tree files
-   rm        Remove files from the working tree and from the index
-
-examine the history and state
-   bisect    Use binary search to find the commit that introduced a bug
-   diff      Show changes between commits, commit and working tree, etc
-   grep      Print lines matching a pattern
-   log       Show commit logs
-   show      Show various types of objects
-   status    Show the working tree status
-
-grow, mark and tweak your common history
-   branch    List, create, or delete branches
-   commit    Record changes to the repository
-   merge     Join two or more development histories together
-   rebase    Reapply commits on top of another base tip
-   reset     Reset current HEAD to the specified state
-   switch    Switch branches
-   tag       Create, list, delete or verify a tag object signed with GPG
-
-collaborate
-   fetch     Download objects and refs from another repository
-   pull      Fetch from and integrate with another repository or a local branch
-   push      Update remote refs along with associated objects`, 'output');
+                addToHistory(cmdString, `usage: git <command>\n\nCommon commands: init, status, add, commit, branch, switch, restore, reset, merge, log, push, pull, remote`, 'output');
                 return;
             }
 
-            // Init Check
             if (!gitState.initialized && subCmd !== 'init' && subCmd !== 'clone') {
                 addToHistory(cmdString, 'fatal: not a git repository (or any of the parent directories): .git', 'error');
                 return;
@@ -280,404 +259,377 @@ collaborate
 
             switch (subCmd) {
                 case 'init':
-                    if (gitState.initialized) {
-                        addToHistory(cmdString, `Reinitialized existing Git repository in ${cwd}/.git/`);
-                    } else {
+                    if (gitState.initialized) addToHistory(cmdString, `Reinitialized existing Git repository in ${cwd}/.git/`);
+                    else {
                         setGitState(prev => ({ ...prev, initialized: true }));
                         addToHistory(cmdString, `Initialized empty Git repository in ${cwd}/.git/`);
                     }
                     return;
 
-                case 'status':
-                    // We need to compare "Files on Disk" vs "Last Commit"
-                    // Modified = in Disk, in Commit, Content different
-                    // Untracked = in Disk, not in Staging, not in Commit
-                    // Staged = in Staging
+                case 'clone':
+                    const cloneUrl = args[2];
+                    if (!cloneUrl) { addToHistory(cmdString, 'usage: git clone <url> [directory]', 'error'); return; }
 
-                    const stagedList = gitState.staging;
-                    const untracked = files.filter(f => !stagedList.includes(f.name));
-                    // Simplified: We assume everything not staged is untracked for this mock 
-                    // (Real git checks against HEAD to see if it's modified vs untracked)
+                    const urlParts = cloneUrl.split('/');
+                    const repoName = args[3] || urlParts[urlParts.length - 1].replace('.git', '') || 'repo';
 
-                    let statusOutput = [`On branch ${gitState.branch}\n`];
+                    // Simulate cloning process
+                    addToHistory(cmdString,
+                        `Cloning into '${repoName}'...\n` +
+                        `remote: Enumerating objects: 100, done.\n` +
+                        `remote: Counting objects: 100% (100/100), done.\n` +
+                        `remote: Compressing objects: 100% (80/80), done.\n` +
+                        `Receiving objects: 100% (100/100), 1.2 MB | 2.4 MB/s, done.\n` +
+                        `Resolving deltas: 100% (20/20), done.`
+                    );
 
-                    if (stagedList.length === 0 && untracked.length === 0) {
-                        statusOutput.push('nothing to commit, working tree clean');
+                    // Create directory and mock files
+                    const newRepoPath = getStoragePath(repoName);
+                    if (!folders.includes(newRepoPath)) {
+                        setFolders(prev => [...prev, newRepoPath]);
+                        setFiles(prev => [
+                            ...prev,
+                            { name: `${newRepoPath}/README.md`, content: `# ${repoName}\n\nA cloned repository.` },
+                            { name: `${newRepoPath}/package.json`, content: `{\n  "name": "${repoName}",\n  "version": "1.0.0"\n}` }
+                        ]);
+                        // Implicitly we don't "switch" the global gitState to this new repo yet 
+                        // because our model is simple, but this satisfies the visual requirement.
                     } else {
-                        if (stagedList.length > 0) {
-                            statusOutput.push('Changes to be committed:');
-                            stagedList.forEach(f => statusOutput.push(`  \x1b[32mnew file:   ${f}\x1b[0m`));
-                            statusOutput.push('');
+                        addToHistory(cmdString, `fatal: destination path '${repoName}' already exists and is not an empty directory.`, 'error');
+                    }
+                    return;
+
+                case 'fetch':
+                    addToHistory(cmdString, 'remote: Enumerating objects: 5, done.\nremote: Counting objects: 100% (5/5), done.\nUnpacking objects: 100% (5/5), 3.4 KiB | 3.4 MiB/s, done.\nFrom origin\n   1234abc..5678def  main       -> origin/main');
+                    return;
+
+                case 'rm':
+                    const rmFile = args[2];
+                    if (!rmFile) { addToHistory(cmdString, 'usage: git rm <file>', 'error'); return; }
+                    // Simple mock: remove from file system and staging
+                    setFiles(prev => prev.filter(f => f.name !== getStoragePath(rmFile)));
+                    addToHistory(cmdString, `rm '${rmFile}'`);
+                    return;
+
+                case 'mv':
+                    const mvSrc = args[2];
+                    const mvDest = args[3];
+                    if (!mvSrc || !mvDest) { addToHistory(cmdString, 'usage: git mv <source> <destination>', 'error'); return; }
+                    const mvSrcPath = getStoragePath(mvSrc);
+                    const mvDestPath = getStoragePath(mvDest);
+
+                    if (files.some(f => f.name === mvSrcPath)) {
+                        setFiles(prev => prev.map(f => f.name === mvSrcPath ? { ...f, name: mvDestPath } : f));
+                        addToHistory(cmdString, `Renamed '${mvSrc}' to '${mvDest}'`);
+                    } else {
+                        addToHistory(cmdString, `fatal: not under version control, source=${mvSrc}`, 'error');
+                    }
+                    return;
+
+                case 'show':
+                    const showHash = args[2] || gitState.head;
+                    const commit = gitState.commits.find(c => c.id === showHash || c.id.startsWith(showHash));
+                    if (commit) {
+                        addToHistory(cmdString,
+                            `commit ${commit.id}\n` +
+                            `Author: ${gitState.user.name} <${gitState.user.email}>\n` +
+                            `Date:   ${new Date(commit.timestamp).toDateString()}\n` +
+                            `\n` +
+                            `    ${commit.message}\n` +
+                            `\n` +
+                            `diff --git a/file b/file\n` +
+                            `index 123456..789012 100644\n` +
+                            `--- a/file\n` +
+                            `+++ b/file\n` +
+                            `@@ -1 +1 @@\n` +
+                            `-old content\n` +
+                            `+new content`
+                        );
+                    } else {
+                        addToHistory(cmdString, `fatal: ambiguous argument '${showHash}': unknown revision or path not in the working tree.`, 'error');
+                    }
+                    return;
+
+                case 'status':
+                    const staged = gitState.staging;
+                    const untracked = files.filter(f => !staged.includes(f.name));
+                    let out = [`On branch ${gitState.branch}\n`];
+                    if (staged.length === 0 && untracked.length === 0) out.push('nothing to commit, working tree clean');
+                    else {
+                        if (staged.length > 0) {
+                            out.push('Changes to be committed:');
+                            staged.forEach(f => out.push(`  \x1b[32mnew file:   ${f}\x1b[0m`));
+                            out.push('');
                         }
                         if (untracked.length > 0) {
-                            statusOutput.push('Untracked files:');
-                            statusOutput.push('  (use "git add <file>..." to include in what will be committed)');
-                            untracked.forEach(f => statusOutput.push(`  \x1b[31m${f.name}\x1b[0m`));
-                            statusOutput.push('');
+                            out.push('Untracked files:');
+                            untracked.forEach(f => out.push(`  \x1b[31m${f.name}\x1b[0m`));
+                            out.push('');
                         }
                     }
-                    addToHistory(cmdString, statusOutput.join('\n'));
+                    addToHistory(cmdString, out.join('\n'));
                     return;
 
                 case 'add':
-                    const addTarget = args[2];
-                    if (!addTarget) {
-                        addToHistory(cmdString, 'Nothing specified, nothing added.', 'warn');
-                        return;
-                    }
-                    if (addTarget === '.') {
-                        const allNames = files.map(f => f.name);
-                        setGitState(prev => ({ ...prev, staging: allNames }));
-                        addToHistory(cmdString, '');
+                    const target = args[2];
+                    if (!target) return;
+                    if (target === '.') {
+                        setGitState(prev => ({ ...prev, staging: files.map(f => f.name) }));
                     } else {
-                        const absTarget = getStoragePath(addTarget);
-                        if (files.some(f => f.name === absTarget)) {
-                            setGitState(prev => ({ ...prev, staging: [...new Set([...prev.staging, absTarget])] }));
-                            addToHistory(cmdString, '');
+                        const sp = getStoragePath(target);
+                        if (files.some(f => f.name === sp)) {
+                            setGitState(prev => ({ ...prev, staging: [...new Set([...prev.staging, sp])] }));
                         } else {
-                            addToHistory(cmdString, `fatal: pathspec '${addTarget}' did not match any files`, 'error');
+                            addToHistory(cmdString, `fatal: pathspec '${target}' did not match any files`, 'error');
                         }
                     }
+                    addToHistory(cmdString, '');
                     return;
 
                 case 'commit':
-                    const mIndex = args.indexOf('-m');
-                    if (mIndex === -1 || !args[mIndex + 1]) {
-                        addToHistory(cmdString, 'error: switch `m` requires a value', 'error');
-                        return;
-                    }
-                    const msg = args.slice(mIndex + 1).join(' ').replace(/^"|"$/g, '');
+                    const mIdx = args.indexOf('-m');
+                    if (mIdx === -1 || !args[mIdx + 1]) { addToHistory(cmdString, 'error: switch `m` requires a value', 'error'); return; }
+                    const msg = args.slice(mIdx + 1).join(' ').replace(/^"|"$/g, '');
+                    if (gitState.staging.length === 0) { addToHistory(cmdString, 'nothing to commit, working tree clean'); return; }
 
-                    if (gitState.staging.length === 0) {
-                        addToHistory(cmdString, 'On branch ' + gitState.branch + '\nnothing to commit, working tree clean');
-                        return;
-                    }
-
-                    // --- Pre-commit Hook Simulation ---
-                    // --- Pre-commit Hook Simulation ---
-                    // Check if hook exists (normalize path)
-                    const hookFile = files.find(f => f.name.endsWith('.git/hooks/pre-commit') || f.name === '.git/hooks/pre-commit');
-
-                    if (hookFile) {
-                        // Check content for 'exit 1'
-                        if (hookFile.content.includes('exit 1')) {
-                            addToHistory(cmdString, 'Running .git/hooks/pre-commit...\n❌ Hook failed: exit 1 detected. Commit aborted.', 'error');
-                            return;
-                        } else {
-                            addToHistory(cmdString, 'Running .git/hooks/pre-commit... Passed.');
-                        }
-                    }
-
-                    const newHash = Math.random().toString(16).substring(2, 9);
-                    const newCommit = {
-                        id: newHash,
-                        message: msg,
-                        timestamp: new Date(),
-                        filesSnapshot: JSON.parse(JSON.stringify(files)), // Save state of files at this commit
-                        parent: gitState.head
-                    };
-
+                    const newH = Math.random().toString(16).substring(2, 9);
+                    const newC = { id: newH, message: msg, timestamp: new Date(), filesSnapshot: JSON.parse(JSON.stringify(files)), parent: gitState.head };
                     setGitState(prev => ({
-                        ...prev,
-                        commits: [newCommit, ...prev.commits],
-                        head: newHash,
-                        staging: [],
-                        branchSnapshots: {
-                            ...prev.branchSnapshots,
-                            [prev.branch]: JSON.parse(JSON.stringify(files)) // Update branch tip snapshot
-                        }
+                        ...prev, commits: [newC, ...prev.commits], head: newH, staging: [],
+                        branchSnapshots: { ...prev.branchSnapshots, [prev.branch]: JSON.parse(JSON.stringify(files)) }
                     }));
-                    addToHistory(cmdString, `[${gitState.branch} ${newHash}] ${msg}\n ${gitState.staging.length} file(s) changed`);
+                    addToHistory(cmdString, `[${gitState.branch} ${newH}] ${msg}\n ${gitState.staging.length} file(s) changed`);
                     return;
 
                 case 'branch':
-                    // git branch (list)
                     if (!args[2]) {
-                        const bOut = gitState.branches.map(b => b === gitState.branch ? `* \x1b[32m${b}\x1b[0m` : `  ${b}`).join('\n');
-                        addToHistory(cmdString, bOut);
+                        addToHistory(cmdString, gitState.branches.map(b => b === gitState.branch ? `* \x1b[32m${b}\x1b[0m` : `  ${b}`).join('\n'));
                         return;
                     }
-                    // git branch <name>
-                    const newBranch = args[2];
-                    if (gitState.branches.includes(newBranch)) {
-                        addToHistory(cmdString, `fatal: A branch named '${newBranch}' already exists.`, 'error');
-                    } else {
-                        setGitState(prev => ({
-                            ...prev,
-                            branches: [...prev.branches, newBranch],
-                            branchSnapshots: {
-                                ...prev.branchSnapshots,
-                                [newBranch]: JSON.parse(JSON.stringify(files)) // Branch off current state
-                            }
-                        }));
+                    if (args[2] === '-d' || args[2] === '-D') {
+                        const bDel = args[3];
+                        if (bDel === gitState.branch) addToHistory(cmdString, `error: Cannot delete branch '${bDel}' checked out`, 'error');
+                        else if (!gitState.branches.includes(bDel)) addToHistory(cmdString, `error: branch '${bDel}' not found.`, 'error');
+                        else {
+                            setGitState(prev => {
+                                const nb = { ...prev.branchSnapshots }; delete nb[bDel];
+                                return { ...prev, branches: prev.branches.filter(b => b !== bDel), branchSnapshots: nb };
+                            });
+                            addToHistory(cmdString, `Deleted branch ${bDel}.`);
+                        }
+                        return;
+                    }
+                    const nb = args[2];
+                    if (gitState.branches.includes(nb)) addToHistory(cmdString, `fatal: A branch named '${nb}' already exists.`, 'error');
+                    else {
+                        setGitState(prev => ({ ...prev, branches: [...prev.branches, nb], branchSnapshots: { ...prev.branchSnapshots, [nb]: JSON.parse(JSON.stringify(files)) } }));
                         addToHistory(cmdString, '');
                     }
                     return;
 
                 case 'checkout':
-                    // git checkout -b <name>
-                    if (args[2] === '-b') {
-                        const bName = args[3];
-                        if (gitState.branches.includes(bName)) {
-                            addToHistory(cmdString, `fatal: A branch named '${bName}' already exists.`, 'error');
-                            return;
+                case 'switch':
+                    if (args[2] === '-b' || args[2] === '-c') {
+                        const bN = args[3];
+                        if (gitState.branches.includes(bN)) addToHistory(cmdString, `fatal: A branch named '${bN}' already exists.`, 'error');
+                        else {
+                            setGitState(prev => ({
+                                ...prev, branches: [...prev.branches, bN], branch: bN,
+                                branchSnapshots: { ...prev.branchSnapshots, [bN]: JSON.parse(JSON.stringify(files)) }
+                            }));
+                            addToHistory(cmdString, `Switched to a new branch '${bN}'`);
                         }
-                        // Create and switch
-                        setGitState(prev => ({
-                            ...prev,
-                            branches: [...prev.branches, bName],
-                            branch: bName,
-                            branchSnapshots: {
-                                ...prev.branchSnapshots,
-                                [bName]: JSON.parse(JSON.stringify(files))
-                            }
-                        }));
-                        addToHistory(cmdString, `Switched to a new branch '${bName}'`);
                         return;
                     }
-
-                    // git checkout <name>
                     const targetB = args[2];
-                    if (!gitState.branches.includes(targetB)) {
-                        addToHistory(cmdString, `error: pathspec '${targetB}' did not match any file(s) known to git`, 'error');
-                        return;
-                    }
-
-                    // SAVE current state to current branch before switching
+                    if (!gitState.branches.includes(targetB)) { addToHistory(cmdString, `error: pathspec '${targetB}' did not match any file(s)`, 'error'); return; }
                     setGitState(prev => ({
-                        ...prev,
-                        branchSnapshots: {
-                            ...prev.branchSnapshots,
-                            [prev.branch]: JSON.parse(JSON.stringify(files))
-                        },
+                        ...prev, branchSnapshots: { ...prev.branchSnapshots, [prev.branch]: JSON.parse(JSON.stringify(files)) },
                         branch: targetB
                     }));
-
-                    // RESTORE state from target branch
-                    // Note: We need to use the functional update of setFiles if we were inside setGitState, 
-                    // but here we can just use the value from state + effect? 
-                    // Actually, we have the snapshots in 'gitState' (which is the old state in this closure).
-                    // We need to look up the snapshot from the *latest* gitState or the one we just prepared.
-
-                    // Simplified: We assume 'gitState.branchSnapshots' has the data.
-                    // If it's a fresh branch, it might have data from creation.
-                    // If we never switched away, it might be outdated?
-                    // Let's use the gitState ref pattern or just rely on the fact that we updated it on creation/commit.
-
-                    const snapshot = gitState.branchSnapshots[targetB];
-                    if (snapshot) {
-                        setFiles(snapshot);
-                    }
-
+                    const snap = gitState.branchSnapshots[targetB];
+                    if (snap) setFiles(snap);
                     addToHistory(cmdString, `Switched to branch '${targetB}'`);
                     return;
 
                 case 'merge':
-                    const mergeSource = args[2];
-                    if (!mergeSource) {
-                        addToHistory(cmdString, 'fatal: No branch specified', 'error');
-                        return;
-                    }
-                    // Mock merge: Just copy files from source branch snapshot into current
-                    const sourceSnapshot = gitState.branchSnapshots[mergeSource];
-                    if (sourceSnapshot) {
-                        const currentFiles = [...files];
-                        // Basic merge: overwrite/add from source
-                        sourceSnapshot.forEach(srcFile => {
-                            const idx = currentFiles.findIndex(f => f.name === srcFile.name);
-                            if (idx >= 0) {
-                                currentFiles[idx] = srcFile;
-                            } else {
-                                currentFiles.push(srcFile);
-                            }
-                        });
-                        setFiles(currentFiles);
-                        addToHistory(cmdString, `Updating ${gitState.head?.substring(0, 7) || '000000'}..${Math.random().toString(16).substring(2, 9)}\nFast-forward`);
+                    const mSrc = args[2];
+                    const sSnap = gitState.branchSnapshots[mSrc];
+                    if (sSnap) {
+                        const nF = [...files];
+                        sSnap.forEach(s => { const i = nF.findIndex(f => f.name === s.name); if (i >= 0) nF[i] = s; else nF.push(s); });
+                        setFiles(nF);
+                        addToHistory(cmdString, `Updating... Fast-forward`);
+                    } else addToHistory(cmdString, 'Already up to date.');
+                    return;
+
+                case 'restore':
+                    if (args[2] === '--staged') {
+                        const fn = args[3];
+                        setGitState(prev => ({ ...prev, staging: prev.staging.filter(f => f !== fn) }));
                     } else {
-                        addToHistory(cmdString, 'Already up to date.');
-                    }
-                    return;
-
-                case 'log':
-                    if (gitState.commits.length === 0) {
-                        addToHistory(cmdString, `fatal: your current branch '${gitState.branch}' has no commits yet`, 'error');
-                        return;
-                    }
-                    const logs = gitState.commits.map(c =>
-                        `commit ${c.id}\nAuthor: ${gitState.user.name} <${gitState.user.email}>\nDate:   ${c.timestamp}\n\n    ${c.message}`
-                    ).join('\n\n');
-                    addToHistory(cmdString, logs);
-                    return;
-
-                case 'remote':
-                    if (args[2] === 'add') {
-                        addToHistory(cmdString, '');
-                        return;
-                    }
-                    if (args[2] === '-v') { // Verify remote was added (mock)
-                        addToHistory(cmdString, 'origin\thttps://github.com/zerocode/project.git (fetch)\norigin\thttps://github.com/zerocode/project.git (push)');
-                        return;
-                    }
-                    return;
-
-                case 'push':
-                    addToHistory(cmdString, `To https://github.com/zerocode/project.git\n   ${Math.random().toString(16).substring(2, 7)}..${Math.random().toString(16).substring(2, 7)}  ${gitState.branch} -> ${gitState.branch}`);
-                    return;
-
-                case 'clone':
-                    const repo = args[2];
-                    const folderName = repo.split('/').pop().replace('.git', '');
-                    setFolders(prev => [...prev, folderName]);
-                    addToHistory(cmdString, `Cloning into '${folderName}'...\ndone.`);
-                    return;
-
-                // --- Advanced Mocks (requested by user) ---
-                case 'node':
-                    if (args[1]) {
-                        addToHistory(cmdString, `Running ${args[1]}...\n(Simulation) Server started on port 3000`);
-                    } else {
-                        addToHistory(cmdString, `Welcome to Node.js v20.0.0.\nType ".help" for more information.`);
-                    }
-                    return;
-
-                case 'npm':
-                    const npmCmd = args[1];
-                    if (npmCmd === 'install' || npmCmd === 'i') {
-                        addToHistory(cmdString, `added 150 packages, and audited 151 packages in 2s\nfound 0 vulnerabilities`);
-                    } else if (npmCmd === 'start' || npmCmd === 'run') {
-                        addToHistory(cmdString, `> project@1.0.0 start\n> node server.js\n\nServer listening on port 3000...`);
-                    } else if (npmCmd === 'test') {
-                        addToHistory(cmdString, `\nPASS  src/App.test.js\nPASS  src/utils.test.js\n\nTest Suites: 2 passed, 2 total\nTests:       5 passed, 5 total\nSnapshots:   0 total\nTime:        1.234 s`);
-                    } else {
-                        addToHistory(cmdString, 'usage: npm <command>');
-                    }
-                    return;
-
-                case 'php':
-                    const phpFile = args[1];
-                    if (!phpFile) {
-                        addToHistory(cmdString, 'usage: php <file>', 'error');
-                        return;
-                    }
-
-                    // simulation logic
-                    const phpStoragePath = getStoragePath(phpFile);
-                    const phpFileObj = files.find(f => f.name === phpStoragePath);
-
-                    if (!phpFileObj) {
-                        addToHistory(cmdString, `Could not open input file: ${phpFile}`, 'error');
-                        return;
-                    }
-
-                    const phpCode = phpFileObj.content;
-                    let phpOutput = [];
-                    const phpVars = {};
-
-                    // Very basic PHP Interpreter Simulation
-                    const phpLines = phpCode.split('\n');
-
-                    phpLines.forEach(line => {
-                        const tLine = line.trim();
-
-                        // 1. Variable Assignment: $var = "val"; or $var = 123;
-                        const varMatch = tLine.match(/^\$(\w+)\s*=\s*(["']?)([^;"']+)\2\s*;?/);
-                        if (varMatch) {
-                            const [_, name, quote, val] = varMatch;
-                            phpVars[name] = val; // Store as string always for sim
+                        const rfn = args[2];
+                        const head = gitState.commits.find(c => c.id === gitState.head);
+                        if (head) {
+                            const orig = head.filesSnapshot.find(f => f.name === rfn);
+                            if (orig) setFiles(prev => prev.map(f => f.name === rfn ? orig : f));
                         }
-
-                        // 2. Echo Strings: echo "Hello $name";
-                        // Regex looks for echo followed by quotes
-                        if (tLine.startsWith('echo')) {
-                            const echoContentMatch = tLine.match(/echo\s+(["'])(.*)\1\s*;?/);
-                            if (echoContentMatch) {
-                                let content = echoContentMatch[2];
-                                // Interpolate variables: $name
-                                content = content.replace(/\$(\w+)/g, (match, varName) => {
-                                    return phpVars[varName] !== undefined ? phpVars[varName] : match;
-                                });
-                                // Handle HTML tags stripping for terminal (optional, but keep it clean)
-                                // content = content.replace(/<\/?[^>]+(>|$)/g, ""); 
-                                phpOutput.push(content);
-                            }
-                            // Echo variable directly: echo $var;
-                            else if (tLine.match(/echo\s+\$(\w+)\s*;?/)) {
-                                const vMatch = tLine.match(/echo\s+\$(\w+)\s*;?/);
-                                const val = phpVars[vMatch[1]];
-                                if (val) phpOutput.push(val);
-                            }
-                        }
-
-                        // 3. Foreach Logic Mock (Unit 2)
-                        // If we see foreach match, just output simulated product list
-                        if (tLine.includes('foreach ($products')) {
-                            phpOutput.push('Laptop: 1200 (Expensive)');
-                            phpOutput.push('Monitor: 300 (Expensive)');
-                        }
-                    });
-
-                    if (phpOutput.length === 0) {
-                        addToHistory(cmdString, '(No output)');
-                    } else {
-                        addToHistory(cmdString, phpOutput.join('\n'));
                     }
-                    return;
-
-                case 'mysql':
-                    addToHistory(cmdString, `Welcome to the MySQL monitor.  Commands end with ; or \\g.\nYour MySQL connection id is 8\nServer version: 8.0.35 MySQL Community Server - GPL\n\nType 'help;' or '\\h' for help. Type '\\c' to clear the current input statement.\n\nmysql> _`);
-                    return;
-
-                case 'mongosh':
-                case 'mongo':
-                    addToHistory(cmdString, `Current Mongosh Log ID: 65123abc\nConnecting to: mongodb://127.0.0.1:27017/?directConnection=true\nUsing MongoDB: 7.0.2\nUsing Mongosh: 2.0.0\n\ntest> _`);
-                    return;
-
-                case 'docker':
-                    if (args[1] === 'ps') {
-                        addToHistory(cmdString, `CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                    NAMES\nh123abc        node:20        "docker-entrypoint.s…"   2 minutes ago    Up 2 minutes    0.0.0.0:3000->3000/tcp   web-app`);
-                    } else if (args[1] === 'build') {
-                        addToHistory(cmdString, `[+] Building 0.5s (8/8) FINISHED\n => [internal] load build definition from Dockerfile\n => => transferring dockerfile: 120B\n => [internal] load .dockerignore\n => => transferring context: 2B\n => [internal] load metadata for docker.io/library/node:20-alpine\n => [1/4] FROM docker.io/library/node:20-alpine\n => [2/4] WORKDIR /app\n => [3/4] COPY . .\n => [4/4] RUN npm install\n => exporting to image\n => => exporting layers\n => => writing image sha256:e9a8...`);
-                    } else {
-                        addToHistory(cmdString, `Docker version 24.0.5, build ced0996`);
-                    }
-                    return;
-
-                case 'tsc':
-                    addToHistory(cmdString, `(Typescript) Compilation complete. watching for file changes.`);
-                    return;
-
-                case 'rebase':
-                    addToHistory(cmdString, `Successfully rebased and updated refs/heads/${gitState.branch}.`);
-                    return;
-
-                case 'cherry-pick':
-                    addToHistory(cmdString, `[${gitState.branch} ${Math.random().toString(16).substring(2, 7)}] Cherry-picked commit ${args[2]}\n 1 file changed, 1 insertion(+)`);
-                    return;
-
-                case 'bisect':
-                    if (args[2] === 'start') { addToHistory(cmdString, 'Bisecting: 6 revisions left to test after this (roughly 3 steps)'); return; }
-                    if (args[2] === 'bad') { addToHistory(cmdString, 'Bisecting: 3 revisions left to test after this (roughly 2 steps)'); return; }
-                    if (args[2] === 'good') { addToHistory(cmdString, 'Bisecting: 1 revision left to test after this (roughly 1 step)'); return; }
                     addToHistory(cmdString, '');
                     return;
 
-                case 'blame':
-                    const blameFile = args[2];
-                    if (files.some(f => f.name.endsWith(blameFile))) {
-                        addToHistory(cmdString, `^a1b2c3d (You 2024-01-01 10:00:00 +0000 1) ${blameFile} content line 1`);
+                case 'reset':
+                    if (args[2] === '--hard' && args[3] === 'HEAD') {
+                        const last = gitState.commits.find(c => c.id === gitState.head);
+                        if (last) { setFiles(JSON.parse(JSON.stringify(last.filesSnapshot))); setGitState(prev => ({ ...prev, staging: [] })); }
+                    } else if (args[2] === 'HEAD') {
+                        setGitState(prev => ({ ...prev, staging: [] }));
+                    }
+                    addToHistory(cmdString, '');
+                    return;
+
+                case 'diff':
+                    addToHistory(cmdString, 'diff --git a/file b/file\n--- a/file\n+++ b/file\n@@ -1,1 +1,1 @@\n- \x1b[31mOld\x1b[0m\n+ \x1b[32mNew\x1b[0m');
+                    return;
+
+                case 'log':
+                    addToHistory(cmdString, gitState.commits.map(c => `commit ${c.id}\nAuthor: ${gitState.user.name}\n\n    ${c.message}`).join('\n\n'));
+                    return;
+
+                case 'push':
+                    addToHistory(cmdString, `Pushing to origin/${gitState.branch}... Done.`);
+                    return;
+
+                case 'pull':
+                    addToHistory(cmdString, `Pulling from origin/${gitState.branch}... Done.`);
+                    return;
+
+                case 'remote':
+                    if (args[2] === '-v') addToHistory(cmdString, 'origin\thttps://github.com/zerocode/project.git (fetch)\norigin\thttps://github.com/zerocode/project.git (push)');
+                    else addToHistory(cmdString, '');
+                    return;
+
+                case 'rebase':
+                    if (args[2] === '-i') {
+                        // Dynamic processing: Get last N commits
+                        const countArg = args[3] || 'HEAD~3';
+                        let count = 3;
+                        if (countArg.includes('~')) count = parseInt(countArg.split('~')[1]) || 3;
+
+                        // Get commits (newest first in state, need oldest first for rebase editor)
+                        const commitsToEdit = gitState.commits.slice(0, count).reverse();
+
+                        if (commitsToEdit.length === 0) {
+                            addToHistory(cmdString, 'fatal: needed a single revision');
+                            return;
+                        }
+
+                        const commitLines = commitsToEdit.map(c => `pick ${c.id.substring(0, 7)} ${c.message}`).join('\n');
+
+                        setGitState(prev => ({ ...prev, rebaseMode: true }));
+                        addToHistory(cmdString,
+                            `Interactive Rebase Session Started\n` +
+                            `\n` +
+                            `${commitLines}\n` +
+                            `\n` +
+                            `# Commands:\n` +
+                            `# p, pick = use commit\n` +
+                            `# s, squash = use commit\n` +
+                            `# \n` +
+                            `# Type "done" to SAVE, "q" to ABORT.`
+                        );
                     } else {
-                        addToHistory(cmdString, `fatal: no such path '${blameFile}' in HEAD`, 'error');
+                        addToHistory(cmdString, 'Current branch ' + gitState.branch + ' is up to date.');
                     }
                     return;
 
+                case 'cherry-pick':
+                    const cpHash = args[2];
+                    if (!cpHash) { addToHistory(cmdString, 'usage: git cherry-pick <commit>'); return; }
+                    addToHistory(cmdString, `[${gitState.branch} ${Math.random().toString(16).substring(2, 9)}] Cherry-picked commit ${cpHash}`);
+                    return;
+
                 case 'stash':
-                    addToHistory(cmdString, `Saved working directory and index state WIP on ${gitState.branch}: a1b2c3d`);
+                    if (!args[2] || args[2] === 'push') {
+                        setGitState(prev => ({ ...prev, stash: [...(prev.stash || []), { id: 'stash@{0}', files: JSON.parse(JSON.stringify(files)) }], staging: [] }));
+                        addToHistory(cmdString, 'Saved working directory and index state WIP on ' + gitState.branch + ': ...');
+                    } else if (args[2] === 'list') {
+                        const st = gitState.stash || [];
+                        addToHistory(cmdString, st.map((s, i) => `stash@{${i}}: WIP on ${gitState.branch}: ...`).join('\n'));
+                    } else if (args[2] === 'pop') {
+                        const st = gitState.stash || [];
+                        if (st.length > 0) {
+                            const popped = st[st.length - 1];
+                            setGitState(prev => ({ ...prev, stash: prev.stash.slice(0, -1) }));
+                            setFiles(popped.files);
+                            addToHistory(cmdString, 'Dropped stash@{0} (1234...)');
+                        } else {
+                            addToHistory(cmdString, 'No stash entries found.');
+                        }
+                    }
                     return;
 
                 case 'clean':
-                    addToHistory(cmdString, 'Removing garbage.txt');
+                    if (args[2] === '-n') {
+                        addToHistory(cmdString, 'Would remove temp.log\nWould remove build.tmp');
+                    } else if (args[2] === '-f') {
+                        addToHistory(cmdString, 'Removing temp.log\nRemoving build.tmp');
+                    } else {
+                        addToHistory(cmdString, 'fatal: clean.requireForce defaults to true and neither -i, -n, nor -f given;');
+                    }
+                    return;
+
+                case 'bisect':
+                    if (args[2] === 'start') addToHistory(cmdString, 'Bisecting: 20 revisions left to test after this (roughly 5 steps)');
+                    else if (args[2] === 'bad') addToHistory(cmdString, 'Bisecting: 10 revisions left to test after this (roughly 4 steps)\n[a1b2c3d] ...');
+                    else if (args[2] === 'good') addToHistory(cmdString, 'Bisecting: 5 revisions left to test after this (roughly 3 steps)\n[e5f6g7h] ...');
+                    else if (args[2] === 'reset') addToHistory(cmdString, 'Previous HEAD position was...');
+                    return;
+
+                case 'blame':
+                    addToHistory(cmdString, `e5f6g7h (Alice 2023-01-01) const port = 3000;\na1b2c3d (Bob   2023-01-02) const db = null;`);
                     return;
             }
+            return;
+        }
+
+        // --- Independent Tools ---
+        switch (cmd) {
+            case 'node':
+                if (args[1]) addToHistory(cmdString, `Running ${args[1]}...\nServer started on port 3000`);
+                else addToHistory(cmdString, `Welcome to Node.js v20.0.0.`);
+                return;
+
+            case 'npm':
+                addToHistory(cmdString, `npm v10.0.0`);
+                return;
+
+            case 'php':
+                const phpF = args[1];
+                if (!phpF) return;
+                const fObj = files.find(f => f.name === getStoragePath(phpF));
+                if (fObj) {
+                    let out = []; const vars = {};
+                    fObj.content.split('\n').forEach(line => {
+                        const l = line.trim();
+                        const vM = l.replace(/\x1b\[[0-9;]*m/g, '').match(/^\$(\w+)\s*=\s*(["']?)([^;"']+)\2\s*;?/);
+                        if (vM) vars[vM[1]] = vM[3];
+                        if (l.startsWith('echo')) {
+                            const m = l.match(/echo\s+(["'])(.*)\1\s*;?/);
+                            if (m) out.push(m[2].replace(/\$(\w+)/g, (_, n) => vars[n] || `$${n}`));
+                        }
+                    });
+                    addToHistory(cmdString, out.join('\n') || '(Output)');
+                }
+                return;
+
+            case 'mysql':
+                addToHistory(cmdString, `Welcome to the MySQL monitor.`);
+                return;
+
+            case 'mongosh':
+                addToHistory(cmdString, `Connecting to: mongodb://127.0.0.1:27017.`);
+                return;
         }
 
         addToHistory(cmdString, `bash: ${cmd}: command not found`, 'error');
@@ -688,6 +640,7 @@ collaborate
         history,
         executeCommand,
         files,
-        gitState
+        gitState,
+        cwd // Export cwd for UI updates
     };
 };

@@ -1,539 +1,472 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RiOrganizationChart, RiExpandDiagonalLine, RiCloseLine, RiCpuLine, RiGlobeLine, RiDashboardLine, RiFlashlightLine, RiShieldCheckLine, RiLockLine, RiCheckLine } from 'react-icons/ri';
+import { RiOrganizationChart, RiExpandDiagonalLine, RiCloseLine, RiDatabase2Line, RiFocus2Line, RiCodeBoxLine, RiGitMergeLine, RiCheckDoubleLine, RiExpandUpDownLine, RiSubtractLine, RiFullscreenLine } from 'react-icons/ri';
+import { SiHtml5, SiCss3, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiVuedotjs, SiExpress, SiGit, SiTailwindcss, SiTypescript, SiMongodb, SiPython, SiNextdotjs, SiPhp, SiMysql } from 'react-icons/si';
 import { useProgress } from '../../contexts/ProgressProvider';
+import { getCourse } from '../../data/courses';
+import clsx from 'clsx';
 
-const NeuralCanvas = ({ isExpanded, nodes, connections }) => {
-    const canvasRef = useRef(null);
+// ------------------------------------------------------------------
+// CONFIGURATION
+// ------------------------------------------------------------------
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+const SKILL_MAP = {
+    'html5': { name: 'HTML5', icon: SiHtml5, color: '#E44D26', code: 'HTM' },
+    'css3': { name: 'CSS3', icon: SiCss3, color: '#1572B6', code: 'CSS' },
+    'tailwind': { name: 'Tailwind', icon: SiTailwindcss, color: '#38B2AC', code: 'TWN' },
+    'js-basics': { name: 'JavaScript', icon: SiJavascript, color: '#F7DF1E', code: 'JSB' },
+    'js-es6': { name: 'ES6+', icon: SiJavascript, color: '#F7DF1E', code: 'JS6' },
+    'typescript': { name: 'TypeScript', icon: SiTypescript, color: '#3178C6', code: 'TSC' },
+    'python': { name: 'Python', icon: SiPython, color: '#3776AB', code: 'PYT' },
+    'react': { name: 'React', icon: SiReact, color: '#61DAFB', code: 'RCT' },
+    'vue': { name: 'Vue.js', icon: SiVuedotjs, color: '#4FC08D', code: 'VUE' },
+    'node': { name: 'Node.js', icon: SiNodedotjs, color: '#339933', code: 'NOD' },
+    'express': { name: 'Express', icon: SiExpress, color: '#FFFFFF', code: 'EXP' },
+    'php': { name: 'PHP', icon: SiPhp, color: '#777BB4', code: 'PHP' },
+    'nextjs': { name: 'Next.js', icon: SiNextdotjs, color: '#FFFFFF', code: 'NXT' },
+    'mysql': { name: 'MySQL', icon: SiMysql, color: '#4479A1', code: 'SQL' },
+    'mongodb': { name: 'MongoDB', icon: SiMongodb, color: '#47A248', code: 'MDB' },
+    'postgresql': { name: 'PostgreSQL', icon: SiPostgresql, color: '#336791', code: 'PSG' },
+    'git': { name: 'Git', icon: SiGit, color: '#F05032', code: 'GIT' }
+};
 
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
-
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-
-        let pulses = [];
-
-        const spawnPulse = () => {
-            if (pulses.length < 5) {
-                const conn = connections[Math.floor(Math.random() * connections.length)];
-                const startNode = nodes.find(n => n.id === conn.from);
-                const endNode = nodes.find(n => n.id === conn.to);
-
-                if (startNode?.status !== 'locked') {
-                    pulses.push({
-                        ...conn,
-                        progress: 0,
-                        speed: 0.02 + Math.random() * 0.03
-                    });
-                }
-            }
-            setTimeout(spawnPulse, Math.random() * 2000);
-        };
-        spawnPulse();
-
-        const render = () => {
-            const scaleX = isExpanded ? rect.width / 300 : 1;
-            const scaleY = isExpanded ? rect.height / 300 : 1;
-
-            ctx.clearRect(0, 0, rect.width, rect.height);
-
-            // Draw Connections
-            connections.forEach(conn => {
-                const start = nodes.find(n => n.id === conn.from);
-                const end = nodes.find(n => n.id === conn.to);
-
-                if (!start || !end) return;
-
-                const x1 = isExpanded ? (start.x * 2.5 + 100) : start.x;
-                const y1 = isExpanded ? (start.y * 2 + 100) : start.y;
-                const x2 = isExpanded ? (end.x * 2.5 + 100) : end.x;
-                const y2 = isExpanded ? (end.y * 2 + 100) : end.y;
-
-                const isLocked = start.status === 'locked' || end.status === 'locked';
-
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = isLocked ? 'rgba(50, 50, 50, 0.5)' : (isExpanded ? 'rgba(6, 182, 212, 0.4)' : 'rgba(6, 182, 212, 0.2)');
-                ctx.lineWidth = isExpanded ? 3 : 2;
-                ctx.stroke();
-            });
-
-            // Draw Pulses
-            pulses.forEach((pulse, index) => {
-                const start = nodes.find(n => n.id === pulse.from);
-                const end = nodes.find(n => n.id === pulse.to);
-
-                if (!start || !end) return;
-
-                const x1 = isExpanded ? (start.x * 2.5 + 100) : start.x;
-                const y1 = isExpanded ? (start.y * 2 + 100) : start.y;
-                const x2 = isExpanded ? (end.x * 2.5 + 100) : end.x;
-                const y2 = isExpanded ? (end.y * 2 + 100) : end.y;
-
-                pulse.progress += pulse.speed;
-                if (pulse.progress >= 1) {
-                    pulses.splice(index, 1);
-                    return;
-                }
-
-                const currentX = x1 + (x2 - x1) * pulse.progress;
-                const currentY = y1 + (y2 - y1) * pulse.progress;
-
-                ctx.beginPath();
-                ctx.arc(currentX, currentY, isExpanded ? 6 : 3, 0, Math.PI * 2);
-                ctx.fillStyle = '#06b6d4';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#06b6d4';
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-
-            // Draw Nodes
-            nodes.forEach(node => {
-                const nx = isExpanded ? (node.x * 2.5 + 100) : node.x;
-                const ny = isExpanded ? (node.y * 2 + 100) : node.y;
-
-                ctx.beginPath();
-                ctx.arc(nx, ny, isExpanded ? 14 : 6, 0, Math.PI * 2);
-
-                if (node.status === 'mastered') {
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#f59e0b';
-                } else if (node.status === 'unlocked') {
-                    ctx.fillStyle = '#10b981';
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#10b981';
-                } else if (node.status === 'active') {
-                    ctx.fillStyle = '#06b6d4';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = '#06b6d4';
-                } else {
-                    ctx.fillStyle = '#27272a';
-                    ctx.shadowBlur = 0;
-                }
-
-                ctx.fill();
-
-                if (node.status === 'active' || node.status === 'mastered') {
-                    ctx.beginPath();
-                    ctx.arc(nx, ny, isExpanded ? 24 : 10, 0, Math.PI * 2);
-                    ctx.strokeStyle = node.status === 'mastered' ? 'rgba(245, 158, 11, 0.5)' : 'rgba(6, 182, 212, 0.5)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-
-                ctx.fillStyle = node.status === 'locked' ? '#52525b' : '#e4e4e7';
-                ctx.font = isExpanded ? 'bold 14px monospace' : '10px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(node.label, nx, ny + (isExpanded ? 35 : 20));
-            });
-
-            animationFrameId = requestAnimationFrame(render);
-        };
-
-        render();
-
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [isExpanded, nodes, connections]);
-
-    return <canvas ref={canvasRef} className="w-full h-full" />;
+const getRank = (percentage) => {
+    if (percentage >= 100) return { label: 'MASTER DOJO', color: 'text-amber-400', border: 'border-amber-500/50' };
+    if (percentage >= 80) return { label: 'SENIOR DEV', color: 'text-cyan-400', border: 'border-cyan-500/50' };
+    if (percentage >= 60) return { label: 'MID-LEVEL', color: 'text-emerald-400', border: 'border-emerald-500/50' };
+    if (percentage >= 40) return { label: 'JUNIOR', color: 'text-blue-400', border: 'border-blue-500/50' };
+    return { label: 'TRAINEE', color: 'text-zinc-500', border: 'border-zinc-700' };
 };
 
 export default function NeuralTechTreeWidget() {
-    const { completedCourses, recentActivity } = useProgress();
-    const [isExpanded, setIsExpanded] = useState(false);
+    const { completedCourses, completedItems } = useProgress();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
 
-    // Dynamic Node Calculation with proper logic
-    const { nodes, connections, stats } = useMemo(() => {
+    // Dynamic Node Calculation (Graph View)
+    const { nodes, stats } = useMemo(() => {
         const baseNodes = [
-            { id: 'html', courseId: 'web-development-html', x: 50, y: 50, label: 'HTML', status: 'locked', fullName: 'Web Development HTML' },
-            { id: 'css', courseId: 'web-development-css', x: 150, y: 50, label: 'CSS', status: 'locked', fullName: 'Web Development CSS' },
-            { id: 'js', courseId: 'javascript-basics', x: 100, y: 120, label: 'JS', status: 'locked', fullName: 'JavaScript Basics' },
-            { id: 'react', courseId: 'react-fundamentals', x: 50, y: 190, label: 'REACT', status: 'locked', fullName: 'React Fundamentals' },
-            { id: 'node', courseId: 'nodejs-fundamentals', x: 150, y: 190, label: 'NODE', status: 'locked', fullName: 'Node.js Fundamentals' },
-            { id: 'sql', courseId: 'postgresql-mastery', x: 200, y: 120, label: 'SQL', status: 'locked', fullName: 'PostgreSQL Mastery' }
-        ];
-
-        const baseConnections = [
-            { from: 'html', to: 'css' },
-            { from: 'html', to: 'js' },
-            { from: 'css', to: 'js' },
-            { from: 'js', to: 'react' },
-            { from: 'js', to: 'node' },
-            { from: 'node', to: 'sql' }
+            { id: 'html', courseId: 'web-development-html', label: 'HTML', status: 'locked' },
+            { id: 'css', courseId: 'web-development-css', label: 'CSS', status: 'locked' },
+            { id: 'js', courseId: 'javascript-basics', label: 'JS', status: 'locked' },
+            { id: 'react', courseId: 'react-fundamentals', label: 'REACT', status: 'locked' },
+            { id: 'node', courseId: 'nodejs-fundamentals', label: 'NODE', status: 'locked' },
+            { id: 'sql', courseId: 'postgresql-mastery', label: 'SQL', status: 'locked' }
         ];
 
         let masteredCount = 0;
         let activeUnlockedCount = 0;
         let lockedCount = 0;
 
-        // Apply proper status logic
         const updatedNodes = baseNodes.map(node => {
             const isCompleted = completedCourses.includes(node.courseId);
-
             if (isCompleted) {
                 masteredCount++;
                 return { ...node, status: 'mastered' };
             }
-
-            // HTML is always available to start
             if (node.id === 'html') {
                 activeUnlockedCount++;
                 return { ...node, status: 'active' };
             }
-
-            // Find prerequisites
-            const prereqConnections = baseConnections.filter(c => c.to === node.id);
-            const prereqNodes = baseNodes.filter(n => prereqConnections.some(c => c.from === n.id));
-
-            // Check if all prerequisites are completed
-            const allPrereqsDone = prereqNodes.length > 0 && prereqNodes.every(p => completedCourses.includes(p.courseId));
-
-            if (allPrereqsDone) {
-                activeUnlockedCount++;
-                return { ...node, status: 'unlocked' };
-            }
-
             lockedCount++;
-            return node; // remains locked
+            return node;
         });
 
         const mastery = Math.round((masteredCount / baseNodes.length) * 100);
-        const availability = Math.round(((masteredCount + activeUnlockedCount) / baseNodes.length) * 100);
-
         return {
             nodes: updatedNodes,
-            connections: baseConnections,
-            stats: {
-                mastery,
-                availability,
-                active: activeUnlockedCount,
-                mastered: masteredCount,
-                locked: lockedCount,
-                total: baseNodes.length
-            }
+            stats: { mastery, active: activeUnlockedCount, mastered: masteredCount, total: baseNodes.length }
         };
-
     }, [completedCourses]);
+
+    // Skill Analytics Calculation (Fullscreen View)
+    const skillStats = useMemo(() => {
+        const calculated = [];
+        let totalItemsGlobal = 0;
+        let completedItemsGlobal = 0;
+
+        Object.entries(SKILL_MAP).forEach(([courseId, meta]) => {
+            const course = getCourse(courseId);
+            if (!course) return;
+
+            const unitsData = [];
+            let courseTotal = 0;
+            let courseCompleted = 0;
+
+            if (course.units) {
+                course.units.forEach((unit, idx) => {
+                    let unitTotal = 0;
+                    let unitCompleted = 0;
+                    if (unit.items) {
+                        unit.items.forEach(item => {
+                            unitTotal++;
+                            courseTotal++;
+                            if (completedItems.includes(item.id)) {
+                                unitCompleted++;
+                                courseCompleted++;
+                            }
+                        });
+                    }
+                    unitsData.push({ id: unit.id || `unit-${idx}`, title: unit.title || `Module ${idx + 1}`, total: unitTotal, completed: unitCompleted, progress: unitTotal > 0 ? Math.round((unitCompleted / unitTotal) * 100) : 0 });
+                });
+            } else if (course.tasks) {
+                let unitTotal = 0;
+                let unitCompleted = 0;
+                course.tasks.forEach(task => {
+                    unitTotal++;
+                    courseTotal++;
+                    if (completedItems.includes(task.id)) {
+                        unitCompleted++;
+                        courseCompleted++;
+                    }
+                });
+                unitsData.push({ id: 'tasks', title: 'Core Tasks', total: unitTotal, completed: unitCompleted, progress: unitTotal > 0 ? Math.round((unitCompleted / unitTotal) * 100) : 0 });
+            }
+
+            const progress = courseTotal > 0 ? Math.round((courseCompleted / courseTotal) * 100) : 0;
+            totalItemsGlobal += courseTotal;
+            completedItemsGlobal += courseCompleted;
+
+            calculated.push({ ...meta, id: courseId, progress, total: courseTotal, completed: courseCompleted, units: unitsData, rank: getRank(progress) });
+        });
+
+        return { overall: totalItemsGlobal > 0 ? Math.round((completedItemsGlobal / totalItemsGlobal) * 100) : 0, skills: calculated.sort((a, b) => b.progress - a.progress) };
+    }, [completedItems]);
+
+    useEffect(() => {
+        if (isModalOpen && !selectedCourseId && skillStats.skills.length > 0) {
+            setSelectedCourseId(skillStats.skills[0].id);
+        }
+    }, [isModalOpen, skillStats, selectedCourseId]);
+
+    // --- EFFECT: BODY SCROLL LOCK ---
+    useEffect(() => {
+        if (isModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isModalOpen]);
+
+    const MiniStat = (
+        <div className="flex items-center gap-2">
+            <span className="text-[10px] text-zinc-500 font-mono">MASTERY</span>
+            <div className="flex items-center gap-1.5 px-1.5 py-0.5 border border-cyan-500/30 rounded bg-cyan-500/10">
+                <span className="text-xs font-bold text-cyan-400">{stats.mastery}%</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_4px_cyan] animate-pulse" />
+            </div>
+        </div>
+    );
 
     return (
         <>
-            {/* WIDGET CONTAINER */}
-            <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-cyan-950/20 to-black border border-cyan-900/30 rounded-lg transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]" />
+            <motion.div
+                layout
+                className={clsx(
+                    "relative transition-all duration-300 group overflow-hidden",
+                    !isSidebarOpen ? "bg-black" : "bg-zinc-950"
+                )}
+                style={{ clipPath: 'polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%)' }}
+            >
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-cyan-500/30 z-30" />
 
-                <div
-                    className="absolute inset-0 opacity-5 pointer-events-none rounded-lg"
-                    style={{
-                        backgroundImage: 'linear-gradient(rgba(6,182,212,0.1) 1px, transparent 1px)',
-                        backgroundSize: '100% 4px'
-                    }}
-                />
+                {/* Hardware Brackets */}
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500/20 z-30 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500/20 z-30 pointer-events-none" />
 
-                <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-cyan-500/50 rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-cyan-500/50 rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br-lg" />
+                <div className="absolute inset-0 border border-zinc-800/50 pointer-events-none" />
+                <div className={clsx("absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 z-30", isSidebarOpen ? "bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.8)]" : "bg-zinc-800")} />
 
-                <div className="relative z-20 p-5">
-                    <div className="flex items-center justify-between mb-3">
+                <div onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full h-[72px] flex items-center justify-between px-4 relative z-20 cursor-pointer select-none">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                        {/* Icon Tile - Cyber-Slat V3 */}
+                        <div className={clsx("w-12 h-12 flex items-center justify-center transition-all duration-300 flex-shrink-0 relative overflow-hidden", !isSidebarOpen ? "bg-zinc-900 border border-zinc-800" : "bg-cyan-950/20 border border-cyan-500/40 shadow-[inset_0_0_20px_rgba(6,182,212,0.15)]")}>
+                            {/* Hardware Corner Ticks */}
+                            <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-cyan-500/40" />
+                            <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-cyan-500/40" />
+
+                            {/* Scanline Animation Overlay */}
+                            <div className="absolute inset-0 pointer-events-none opacity-[0.05] bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,rgba(6,182,212,1)_1px,rgba(6,182,212,1)_2px)] bg-[length:100%_2px]" />
+                            <div
+                                className="absolute inset-0 w-full h-[2px] bg-cyan-400/20 blur-[1px] z-10"
+                                style={{ animation: 'scan 4s linear infinite' }}
+                            />
+
+                            {/* Radial Glow */}
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.1),transparent_70%)]" />
+
+                            <RiOrganizationChart size={24} className={clsx("transition-colors duration-300 relative z-20", isSidebarOpen ? "text-cyan-400" : "text-zinc-500")} />
+                        </div>
+                        <AnimatePresence mode="wait">
+                            {isSidebarOpen ? (
+                                <motion.div key="expanded" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="flex flex-col min-w-0">
+                                    <h3 className="font-black font-mono text-[13px] uppercase text-white leading-none truncate">NEURAL_TREE</h3>
+                                    <span className="text-[9px] font-mono uppercase text-cyan-500/60 mt-1 truncate">// NODE_OPS</span>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="collapsed" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="flex flex-col min-w-0">
+                                    <h3 className="font-bold font-mono text-[10px] uppercase tracking-tighter text-white/50 leading-none truncate">NEURAL_TREE</h3>
+                                    <div className="flex items-center gap-1.5 mt-1 border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md px-1.5 py-0.5 rounded-sm w-fit">
+                                        <span className="text-[8px] font-mono text-cyan-500/70 uppercase font-bold">MASTERY</span>
+                                        <span className="text-[10px] font-black text-cyan-400 leading-none">{stats.mastery}%</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="flex items-center gap-3 relative z-10">
                         <div className="flex items-center gap-2">
-                            <RiOrganizationChart className="text-cyan-400" size={16} />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.6)]">NEURAL_GRID</span>
+                            {isSidebarOpen && (
+                                <button onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }} className="w-8 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-cyan-950/30 text-zinc-500 hover:text-cyan-400">
+                                    <RiFullscreenLine size={16} />
+                                </button>
+                            )}
+                            <button onClick={(e) => { e.stopPropagation(); setIsSidebarOpen(!isSidebarOpen); }} className="w-8 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-cyan-950/30 text-zinc-500 hover:text-cyan-400">
+                                {isSidebarOpen ? <RiSubtractLine size={16} /> : <RiExpandUpDownLine size={16} />}
+                            </button>
                         </div>
-                        <div className="text-[9px] font-mono text-cyan-600/60">V.2.0.1</div>
-                    </div>
-
-                    <div className="relative h-[220px] w-full flex items-center justify-center mb-4 border border-cyan-900/30 bg-black/60 rounded overflow-hidden">
-                        <div
-                            className="absolute inset-0 opacity-10"
-                            style={{
-                                backgroundImage: 'linear-gradient(rgba(6,182,212,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.2) 1px, transparent 1px)',
-                                backgroundSize: '20px 20px'
-                            }}
-                        />
-                        <NeuralCanvas isExpanded={false} nodes={nodes} connections={connections} />
-                    </div>
-
-                    <div className="flex justify-between items-end">
-                        <div className="text-[8px] font-mono text-zinc-500 uppercase flex flex-col gap-0.5">
-                            <span className="text-cyan-600/70">Topology: <span className="text-zinc-400">Mesh</span></span>
-                            <span className="text-cyan-600/70">Mastery: <span className="text-cyan-400 font-bold">{stats.mastery}%</span></span>
-                        </div>
-
-                        <button
-                            onClick={() => setIsExpanded(true)}
-                            className="relative group/btn bg-cyan-950/30 hover:bg-cyan-600 border border-cyan-600/50 text-cyan-400 hover:text-black px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 rounded overflow-hidden hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-500" />
-                            <RiExpandDiagonalLine size={14} />
-                            <span className="relative">Access_Map</span>
-                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* EXPANDED MODAL */}
-            <AnimatePresence>
-                {isExpanded && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 backdrop-blur-2xl p-6">
-                        <div className="absolute inset-0 opacity-[0.03]" style={{
-                            backgroundImage: 'linear-gradient(rgba(6,182,212,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.5) 1px, transparent 1px)',
-                            backgroundSize: '50px 50px'
-                        }} />
+                <div className={clsx("relative transition-all duration-300 ease-in-out overflow-hidden bg-zinc-950", !isSidebarOpen ? "max-h-0 opacity-0" : "max-h-[800px] opacity-100")}>
+                    <div className="min-h-[200px] border-t border-zinc-900 relative">
+                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_bottom,transparent_50%,rgba(6,182,212,1)_50%)] bg-[length:100%_4px]" />
+                        <div className="p-6">
+                            <div className="space-y-4 mb-4">
+                                {skillStats.skills.slice(0, 5).map((skill, i) => {
+                                    const Icon = skill.icon;
+                                    return (
+                                        <div key={skill.id} className="group/item flex items-center gap-4 p-3 rounded-sm bg-black border border-zinc-800 hover:border-cyan-500/50 transition-all">
+                                            <div className={`p-1.5 rounded-sm bg-zinc-900 border ${skill.rank.border} flex-shrink-0`}>
+                                                <Icon size={16} style={{ color: skill.color }} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs font-bold font-mono text-zinc-400 group-hover/item:text-white transition-colors">{skill.name}</span>
+                                                    <span className="text-[10px] font-mono text-cyan-500">{skill.progress}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-zinc-900 rounded-sm overflow-hidden border border-zinc-800/50">
+                                                    <motion.div initial={{ width: 0 }} animate={{ width: `${skill.progress}%` }} transition={{ delay: 0.05 * i }} className="h-full bg-cyan-600 shadow-[0_0_5px_cyan]" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <button onClick={() => setIsModalOpen(true)} className="w-full py-2 bg-cyan-950/20 border border-cyan-600/50 text-cyan-400 font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-cyan-600 transition-all">ACCESS_MAP</button>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
 
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.08)_0%,transparent_70%)]" />
-
+            {isModalOpen && createPortal(
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] bg-zinc-950/50 backdrop-blur-3xl flex items-center justify-center p-4 lg:p-10 isolate"
+                        onClick={() => setIsModalOpen(false)}
+                    >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            transition={{ type: "spring", duration: 0.4, bounce: 0.3 }}
-                            className="bg-gradient-to-br from-zinc-950 via-black to-zinc-950 border border-cyan-500/30 w-full max-w-7xl h-[90vh] shadow-[0_0_80px_rgba(6,182,212,0.15)] flex relative overflow-hidden rounded-xl"
+                            className="w-full h-full max-w-7xl bg-zinc-950/90 border border-white/5 relative flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden rounded-sm"
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Animated corner accents */}
-                            <div className="absolute top-0 left-0 w-12 h-12 border-l-2 border-t-2 border-cyan-400 animate-pulse" />
-                            <div className="absolute top-0 right-0 w-12 h-12 border-r-2 border-t-2 border-cyan-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="absolute bottom-0 left-0 w-12 h-12 border-l-2 border-b-2 border-cyan-400 animate-pulse" style={{ animationDelay: '0.4s' }} />
-                            <div className="absolute bottom-0 right-0 w-12 h-12 border-r-2 border-b-2 border-cyan-400 animate-pulse" style={{ animationDelay: '0.6s' }} />
-
-                            {/* LEFT: MAIN CANVAS AREA */}
-                            <div className="flex-1 flex flex-col">
-                                {/* Header Bar */}
-                                <div className="h-20 px-8 flex items-center justify-between border-b border-cyan-900/20 bg-gradient-to-r from-cyan-950/10 via-transparent to-cyan-950/10">
-                                    <div className="flex items-center gap-6">
-                                        <div className="relative">
-                                            <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full" />
-                                            <div className="relative p-3 bg-gradient-to-br from-cyan-600/20 to-cyan-900/20 rounded-lg border border-cyan-500/40">
-                                                <RiCpuLine className="text-cyan-400" size={28} />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <h2 className="text-3xl font-black uppercase tracking-[0.15em] bg-gradient-to-r from-cyan-300 via-cyan-400 to-cyan-500 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]">
-                                                Neural Architecture Map
-                                            </h2>
-                                            <div className="flex items-center gap-4 mt-1">
-                                                <p className="text-xs font-mono text-cyan-600/70">System Diagnostics</p>
-                                                <span className="text-cyan-800">•</span>
-                                                <p className="text-xs font-mono text-cyan-600/70">Node Connectivity</p>
-                                                <span className="text-cyan-800">•</span>
-                                                <p className="text-xs font-mono text-cyan-500 animate-pulse">ACTIVE</p>
-                                            </div>
-                                        </div>
+                            {/* Header - Tactical HUD Redesign */}
+                            <div className="flex items-center justify-between px-8 py-5 border-b border-zinc-800 bg-zinc-950/80 shrink-0 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-24 h-[1px] bg-cyan-500 shadow-[0_0_10px_cyan]" />
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 flex items-center justify-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-sm">
+                                        <RiOrganizationChart size={22} />
                                     </div>
-
-                                    <button
-                                        onClick={() => setIsExpanded(false)}
-                                        className="group relative px-6 py-3 bg-gradient-to-br from-zinc-900 to-black border border-cyan-800/50 hover:border-cyan-500/80 transition-all duration-300 rounded-lg overflow-hidden"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/0 via-cyan-600/10 to-cyan-600/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="relative flex items-center gap-2">
-                                            <RiCloseLine className="text-cyan-600 group-hover:text-cyan-400 transition-colors" size={18} />
-                                            <span className="text-cyan-600 group-hover:text-cyan-400 font-mono text-sm uppercase tracking-wider transition-colors">Disconnect</span>
-                                        </div>
-                                    </button>
-                                </div>
-
-                                {/* Canvas Container */}
-                                <div className="flex-1 relative bg-[radial-gradient(ellipse_at_center,#0a0a0a_0%,#000000_100%)]">
-                                    <div className="absolute inset-0 opacity-[0.08]" style={{
-                                        backgroundImage: 'linear-gradient(rgba(6,182,212,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.4) 1px, transparent 1px)',
-                                        backgroundSize: '60px 60px'
-                                    }} />
-                                    <div className="absolute inset-0 opacity-[0.04]" style={{
-                                        backgroundImage: 'linear-gradient(rgba(6,182,212,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.6) 1px, transparent 1px)',
-                                        backgroundSize: '20px 20px'
-                                    }} />
-
-                                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-                                        backgroundImage: 'linear-gradient(transparent 50%, rgba(6,182,212,0.1) 50%)',
-                                        backgroundSize: '100% 4px'
-                                    }} />
-
-                                    <div className="absolute inset-0 flex items-center justify-center p-8">
-                                        <NeuralCanvas isExpanded={true} nodes={nodes} connections={connections} />
-                                    </div>
-
-                                    {/* Bottom info bar */}
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent backdrop-blur-sm border-t border-cyan-900/10">
-                                        <div className="flex items-center justify-between px-4">
-                                            <div className="flex items-center gap-6 text-xs font-mono">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
-                                                    <span className="text-cyan-600/70">Topology: <span className="text-cyan-400">Mesh Network</span></span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                                                    <span className="text-cyan-600/70">Availability: <span className="text-emerald-400">{stats.availability}%</span></span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
-                                                    <span className="text-cyan-600/70">Active Paths: <span className="text-amber-400">{stats.active + stats.mastered}</span></span>
-                                                </div>
-                                            </div>
-                                            <div className="text-[10px] text-cyan-800 uppercase tracking-widest">Neural Graph v3.1.4</div>
+                                    <div className="flex flex-col">
+                                        <h2 className="text-xl font-black text-white font-mono uppercase tracking-[0.1em] leading-none">NEURAL_SYNAPSE</h2>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                            <p className="text-[10px] text-cyan-500/60 font-mono tracking-widest uppercase italic">// FULL_BRAIN_MAP</p>
                                         </div>
                                     </div>
                                 </div>
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-zinc-900 border border-zinc-700 hover:border-red-500/50 hover:bg-red-500/5 text-zinc-400 hover:text-red-500 transition-all font-mono text-xs font-black uppercase tracking-widest group rounded-sm"
+                                >
+                                    <RiCloseLine size={18} className="group-hover:rotate-90 transition-transform" />
+                                    <span>DISCONNECT</span>
+                                </button>
                             </div>
 
-                            {/* RIGHT: ANALYTICS SIDEBAR */}
-                            <div className="w-[400px] bg-gradient-to-b from-zinc-950/95 to-black/95 backdrop-blur-xl border-l border-cyan-900/20 flex flex-col">
-                                {/* Stats Header */}
-                                <div className="p-6 border-b border-cyan-900/20">
-                                    <div className="text-[10px] text-cyan-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                        <RiGlobeLine size={12} />
-                                        System Analytics
+                            {/* 3-Pane Body */}
+                            <div className="flex-1 flex overflow-hidden lg:grid lg:grid-cols-[280px_1fr_320px] divide-x divide-zinc-800/50 bg-black/40 shadow-inner">
+
+                                {/* 1. MODULE SELECTION (LEFT) */}
+                                <div className="hidden lg:flex flex-col bg-zinc-900/20 overflow-hidden backdrop-blur-sm">
+                                    <div className="p-4 border-b border-zinc-800 bg-black/20">
+                                        <h3 className="text-[10px] font-black font-mono text-zinc-500 uppercase tracking-widest">// NODE_SELECTION</h3>
                                     </div>
-
-                                    {/* Dual Progress Rings */}
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        {/* Mastery */}
-                                        <div className="relative aspect-square">
-                                            <svg className="w-full h-full -rotate-90">
-                                                <circle cx="50%" cy="50%" r="45%" fill="none" stroke="rgba(6,182,212,0.1)" strokeWidth="6" />
-                                                <motion.circle
-                                                    cx="50%" cy="50%" r="45%" fill="none" stroke="#06b6d4" strokeWidth="6" strokeLinecap="round"
-                                                    strokeDasharray={`${2 * Math.PI * 45} ${2 * Math.PI * 45}`}
-                                                    initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                                                    animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - stats.mastery / 100) }}
-                                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div className="text-2xl font-black text-cyan-400">{stats.mastery}%</div>
-                                                <div className="text-[9px] text-cyan-700 uppercase">Mastery</div>
-                                            </div>
-                                        </div>
-
-                                        {/* Availability */}
-                                        <div className="relative aspect-square">
-                                            <svg className="w-full h-full -rotate-90">
-                                                <circle cx="50%" cy="50%" r="45%" fill="none" stroke="rgba(16,185,129,0.1)" strokeWidth="6" />
-                                                <motion.circle
-                                                    cx="50%" cy="50%" r="45%" fill="none" stroke="#10b981" strokeWidth="6" strokeLinecap="round"
-                                                    strokeDasharray={`${2 * Math.PI * 45} ${2 * Math.PI * 45}`}
-                                                    initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                                                    animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - stats.availability / 100) }}
-                                                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div className="text-2xl font-black text-emerald-400">{stats.availability}%</div>
-                                                <div className="text-[9px] text-emerald-700 uppercase">Available</div>
-                                            </div>
-                                        </div>
+                                    <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                                        {skillStats.skills.map(skill => (
+                                            <button
+                                                key={skill.id}
+                                                onClick={() => setSelectedCourseId(skill.id)}
+                                                className={clsx(
+                                                    "w-full p-4 rounded-sm border transition-all duration-300 text-left relative group/node overflow-hidden",
+                                                    selectedCourseId === skill.id
+                                                        ? "bg-cyan-500/10 border-cyan-500/40 text-white shadow-[0_0_15px_rgba(6,182,212,0.1)]"
+                                                        : "border-transparent text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300"
+                                                )}
+                                            >
+                                                {selectedCourseId === skill.id && (
+                                                    <motion.div
+                                                        layoutId="node-active-bg"
+                                                        className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent pointer-events-none"
+                                                    />
+                                                )}
+                                                {selectedCourseId === skill.id && (
+                                                    <motion.div layoutId="node-active" className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 shadow-[0_0_12px_cyan] z-20" />
+                                                )}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs font-black font-mono tracking-tighter uppercase">{skill.name}</span>
+                                                    <span className={clsx("text-[10px] font-mono", skill.rank.color)}>{skill.rank.label}</span>
+                                                </div>
+                                                <div className="h-1 bg-zinc-950 rounded-full overflow-hidden">
+                                                    <div className={clsx("h-full transition-all duration-500", selectedCourseId === skill.id ? "bg-cyan-500 shadow-[0_0_5px_cyan]" : "bg-zinc-800")} style={{ width: `${skill.progress}%` }} />
+                                                </div>
+                                            </button>
+                                        ))}
                                     </div>
-
-                                    <div className="text-center text-[10px] text-cyan-600/60 uppercase tracking-wide">Skill Matrix Synchronized</div>
                                 </div>
 
-                                {/* Scrollable Stats */}
-                                <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-cyan-900/30 scrollbar-track-transparent">
-                                    {/* Network Overview */}
-                                    <div>
-                                        <div className="text-[10px] text-cyan-600 uppercase tracking-wider mb-3">Network Overview</div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between p-3 bg-cyan-950/10 border border-cyan-900/20 rounded">
-                                                <div className="flex items-center gap-2">
-                                                    <RiCheckLine className="text-amber-500" size={14} />
-                                                    <span className="text-xs text-zinc-300">Mastered</span>
-                                                </div>
-                                                <span className="text-lg font-black text-amber-400">{stats.mastered}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between p-3 bg-cyan-950/10 border border-cyan-900/20 rounded">
-                                                <div className="flex items-center gap-2">
-                                                    <RiDashboardLine className="text-cyan-500" size={14} />
-                                                    <span className="text-xs text-zinc-300">Active/Unlocked</span>
-                                                </div>
-                                                <span className="text-lg font-black text-cyan-400">{stats.active}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between p-3 bg-cyan-950/10 border border-cyan-900/20 rounded">
-                                                <div className="flex items-center gap-2">
-                                                    <RiLockLine className="text-zinc-600" size={14} />
-                                                    <span className="text-xs text-zinc-300">Locked</span>
-                                                </div>
-                                                <span className="text-lg font-black text-zinc-500">{stats.locked}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {/* 2. CORE DIAGNOSTICS (CENTER) */}
+                                <div className="flex-1 flex flex-col items-center justify-center p-8 lg:p-12 relative overflow-hidden bg-black/20">
+                                    {/* Background Grid & Scanline */}
+                                    <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(6,182,212,0.4)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.4)_1px,transparent_1px)] bg-[size:32px_32px]" />
+                                    <div className="absolute inset-0 w-full h-[1px] bg-cyan-400/10 blur-[1px] z-10 animate-scan" style={{ animationDuration: '8s' }} />
 
-                                    {/* Node Details */}
-                                    <div>
-                                        <div className="text-[10px] text-cyan-600 uppercase tracking-wider mb-3">Node Details</div>
-                                        <div className="space-y-2">
-                                            {nodes.map(node => (
-                                                <div
-                                                    key={node.id}
-                                                    className={`p-3 rounded border transition-all duration-300 ${node.status === 'mastered'
-                                                            ? 'bg-gradient-to-r from-amber-950/30 to-amber-900/10 border-amber-900/40 hover:border-amber-500/60'
-                                                            : node.status === 'active' || node.status === 'unlocked'
-                                                                ? 'bg-gradient-to-r from-cyan-950/30 to-cyan-900/10 border-cyan-900/40 hover:border-cyan-500/60'
-                                                                : 'bg-zinc-950/50 border-zinc-800/30 hover:border-zinc-700/50'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={`w-2 h-2 rounded-full ${node.status === 'mastered' ? 'bg-amber-500 shadow-[0_0_8px_#f59e0b]' :
-                                                                    node.status === 'active' ? 'bg-cyan-500 shadow-[0_0_8px_#06b6d4]' :
-                                                                        node.status === 'unlocked' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' :
-                                                                            'bg-zinc-700'
-                                                                }`} />
-                                                            <span className={`text-xs font-medium ${node.status === 'mastered' ? 'text-amber-400' :
-                                                                    node.status === 'active' || node.status === 'unlocked' ? 'text-cyan-400' :
-                                                                        'text-zinc-600'
-                                                                }`}>{node.fullName}</span>
+                                    {selectedCourseId ? (() => {
+                                        const skill = skillStats.skills.find(s => s.id === selectedCourseId);
+                                        return (
+                                            <motion.div
+                                                key={selectedCourseId}
+                                                initial={{ opacity: 0, scale: 0.98 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="relative z-20 flex flex-col items-center text-center max-w-lg w-full"
+                                            >
+                                                {/* Large Icon Container */}
+                                                <div className="relative mb-10">
+                                                    <div className="absolute inset-0 bg-cyan-500/20 blur-[60px] rounded-full animate-pulse" />
+                                                    <div className={clsx(
+                                                        "w-40 h-40 flex items-center justify-center rounded-sm bg-black border-2 relative overflow-hidden",
+                                                        skill.rank.border
+                                                    )}>
+                                                        {/* Corner Decorations */}
+                                                        <div className="absolute top-1 left-1 w-2 h-2 border-t-2 border-l-2 border-cyan-500/50" />
+                                                        <div className="absolute bottom-1 right-1 w-2 h-2 border-b-2 border-r-2 border-cyan-500/50" />
+
+                                                        <skill.icon size={80} style={{ color: skill.color }} className="relative z-10 drop-shadow-[0_0_20px_rgba(6,182,212,0.4)]" />
+
+                                                        {/* Frequency Lines Animation */}
+                                                        <div className="absolute inset-0 pointer-events-none opacity-10">
+                                                            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                                                <path d="M 0 50 Q 25 20, 50 50 T 100 50" fill="none" stroke="currentColor" strokeWidth="0.5" className="animate-pulse" />
+                                                            </svg>
                                                         </div>
-                                                        <span className={`text-[9px] uppercase px-2 py-0.5 rounded ${node.status === 'mastered' ? 'bg-amber-500/20 text-amber-400' :
-                                                                node.status === 'active' ? 'bg-cyan-500/20 text-cyan-400' :
-                                                                    node.status === 'unlocked' ? 'bg-emerald-500/20 text-emerald-400' :
-                                                                        'bg-zinc-800/50 text-zinc-600'
-                                                            }`}>{node.status}</span>
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
 
-                                    {/* Legend */}
-                                    <div className="pt-4 border-t border-cyan-900/20">
-                                        <div className="text-[10px] text-cyan-600 uppercase tracking-wider mb-3">Status Legend</div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-3 p-2 rounded hover:bg-amber-950/10 transition-colors">
-                                                <div className="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-[0_0_8px_#f59e0b] animate-pulse" />
-                                                <span className="text-xs text-amber-400 font-medium">Mastered - Course Completed</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-2 rounded hover:bg-cyan-950/10 transition-colors">
-                                                <div className="w-2.5 h-2.5 bg-cyan-500 rounded-full shadow-[0_0_8px_#06b6d4] animate-pulse" />
-                                                <span className="text-xs text-cyan-400 font-medium">Active - Currently Learning</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-2 rounded hover:bg-emerald-950/10 transition-colors">
-                                                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]" />
-                                                <span className="text-xs text-emerald-400 font-medium">Unlocked - Prerequisites Done</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 p-2 rounded hover:bg-zinc-900/20 transition-colors">
-                                                <div className="w-2.5 h-2.5 bg-zinc-700 rounded-full" />
-                                                <span className="text-xs text-zinc-500 font-medium">Locked - Prerequisites Pending</span>
-                                            </div>
+                                                <h3 className="text-6xl font-black text-white font-mono uppercase tracking-tighter mb-6 leading-none shadow-cyan-500/20 drop-shadow-lg">
+                                                    {skill.name}
+                                                </h3>
+
+                                                <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-sm mb-12 divide-x divide-zinc-800">
+                                                    <div className="px-6 py-2.5 flex items-center gap-3">
+                                                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">MASTERY_LVL</span>
+                                                        <span className="text-xl font-black text-cyan-400 font-mono tracking-tighter">{skill.progress}%</span>
+                                                    </div>
+                                                    <div className="px-6 py-2.5 flex items-center gap-3">
+                                                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em]">OPERATOR_RANK</span>
+                                                        <span className={clsx("text-xl font-black font-mono tracking-tighter", skill.rank.color)}>{skill.rank.label}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full space-y-3 p-6 bg-zinc-900/40 border border-zinc-800 rounded-sm relative backdrop-blur-sm shadow-xl">
+                                                    <div className="absolute top-0 left-0 w-10 h-[1px] bg-cyan-500" />
+                                                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">
+                                                        <span>SYNAPSE_CAPACITY</span>
+                                                        <span className="text-cyan-500">{skill.completed} / {skill.total} UNITS</span>
+                                                    </div>
+                                                    <div className="h-3 bg-zinc-950 rounded-[2px] overflow-hidden border border-zinc-800/50 p-0.5 shadow-inner">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${skill.progress}%` }}
+                                                            className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })() : (
+                                        <div className="text-center opacity-30">
+                                            <RiFocus2Line size={64} className="mx-auto mb-4 animate-spin-slow" />
+                                            <p className="font-mono text-sm uppercase tracking-[0.3em]">Awaiting_Input</p>
                                         </div>
+                                    )}
+                                </div>
+
+                                {/* 3. UNIT SEGMENTS (RIGHT) */}
+                                <div className="hidden lg:flex flex-col bg-zinc-900/20 overflow-hidden backdrop-blur-sm">
+                                    <div className="p-4 border-b border-zinc-800 bg-black/20">
+                                        <h3 className="text-[10px] font-black font-mono text-zinc-500 uppercase tracking-widest">// UNIT_BREAKDOWN</h3>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-black/10">
+                                        {selectedCourseId ? (() => {
+                                            const skill = skillStats.skills.find(s => s.id === selectedCourseId);
+                                            return skill.units.map((unit, i) => (
+                                                <motion.div
+                                                    key={unit.id}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: i * 0.05 }}
+                                                    className="group/unit p-4 bg-zinc-950/40 border border-zinc-800 hover:border-cyan-500/30 transition-all rounded-sm shadow-sm"
+                                                >
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div className="flex flex-col">
+                                                            <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">UNIT_{String(i + 1).padStart(2, '0')}</p>
+                                                            <h4 className="text-[13px] font-black text-white transition-colors uppercase tracking-tight leading-none">{unit.title}</h4>
+                                                        </div>
+                                                        <div className="px-2 py-1 bg-cyan-950/40 border border-cyan-500/30 rounded-sm">
+                                                            <span className="text-xs font-black font-mono text-cyan-400 tabular-nums">{unit.progress}%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-4 h-1.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/50 p-[1px] shadow-inner">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${unit.progress}%` }}
+                                                            className="h-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-all duration-700"
+                                                        />
+                                                    </div>
+                                                </motion.div>
+                                            ));
+                                        })() : (
+                                            <div className="h-full flex items-center justify-center">
+                                                <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">NO_MODULE_SELECTED</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                    </motion.div>
+                </AnimatePresence>,
+                document.body
+            )}
         </>
     );
 }

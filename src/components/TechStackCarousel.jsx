@@ -85,7 +85,7 @@ export default function TechStackCarousel() {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes scroll {
                     0% { transform: translateX(0); }
                     100% { transform: translateX(-50%); }

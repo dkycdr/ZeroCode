@@ -8,7 +8,8 @@ import CourseCard from '../components/dashboard/CourseCard';
 import ResumeProtocol from '../components/dashboard/ResumeProtocol';
 import ResourceMonitor from '../components/dashboard/ResourceMonitor';
 import ArchivesWidget from '../components/dashboard/ArchivesWidget';
-import { SkillAnalyticsWidget } from '../components/dashboard/SkillAnalyticsWidget';
+// import { SkillAnalyticsWidget } from '../components/dashboard/SkillAnalyticsWidget';
+import NeuralTechTreeWidget from '../components/dashboard/NeuralTechTreeWidget';
 import CyberDeckWidget from '../components/dashboard/CyberDeckWidget';
 
 import { useProgress } from '../contexts/ProgressProvider';
@@ -47,7 +48,8 @@ export default function Dashboard() {
                         {/* LEFT COLUMN: Tactical Sidebar */}
                         <div className="lg:col-span-1 space-y-6">
                             <ResourceMonitor />
-                            <SkillAnalyticsWidget />
+                            {/* <SkillAnalyticsWidget /> */}
+                            <NeuralTechTreeWidget />
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2"><ArchivesWidget /></div>
                                 <div className="col-span-2"><CyberDeckWidget /></div>

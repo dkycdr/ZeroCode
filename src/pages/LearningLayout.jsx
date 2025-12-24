@@ -558,9 +558,44 @@ export default function LearningLayout() {
         if (courseId === 'git') {
             results = tasks.map(task => {
                 try {
-                    const stateString = JSON.stringify(virtualGitState);
-                    const regex = new RegExp(task.regex);
-                    return regex.test(stateString);
+                    const state = virtualGitState;
+                    if (!state) return false;
+
+                    const regexStr = task.regex;
+                    if (!regexStr) return false;
+
+                    // Specialized prefix handling
+                    if (typeof regexStr === 'string' && regexStr.includes(':')) {
+                        const colonIndex = regexStr.indexOf(':');
+                        const prefix = regexStr.substring(0, colonIndex);
+                        const pattern = regexStr.substring(colonIndex + 1);
+
+                        switch (prefix) {
+                            case 'COMMAND':
+                                return state.history?.some(h =>
+                                    h.type === 'command' && new RegExp(pattern, 'i').test(h.content)
+                                );
+                            case 'BRANCH_EXISTS':
+                                return state.branches?.includes(pattern);
+                            case 'BRANCH_ACTIVE':
+                                return state.branch === pattern;
+                            case 'STAGED':
+                                return state.staging?.includes(pattern);
+                            case 'COMMIT_MSG':
+                                return state.commits?.some(c => new RegExp(pattern).test(c.message));
+                            case 'COMMIT_COUNT':
+                                return state.commits?.length >= parseInt(pattern);
+                            case 'FILE_EXISTS':
+                                return state.files?.some(f => f.name === pattern);
+                            case 'FILE_CONTENT':
+                                const [fName, ...cRegexParts] = pattern.split(':');
+                                const file = state.files?.find(f => f.name === fName);
+                                return file && new RegExp(cRegexParts.join(':')).test(file.content);
+                        }
+                    }
+
+                    // Fallback: match against JSON dump
+                    return new RegExp(task.regex).test(JSON.stringify(state));
                 } catch (e) {
                     return false;
                 }
@@ -671,11 +706,13 @@ export default function LearningLayout() {
                             />
                         ) : activeEngine === 'TERMINAL' ? (
                             <Terminal
+                                key={itemId}
                                 files={files}
                                 setFiles={setFiles}
                                 folders={folders}
                                 setFolders={setFolders}
                                 onStateChange={setVirtualGitState}
+                                initialGitState={item.initialGitState} // Pass seed state
                             />
                         ) : (
                             <PreviewPane

@@ -1,14 +1,12 @@
-import { unit1Introduction } from './unit-1-introduction';
-import { unit2BasicCommands } from './unit-2-basic-commands';
-import { unit3Github } from './unit-3-github';
-import { unit4Project } from './unit-4-project';
-import { unit5BranchingMerging } from './unit-5-branching-merging';
-import { unit6Remote } from './unit-6-remote';
-import { unit7Collaboration } from './unit-7-collaboration';
-import { unit8RebaseCherrypick } from './unit-8-rebase-cherrypick';
-import { unit9StashClean } from './unit-9-stash-clean';
-import { unit10HooksAutomation } from './unit-10-hooks-automation';
-import { unit11AdvancedWorkflows } from './unit-11-advanced-workflows';
+import { unit1Introduction } from './unit-01-introduction/index.js';
+import { unit2Workflow } from './unit-02-workflow/index.js';
+import { unit3Branching } from './unit-03-branching/index.js';
+import { unit4Remote } from './unit-04-remote/index.js';
+import { unit5Advanced } from './unit-05-advanced/index.js';
+import { unit4Project } from './unit-4-project.js';
+import { unit7Collaboration } from './unit-7-collaboration.js';
+import { unit10HooksAutomation } from './unit-10-hooks-automation.js';
+import { unit06Team } from './unit-06-team/index.js';
 
 export const gitCourse = {
     id: 'git',
@@ -19,15 +17,13 @@ export const gitCourse = {
     duration: '20 hours',
     units: [
         unit1Introduction,
-        unit2BasicCommands,
-        unit3Github,
+        unit2Workflow,
+        unit3Branching,
+        unit4Remote,
+        unit5Advanced,
+        unit06Team,
         unit4Project,
-        unit5BranchingMerging,
-        unit6Remote,
         unit7Collaboration,
-        unit8RebaseCherrypick,
-        unit9StashClean,
-        unit10HooksAutomation,
-        unit11AdvancedWorkflows
+        unit10HooksAutomation
     ]
 };

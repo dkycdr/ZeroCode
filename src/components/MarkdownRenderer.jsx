@@ -30,7 +30,8 @@ mermaid.initialize({
 // Mermaid Diagram Component
 // Robust Mermaid Component
 // Robust Mermaid Component (DOM-based)
-const MermaidDiagram = ({ chart }) => {
+// Robust Mermaid Component (DOM-based)
+const MermaidDiagram = ({ chart, maxWidth = '100%' }) => {
     const elementRef = React.useRef(null);
     const [isRendered, setIsRendered] = React.useState(false);
     const [error, setError] = React.useState(null);
@@ -42,7 +43,7 @@ const MermaidDiagram = ({ chart }) => {
             try {
                 // Reset content
                 elementRef.current.removeAttribute('data-processed');
-                elementRef.current.innerHTML = chart;
+                elementRef.current.textContent = chart;
 
                 // Run mermaid on the element
                 await mermaid.run({
@@ -65,7 +66,10 @@ const MermaidDiagram = ({ chart }) => {
     }, [chart]);
 
     return (
-        <div className="my-8 bg-[#1a202c] p-6 rounded-lg border border-gray-700 shadow-xl overflow-x-auto relative min-h-[100px] w-full">
+        <div
+            className="my-10 bg-[#1a202c] p-6 rounded-lg border border-gray-700 shadow-xl overflow-x-auto relative min-h-[100px] mx-auto"
+            style={{ maxWidth: maxWidth }}
+        >
             {error ? (
                 <div className="text-red-400 font-mono text-sm p-4 border border-red-900 bg-red-900/20 rounded">
                     Mermaid Error: {error}
@@ -73,7 +77,7 @@ const MermaidDiagram = ({ chart }) => {
             ) : (
                 <div
                     ref={elementRef}
-                    className="mermaid opacity-100 transition-opacity duration-300"
+                    className="mermaid opacity-100 transition-opacity duration-300 flex justify-center"
                     style={{ visibility: isRendered ? 'visible' : 'hidden' }}
                 />
             )}
@@ -98,18 +102,18 @@ const MarkdownRenderer = ({ content, className = '' }) => {
             prose prose-invert max-w-none 
             
             /* Clean, Readable Fonts */
-            prose-p:text-gray-300 prose-p:text-base prose-p:leading-7 prose-p:mb-5
+            prose-p:text-gray-300 prose-p:text-base prose-p:leading-8 prose-p:mb-8
 
             /* Headings */
             prose-headings:font-bold prose-headings:text-white
-            prose-h1:text-3xl prose-h1:tracking-tight prose-h1:mb-8 prose-h1:pb-4 prose-h1:border-b prose-h1:border-gray-800
-            prose-h2:text-xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-blue-400 prose-h2:flex prose-h2:items-center
-            prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-4 prose-h3:text-gray-200
+            prose-h1:text-3xl prose-h1:tracking-tight prose-h1:mb-10 prose-h1:pb-6 prose-h1:border-b prose-h1:border-gray-800
+            prose-h2:text-xl prose-h2:mt-16 prose-h2:mb-8 prose-h2:text-blue-400 prose-h2:flex prose-h2:items-center
+            prose-h3:text-lg prose-h3:mt-10 prose-h3:mb-6 prose-h3:text-gray-200
 
             /* Lists - The "Points" view (Tighter) */
-            prose-ul:my-6 prose-ul:ml-0 prose-ul:pl-0 
-            prose-li:list-none prose-li:mb-3 prose-li:bg-gray-800/30 prose-li:px-4 prose-li:py-3 prose-li:rounded-lg prose-li:border prose-li:border-gray-800/50
-            prose-li:flex prose-li:items-start prose-li:gap-3
+            prose-ul:my-8 prose-ul:ml-0 prose-ul:pl-0 
+            prose-li:list-none prose-li:mb-5 prose-li:bg-gray-800/30 prose-li:px-4 prose-li:py-4 prose-li:rounded-lg prose-li:border prose-li:border-gray-800/50
+            prose-li:flex prose-li:items-start prose-li:gap-4
             
             /* Quotes */
             prose-blockquote:bg-blue-900/10 prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:my-8 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
@@ -123,7 +127,7 @@ const MarkdownRenderer = ({ content, className = '' }) => {
                     li: ({ children }) => (
                         <li className="flex items-start gap-3">
                             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
-                            <div className="flex-1 text-base leading-relaxed text-gray-300">
+                            <div className="flex-1 text-base leading-8 text-gray-300">
                                 {children}
                             </div>
                         </li>
@@ -140,7 +144,13 @@ const MarkdownRenderer = ({ content, className = '' }) => {
 
                         // Handle Mermaid diagrams
                         if (!inline && language === 'mermaid') {
-                            return <MermaidDiagram chart={String(children).trim()} />;
+                            const chartContent = String(children).trim();
+                            // Parse width directive: %% width: 400px %%
+                            const widthMatch = chartContent.match(/^%%\s*width:\s*(\d+px|%|auto)\s*%%\n?/);
+                            const maxWidth = widthMatch ? widthMatch[1] : '800px'; // Default to 800px if not specified
+                            const cleanChart = chartContent.replace(/^%%\s*width:.*?%%\n?/, '').trim();
+
+                            return <MermaidDiagram chart={cleanChart} maxWidth={maxWidth} />;
                         }
 
                         // Handle regular code blocks

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useVirtualGit } from '../../hooks/useVirtualGit';
 
 export default function Terminal({ files, setFiles, folders, setFolders, onStateChange }) {
-    const { history, executeCommand, gitState } = useVirtualGit(files, setFiles, folders, setFolders);
+    const { history, executeCommand, gitState, cwd } = useVirtualGit(files, setFiles, folders, setFolders);
     const [input, setInput] = useState('');
     const bottomRef = useRef(null);
     const inputRef = useRef(null);
@@ -10,10 +10,10 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
     // Sync state back to parent (for validation)
     useEffect(() => {
         if (onStateChange) {
-            // Pass both git internal state AND terminal history for validation
-            onStateChange({ ...gitState, history });
+            // Pass internal state, history, AND virtual files/folders for deep validation
+            onStateChange({ ...gitState, history, files, folders });
         }
-    }, [gitState, history, onStateChange]);
+    }, [gitState, history, files, folders, onStateChange]);
 
     // Auto-scroll logic
     useEffect(() => {
@@ -59,7 +59,8 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
                         {line.type === 'command' ? (
                             <div className="flex items-center gap-2 opacity-80 mt-2 mb-1">
                                 <span className="text-green-500 font-bold">➜</span>
-                                <span className="text-cyan-500">~/project</span>
+                                {/* Extract path from history command string which is formatted as "path $ command" */}
+                                <span className="text-cyan-500">{line.content.split('$')[0].trim()}</span>
                                 <span className="text-zinc-600">$</span>
                                 <span className="text-white font-bold">{line.content.split('$')[1]}</span>
                             </div>
@@ -70,6 +71,7 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
                                     __html: line.content
                                         .replace(/\x1b\[32m/g, '<span class="text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">')
                                         .replace(/\x1b\[31m/g, '<span class="text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">')
+                                        .replace(/\x1b\[33m/g, '<span class="text-yellow-300 font-bold drop-shadow-[0_0_5px_rgba(253,224,71,0.5)]">')
                                         .replace(/\x1b\[34m/g, '<span class="text-blue-400 font-bold">')
                                         .replace(/\x1b\[0m/g, '</span>')
                                 }} />
@@ -84,9 +86,15 @@ export default function Terminal({ files, setFiles, folders, setFolders, onState
 
             {/* Input Line */}
             <div className="flex items-center gap-2 text-zinc-300 mt-2 relative z-20">
-                <span className="text-green-500 font-bold">➜</span>
-                <span className="text-cyan-500">~/project</span>
-                <span className="text-zinc-600">$</span>
+                {gitState.rebaseMode ? (
+                    <span className="text-yellow-400 font-bold tracking-wider">[REBASE_MODE]</span>
+                ) : (
+                    <>
+                        <span className="text-green-500 font-bold">➜</span>
+                        <span className="text-cyan-500">{cwd}</span>
+                        <span className="text-zinc-600">$</span>
+                    </>
+                )}
                 <input
                     ref={inputRef}
                     type="text"

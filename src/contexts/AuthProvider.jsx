@@ -266,16 +266,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const loginWithGoogle = async (googleToken) => {
+    const loginWithGoogle = async (googleData) => {
         try {
-            // Decode JWT token to get user info
-            const base64Url = googleToken.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
+            let googleUser;
 
-            const googleUser = JSON.parse(jsonPayload);
+            // Check if input is a JWT string (from legacy GoogleLogin) or Profile Object (from useGoogleLogin)
+            if (typeof googleData === 'string') {
+                // Decode JWT token to get user info
+                const base64Url = googleData.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                googleUser = JSON.parse(jsonPayload);
+            } else {
+                // Assume it's already a profile object from UserInfo endpoint
+                googleUser = googleData;
+            }
+
             const { email, name, sub: googleId, picture } = googleUser;
 
             // Check if user exists
