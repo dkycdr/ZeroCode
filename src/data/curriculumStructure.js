@@ -1,3 +1,4 @@
+// BUILD_TRIGGER: 2025-12-26-05:22
 // ZeroCode Curriculum Structure
 // Flow: Lesson → Quiz → Project → Informational (like Codecademy)
 
@@ -49,7 +50,7 @@ export const courses = {
         prerequisites: [],
         shortDesc: 'Structure, Semantic tags, Forms, and Accessibility',
         icon: 'html5',
-        totalUnits: 4
+        totalUnits: 11
     },
     'css3': {
         id: 'css3',
@@ -60,7 +61,7 @@ export const courses = {
         prerequisites: [], // Beginner courses are always accessible
         shortDesc: 'Box Model, Flexbox, Grid, and Animations',
         icon: 'css3',
-        totalUnits: 5
+        totalUnits: 17
     },
     'js-basics': {
         id: 'js-basics',
@@ -71,7 +72,7 @@ export const courses = {
         prerequisites: [], // Beginner courses are always accessible
         shortDesc: 'Variables, Functions, Conditionals, Loops',
         icon: 'javascript',
-        totalUnits: 6
+        totalUnits: 11
     },
     'git': {
         id: 'git',
@@ -82,7 +83,7 @@ export const courses = {
         prerequisites: [],
         shortDesc: 'Version Control, Commits, Branches, Pull Requests',
         icon: 'git',
-        totalUnits: 4
+        totalUnits: 6
     },
     'tailwind': {
         id: 'tailwind',
@@ -93,13 +94,24 @@ export const courses = {
         prerequisites: [], // Beginner courses are always accessible
         shortDesc: 'Utility-first CSS, Responsive Design, Components',
         icon: 'tailwind',
-        totalUnits: 4
+        totalUnits: 10
+    },
+    'python': {
+        id: 'python',
+        title: 'Python Fundamentals',
+        level: 'beginner',
+        order: 6,
+        duration: '7 hours',
+        prerequisites: [],
+        shortDesc: 'Syntax, Data Structures, Functions',
+        icon: 'python',
+        totalUnits: 12
     },
     'dom': {
         id: 'dom',
         title: 'DOM Manipulation',
         level: 'intermediate',
-        order: 6,
+        order: 7,
         duration: '5 hours',
         prerequisites: ['js-basics'],
         shortDesc: 'Selectors, Events, Dynamic Content',
@@ -150,17 +162,7 @@ export const courses = {
         icon: 'mysql',
         totalUnits: 5
     },
-    'python': {
-        id: 'python',
-        title: 'Python Fundamentals',
-        level: 'intermediate',
-        order: 11,
-        duration: '7 hours',
-        prerequisites: ['js-basics'],
-        shortDesc: 'Syntax, Data Structures, Functions',
-        icon: 'python',
-        totalUnits: 5
-    },
+
     'vue': {
         id: 'vue',
         title: 'Vue.js Mastery',

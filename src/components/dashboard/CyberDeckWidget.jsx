@@ -4,7 +4,7 @@ import { RiTerminalBoxLine, RiFullscreenLine, RiFullscreenExitLine, RiSubtractLi
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProgress } from '../../contexts/ProgressProvider';
 import { useNotes } from '../../contexts/NotesProvider';
-import { getCourse } from '../../data/courses';
+import { getCourse } from '../../data/curriculumStructure';
 import clsx from 'clsx';
 
 export default function CyberDeckWidget() {

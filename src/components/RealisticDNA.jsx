@@ -2,7 +2,13 @@ import { useRef, useEffect } from 'react';
 
 // Realistic 2D Canvas DNA Component - SCOPED TO SECTION
 // CYBERPUNK EDITION: Neon Colors + Infinite Scroll
-export default function RealisticDNA() {
+export default function RealisticDNA({
+    color1 = '#00f0ff',
+    color2 = '#bd00ff',
+    opacity = 1,
+    helixRadius = 80,
+    pulse = true
+}) {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
 
@@ -15,7 +21,7 @@ export default function RealisticDNA() {
         let animationFrameId;
 
         // Configuration
-        const helixRadius = 80;
+        const helixRadiusVal = helixRadius;
         const separation = 20;
 
         const resize = () => {
@@ -65,21 +71,21 @@ export default function RealisticDNA() {
                 const y = (i * separation) - globalYOffset + centerY;
                 const angle = t + rotationOffset;
 
-                const x1 = Math.cos(angle) * helixRadius;
-                const z1 = Math.sin(angle) * helixRadius;
-                const x2 = Math.cos(angle + Math.PI) * helixRadius;
-                const z2 = Math.sin(angle + Math.PI) * helixRadius;
+                const x1 = Math.cos(angle) * helixRadiusVal;
+                const z1 = Math.sin(angle) * helixRadiusVal;
+                const x2 = Math.cos(angle + Math.PI) * helixRadiusVal;
+                const z2 = Math.sin(angle + Math.PI) * helixRadiusVal;
 
-                // Cyberpunk Colors: Neon Cyan & Purple
+                // Cyberpunk Colors: Dynamic
                 particles.push({
                     x: centerX + x1, y, z: z1,
-                    color: '#00f0ff', // Cyber Cyan
+                    color: color1,
                     type: 'node', size: 3
                 });
 
                 particles.push({
                     x: centerX + x2, y, z: z2,
-                    color: '#bd00ff', // Cyber Purple
+                    color: color2,
                     type: 'node', size: 3
                 });
 

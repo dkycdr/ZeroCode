@@ -1,229 +1,430 @@
-# 🚀 ZeroCode - Learn to Code from Zero
+# 🚀 ZeroCode - Interactive Cyberpunk Coding Academy
 
-**Platform pembelajaran coding interaktif dengan 16 kursus lengkap, editor kode live, dan komunitas support.**
+<div align="center">
 
-> Dari HTML dasar sampai CI/CD DevOps - semua yang kamu butuh untuk jadi developer profesional!
+**Platform E-Learning Interaktif dengan Tema Cyberpunk**  
+*Dari Absolute Beginner sampai Full-Stack Developer*
+
+[![Version](https://img.shields.io/badge/version-2.7.0--beta.1-cyan.svg)](https://zerocode.vercel.app)
+[![Courses](https://img.shields.io/badge/courses-19-emerald.svg)](#-katalog-19-kursus-lengkap)
+[![Tech](https://img.shields.io/badge/tech-React%2019-blue.svg)](#%EF%B8%8F-tech-stack-detail)
+
+[🌐 Live Demo](https://zerocode.vercel.app) | [📱 WhatsApp](https://wa.me/6283875727384)
+
+</div>
+
+---
+
+## 📖 Daftar Isi
+
+- [Overview](#-overview)
+- [19 Kursus Lengkap](#-katalog-19-kursus-lengkap)
+- [Fitur Platform](#-fitur-utama)
+- [Gamification System](#-gamification--xp-system)
+- [Tech Stack](#%EF%B8%8F-tech-stack-detail)
+- [Arsitektur Project](#-arsitektur-project)
+- [Pricing](#-pricing-tiers)
+- [Cara Memulai](#-cara-memulai)
+
+---
+
+## 🌐 Overview
+
+**ZeroCode** adalah platform pembelajaran coding interaktif dengan estetika **Cyberpunk/Futuristic HUD**. Platform ini menyediakan:
+
+- ✅ **19 Kursus** dari HTML sampai DevOps CI/CD
+- ✅ **Browser-based IDE** dengan Monaco Editor
+- ✅ **Multi-Engine Execution** (HTML/CSS/JS, Python, TypeScript, Vue, Git Terminal)
+- ✅ **AI Chatbot "Nebula"** powered by Google Gemini
+- ✅ **Gamification** dengan XP, Level, Streak, dan Leaderboard
+- ✅ **Community Forum** untuk diskusi dan Q&A
+- ✅ **Specialization Tracks** (Frontend, Backend, Full-Stack)
+
+---
+
+## 📚 Katalog 19 Kursus Lengkap
+
+### 🟢 Beginner Track (Starter Pack)
+| Kursus | Unit | Deskripsi |
+|--------|------|-----------|
+| **HTML5** | 9 Units (~95 items) | Struktur web, semantics, forms, multimedia, a11y |
+| **CSS3** | 17 Units (~170+ items) | Box model, Flexbox, Grid, animations, container queries |
+| **JavaScript Basics** | 13 Units | Variables, functions, control flow, arrays, objects |
+| **Git & GitHub** | 10+ Units (~70 items) | Version control, branching, merging, rebase |
+| **Tailwind CSS** | 11 Units | Utility-first CSS framework |
+| **PostgreSQL** | 7 Units (~23 items) | Relational database fundamentals |
+
+### 🔵 Intermediate Track (Developer Pro)
+| Kursus | Unit | Deskripsi |
+|--------|------|-----------|
+| **DOM Manipulation** | 7 Units | Event handling, DOM traversal |
+| **ES6+ Modern JS** | 11 Units | Arrow functions, async/await, modules |
+| **React.js** | 7+ Units (~17 items) | Components, hooks, state management |
+| **PHP** | 8 Units | Server-side scripting |
+| **MySQL** | 6 Units | SQL queries, joins, normalization |
+| **Python** | 8 Units | Scripting & automation with Pyodide |
+| **Vue.js** | 7 Units (~23 items) | Progressive JavaScript framework |
+
+### 🟣 Advanced Track (Full-Stack Elite)
+| Kursus | Unit | Deskripsi |
+|--------|------|-----------|
+| **TypeScript** | 8 Units | Type-safe JavaScript |
+| **Node.js** | 14 Units | Server-side JavaScript runtime |
+| **Express.js** | 7 Units (~23 items) | Backend web framework |
+| **MongoDB** | 7 Units | NoSQL database |
+| **Next.js** | 8 Units | Full-stack React framework |
+| **CI/CD & DevOps** | 7 Units | Pipeline, deployment, automation |
 
 ---
 
 ## ✨ Fitur Utama
 
-### 📚 16 Kursus Lengkap
-- **Frontend**: HTML5, CSS3, JavaScript, React, TypeScript, Tailwind CSS
-- **Backend**: Node.js, Express, PHP, Python
-- **Database**: MySQL, MongoDB
-- **DevOps**: Git, CI/CD Pipeline
-- **Full-Stack**: Next.js, TypeScript, dan lebih banyak lagi
+### 💻 Multi-Engine Code Execution
 
-### 💻 Interactive Code Editor
-- **Live Preview** - Lihat hasil code langsung saat kamu ketik
-- **Multi-file Support** - Edit HTML, CSS, JavaScript dalam satu tempat
-- **Python Support** - Run Python code langsung di browser (Pyodide)
-- **Real-time Validation** - Instant feedback untuk setiap task
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Course Type          │  Engine        │  Technology        │
+├─────────────────────────────────────────────────────────────┤
+│  HTML/CSS/JavaScript  │  Preview       │  iframe injection  │
+│  Python               │  PYTHON        │  Pyodide (WASM)    │
+│  TypeScript           │  Preview       │  ts.transpileModule│
+│  Vue.js               │  Preview       │  vue3-sfc-loader   │
+│  Git/Node/PHP         │  TERMINAL      │  Virtual Terminal  │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### 📊 Progress Tracking
-- Track pembelajaran di setiap kursus
-- Lihat persentase completion
-- Simpan progress otomatis
-- Resume dari mana terakhir kali belajar
+### 🖥️ Monaco Code Editor
+- **Custom "ZeroCode Cyber" Theme** dengan warna cyberpunk
+- **Multi-file & Folder Support** dengan file tree
+- **Syntax Highlighting** untuk 10+ bahasa
+- **IntelliSense** untuk TypeScript/React
+- **Auto-save** dan seamless integration
 
-### 🎯 Hands-on Learning
-- **Lessons** - Penjelasan teori dengan contoh kode
-- **Projects** - Build real-world applications
-- **Quizzes** - Test pemahaman dengan soal interaktif
-- **Tasks** - Praktik langsung dengan auto-validation
+### 🤖 Nebula AI Chatbot
+- Powered by **Google Gemini Flash**
+- Context-aware coding hints
+- Platform guide & FAQ
+- Cyberpunk persona ("Voyager", "Operator", "System-Online")
 
-### 👥 Community Forum
-- Tanya jawab dengan learners lain
-- Share knowledge dan tips
-- Diskusi tentang coding challenges
-- Support dari admin dan mentor
+### 📊 Activity Tracking (CyberDeck Widget)
+- **365-day Heatmap** seperti GitHub contribution graph
+- **Velocity Score** (events per day)
+- **Streak Counter** untuk konsistensi
+- **Full-screen Analytics Dashboard**
 
-### 📖 Resource Library
-- Curated documentation links
-- Tools dan utilities recommendations
-- Tutorial videos dan articles
-- Cheatsheets untuk quick reference
+### 🗺️ Specialization Tracks
+3 Learning paths yang terstruktur:
 
-### 🎓 Structured Learning Path
-- **Beginner** - Dasar-dasar web development
-- **Intermediate** - Skill yang lebih advanced
-- **Advanced** - Professional-level expertise
-- **Fullstack** - Paket lengkap dengan diskon 20%
+| Track | Kursus | Est. Time | Certification |
+|-------|--------|-----------|---------------|
+| **Frontend Protocol** | 11 courses | 120 hrs | Interface Architect |
+| **Backend Protocol** | 11 courses | 150 hrs | System Admin |
+| **Full-Stack Operative** | 15 courses | 280 hrs | Master Operative |
 
----
+### 🧭 Neural Tech Tree
+- Visual skill tree dengan **hexagon nodes**
+- **3D neural connections** antar kursus
+- **Unit-level breakdown** dengan progress bars
+- **Update detection** untuk konten baru
 
-## 💰 Harga Terjangkau
-
-| Paket | Harga | Akses |
-|-------|-------|-------|
-| **Free** | Gratis | Demo courses (HTML, CSS, JS Basics) |
-| **Beginner** | Rp 50.000 | Semua beginner courses |
-| **Intermediate** | Rp 75.000 | Beginner + Intermediate courses |
-| **Advanced** | Rp 80.000 | Semua courses |
-| **Fullstack** | Rp 164.000 | Semua courses + 20% hemat |
-
-**Hubungi untuk pembelian:** [WhatsApp](https://wa.me/6281234567890)
+### 💬 Community Forum (Neural Network)
+- Category filters (General, HTML/CSS, JavaScript, React, Backend, Help)
+- Sorting: Latest, Top (votes), Most Active
+- User tier badges (Free, Pro, Elite, Admin)
+- Cyberpunk-themed UI dengan glitch effects
 
 ---
 
-## 🎓 Apa yang Akan Kamu Pelajari?
+## 🏆 Gamification & XP System
 
-### Beginner Track (New Recruit)
-✅ HTML5 - Struktur web  
-✅ CSS3 - Styling & layout  
-✅ JavaScript Basics - Logic & interactivity  
-✅ Git & GitHub - Version control  
-✅ Tailwind CSS - Utility-first CSS  
+### Experience Points (XP)
+| Content Type | XP Earned |
+|--------------|-----------|
+| Informational (Reading) | 20 XP |
+| Lesson (Hands-on Lab) | 50 XP |
+| Quiz | 100 XP |
+| Project | 250 XP |
 
-### Intermediate Track (Systems Engineer)
-✅ DOM Manipulation - JavaScript advanced  
-✅ ES6+ Modern JavaScript - Arrow functions, async/await  
-✅ React.js - Build interactive UIs  
-✅ PHP - Backend programming  
-✅ MySQL - Database design  
-✅ Python - Scripting & automation  
+### Level Progression
+```
+Level Formula: XP = 100 × Level × (Level + 1)
 
-### Advanced Track (Lead Architect)
-✅ TypeScript - Type-safe JavaScript  
-✅ Node.js & Express - Backend framework  
-✅ MongoDB - NoSQL database  
-✅ Next.js - Full-stack React framework  
-✅ CI/CD & DevOps - Deployment & automation
+Level 1:  0 XP
+Level 2:  200 XP
+Level 3:  600 XP
+Level 4:  1,200 XP
+Level 5:  2,000 XP
+...
+```
 
-### 🚀 Coming Soon (Dalam Pengembangan)
-Kami terus menambah courses baru untuk memberikan pembelajaran yang lebih komprehensif:
-- 🔜 Vue.js - Progressive JavaScript framework
-- 🔜 Docker & Kubernetes - Container orchestration
-- 🔜 GraphQL - Modern API development
-- 🔜 AWS & Cloud Services - Cloud deployment
-- 🔜 Machine Learning dengan Python - AI & ML basics
-- 🔜 Mobile Development - React Native & Flutter
-- 🔜 Blockchain & Web3 - Cryptocurrency & smart contracts
-- 🔜 Dan banyak lagi...
+### Rank System (Neural Tech Tree)
+| Progress | Rank | Badge Color |
+|----------|------|-------------|
+| 0-39% | TRAINEE | Zinc |
+| 40-59% | JUNIOR | Blue |
+| 60-79% | MID-LEVEL | Emerald |
+| 80-99% | SENIOR DEV | Cyan |
+| 100% | MASTER DOJO | Amber |
 
-**Platform ini terus berkembang dengan konten baru setiap bulan!** 📈  
+### Reward Overlay System
+- **Confetti Animation** saat complete item
+- **XP Popup** dengan level-up celebrationns
+- **Unit Completion** badge rewards
+- **Course Completion** certificates
 
 ---
 
-## 🌟 Keunggulan ZeroCode
+## 🛠️ Tech Stack Detail
 
-| Fitur | Benefit |
-|-------|---------|
-| **Live Code Editor** | Belajar sambil coding, lihat hasil langsung |
-| **Python Support** | Run Python di browser tanpa install |
-| **Real Projects** | Build aplikasi nyata, bukan hanya teori |
-| **Community** | Belajar bersama, saling support |
-| **Progress Tracking** | Motivasi dengan melihat progress |
-| **Affordable** | Harga terjangkau untuk semua kalangan |
-| **Responsive Design** | Belajar di desktop, tablet, atau mobile |
-| **Dark Theme** | Nyaman untuk mata saat belajar lama |
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19 | UI Framework |
+| Vite | 7 | Build Tool |
+| Tailwind CSS | 4 | Styling |
+| Framer Motion | Latest | Animations |
+| Monaco Editor | 0.45 | Code Editor |
+| React Router DOM | 7 | Routing |
+| Lucide React / React Icons | Latest | Icons |
+| clsx + tailwind-merge | Latest | Utility classes |
+
+### AI & Backend
+| Technology | Purpose |
+|------------|---------|
+| Google Generative AI (Gemini Flash) | AI Chatbot |
+| Neon PostgreSQL | Serverless Database |
+| Vercel Functions | Serverless API |
+
+### Code Execution
+| Technology | Purpose |
+|------------|---------|
+| Pyodide (WASM) | Python in Browser |
+| ts.transpileModule | TypeScript Compilation |
+| vue3-sfc-loader | Vue SFC Parsing |
+| Custom Virtual Git | Git Simulation |
+
+### Authentication
+| Feature | Implementation |
+|---------|----------------|
+| Email/Password | bcrypt + JWT |
+| Google OAuth | JWT decode |
+| GitHub OAuth | GitHub API |
+| Email Verification | 6-digit code |
+| Password Reset | Email link |
+
+---
+
+## 📁 Arsitektur Project
+
+```
+zerocode/
+├── api/                        # Vercel Serverless Functions
+│   ├── auth/                   # Authentication handlers
+│   ├── leaderboard.js
+│   ├── send-verification-email.js
+│   ├── send-password-reset-email.js
+│   └── send-welcome-email.js
+│
+├── src/
+│   ├── components/
+│   │   ├── common/             # Reusable UI (Avatar, Button, etc.)
+│   │   ├── dashboard/          # Dashboard widgets
+│   │   │   ├── CyberDeckWidget.jsx     # Activity heatmap
+│   │   │   ├── NeuralTechTreeWidget.jsx # Skill tree
+│   │   │   ├── ResourceMonitor.jsx     # System stats
+│   │   │   └── WelcomeHero.jsx
+│   │   ├── layout/             # Page layouts
+│   │   │   ├── TopNavbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── LearningNavbar.jsx
+│   │   │   ├── CourseMenuDrawer.jsx
+│   │   │   └── AIAssistantPanel.jsx
+│   │   ├── Terminal/           # Virtual Terminal
+│   │   │   └── Terminal.jsx
+│   │   ├── EditorComponent.jsx # Monaco Editor wrapper
+│   │   └── NebulaChatbot.jsx   # AI Chatbot
+│   │
+│   ├── contexts/
+│   │   ├── AuthProvider.jsx    # Authentication & user state
+│   │   ├── ProgressProvider.jsx # Learning progress & XP
+│   │   └── NotesProvider.jsx   # User notes
+│   │
+│   ├── data/
+│   │   ├── curriculumStructure.js  # Course metadata & levels
+│   │   └── courses/            # Course content (19 folders)
+│   │       ├── html5/          # 9 units, ~95 items
+│   │       ├── css3/           # 17 units, ~178 items
+│   │       ├── git/            # ~70 items
+│   │       ├── react/          # ~17 items
+│   │       ├── vue/            # ~23 items
+│   │       ├── express/        # ~23 items
+│   │       ├── postgresql/     # ~23 items
+│   │       └── ... (12 more courses)
+│   │
+│   ├── hooks/
+│   │   └── useVirtualGit.js    # Virtual Git implementation
+│   │
+│   ├── lib/
+│   │   ├── neon.js             # Database connection
+│   │   └── geminiService.js    # AI service
+│   │
+│   ├── pages/
+│   │   ├── LandingPage.jsx     # Homepage
+│   │   ├── Dashboard.jsx       # User dashboard
+│   │   ├── LearningLayout.jsx  # Learning environment
+│   │   ├── CoursePage.jsx      # Course detail
+│   │   ├── Forum.jsx           # Community forum
+│   │   ├── Specializations.jsx # Learning tracks
+│   │   ├── Profile.jsx         # User profile
+│   │   └── AdminPanel.jsx      # Admin dashboard
+│   │
+│   └── App.jsx                 # Main routing
+│
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+---
+
+## 💰 Pricing Tiers
+
+### Opsi Pembelian
+
+| Paket | Harga | Kursus |
+|-------|-------|--------|
+| **Starter Pack** | Rp 149.000 | HTML, CSS, JS Basics, Git, Tailwind |
+| **Developer Pro** | Rp 299.000 | Starter + React, PHP, MySQL, Python, DOM, ES6 |
+| **Full-Stack Elite** | Rp 549.000 | ALL 19 COURSES + Future Updates |
+
+### Subscription Tiers (Internal)
+```javascript
+SUBSCRIPTION_TIERS = {
+    free: ['html5', 'css3', 'js-basics'],
+    beginner: ['html5', 'css3', 'js-basics', 'git', 'tailwind'],
+    intermediate: ['...beginner', 'dom', 'js-es6', 'react', 'php', 'mysql', 'python'],
+    advanced: 'all',
+    fullstack: 'all',
+    admin: 'all'
+}
+```
 
 ---
 
 ## 🚀 Cara Memulai
 
-### 1. Daftar Akun
-- Buka [ZeroCode](https://zerocode.vercel.app)
-- Klik "Register"
-- Isi email dan password
+### Development Setup
 
-### 2. Pilih Paket
-- Lihat pricing di landing page
-- Pilih paket sesuai kebutuhan
-- Hubungi admin untuk pembayaran
+```bash
+# Clone repository
+git clone https://github.com/username/zerocode.git
+cd zerocode
 
-### 3. Mulai Belajar
-- Akses semua courses sesuai paket
-- Pilih course yang ingin dipelajari
-- Ikuti lessons, projects, dan quizzes
-- Track progress di dashboard
+# Install dependencies
+npm install
 
-### 4. Bergabung Komunitas
-- Buka Forum untuk diskusi
-- Tanya jawab dengan learners lain
-- Share project dan tips
+# Setup environment variables
+cp .env.example .env
+# Edit .env dengan API keys
 
----
+# Run development server
+npm run dev
+```
 
-## 💡 Contoh Course
-
-### JavaScript Basics
-- **Unit 1**: Variables, Data Types, Operators
-- **Unit 2**: Control Flow (if/else, loops)
-- **Unit 3**: Functions & Scope
-- **Unit 4**: Arrays & Objects
-- **Unit 5**: DOM Manipulation
-- **Final Project**: Build a Todo App
-
-Setiap unit punya:
-- 📖 Penjelasan teori
-- 💻 Code examples
-- 🎯 Interactive tasks
-- 🧪 Quizzes
-- 🚀 Mini projects
+### Environment Variables
+```env
+VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_DATABASE_URL=your_neon_postgres_url
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+VITE_GITHUB_CLIENT_ID=your_github_oauth_client_id
+```
 
 ---
 
-## 🛠️ Tech Stack
+## 🔧 Virtual Git Terminal
 
-- **Frontend**: React 18, Vite, Tailwind CSS
-- **Backend**: Node.js, Express
-- **Database**: Neon PostgreSQL (serverless)
-- **Auth**: JWT + bcrypt
-- **Code Execution**: Pyodide (Python), Monaco Editor
-- **Deployment**: Vercel
+Platform ini menyediakan **virtual Git environment** untuk pembelajaran Git tanpa risiko. Fitur:
 
----
+### Supported Commands
 
-## 📱 Responsive & User-Friendly
+**System Commands:**
+- `pwd`, `ls`, `cd`, `mkdir`, `touch`, `cat`, `echo`, `clear`
 
-- ✅ Desktop, tablet, mobile friendly
-- ✅ Dark theme untuk kenyamanan mata
-- ✅ Fast loading & smooth performance
-- ✅ Offline-ready (progress tersimpan)
-- ✅ Accessible untuk semua pengguna
+**Git Commands:**
+- `git init`, `git clone`, `git status`, `git add`, `git commit`
+- `git branch`, `git switch/checkout`, `git merge`
+- `git log`, `git diff`, `git show`
+- `git push`, `git pull`, `git fetch`
+- `git stash`, `git cherry-pick`, `git rebase -i`
+- `git rm`, `git mv`, `git restore`, `git reset`
+- `git bisect`, `git blame`, `git clean`
 
----
-
-## 🎯 Cocok Untuk
-
-- 👨‍💻 Pemula yang ingin belajar coding
-- 🎓 Mahasiswa yang ingin skill praktis
-- 💼 Career changer yang ingin jadi developer
-- 🚀 Siapa saja yang ingin master web development
+**Other Tools:**
+- `node`, `npm`, `php`, `mysql`, `mongosh`
 
 ---
 
-## 📞 Hubungi Kami
+## 🌟 Unique Features
 
-**Untuk pembelian atau pertanyaan:**
-- 📱 WhatsApp: [Klik di sini](https://wa.me/6281234567890)
-- 💬 Forum: Tanya di komunitas ZeroCode
-- 📧 Email: support@zerocode.id
+### 1. Task Validation System
+Setiap lesson memiliki tasks dengan regex validation:
+```javascript
+tasks: [
+    {
+        id: 1,
+        description: 'Add <!DOCTYPE html>',
+        regex: /^\s*<!DOCTYPE\s+html>/im,
+        hint: 'Must be the first line'
+    }
+]
+```
+
+### 2. Ghost Progress Detection
+Sistem mendeteksi "orphaned" progress dari konten yang sudah di-refactor:
+```javascript
+// Jika item ID berubah setelah refactor,
+// sistem akan menampilkan "Update Available" badge
+checkUnitStatus(unitId, unitVersion, courseId)
+```
+
+### 3. Unit Versioning
+Setiap unit memiliki version untuk track updates:
+```javascript
+{
+    id: 'css3-unit-1-box-model',
+    version: '2.0.0',  // Semantic versioning
+    items: [...]
+}
+```
+
+### 4. Multi-Branch Git Snapshots
+Virtual Git menyimpan file snapshots per branch:
+```javascript
+branchSnapshots: {
+    'main': [...files],
+    'feature': [...files]
+}
+```
 
 ---
 
-## 🤝 Tim ZeroCode
+## 📞 Kontak
 
-- **Lead Developer** - Platform development & features
-- **Documentation Team** - Course content & materials
-- **Admin & Support** - User management & community support
+- **WhatsApp**: [+62 838 7572 7384](https://wa.me/6283875727384)
+- **Website**: [zerocode.vercel.app](https://zerocode.vercel.app)
 
 ---
 
 ## 📄 License
 
-MIT - Bebas digunakan untuk keperluan apapun
+MIT License - Free for personal and commercial use.
 
 ---
 
-## 🎉 Mulai Belajar Sekarang!
+<div align="center">
 
-**Jangan tunda lagi!** Investasi terbaik adalah investasi pada diri sendiri.
+**ZeroCode** - *Learn to Code from Zero* 🚀
 
-👉 [Daftar Gratis](https://zerocode.vercel.app) - Coba demo courses tanpa bayar!
+*Cyberpunk-themed interactive coding academy for the next generation of developers*
 
----
-
-*ZeroCode - Learn to Code from Zero. Dari nol menjadi hero! 🚀*
+</div>

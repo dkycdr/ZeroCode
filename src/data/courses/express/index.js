@@ -1,6 +1,6 @@
 
-import { unit1Intro } from './unit-01-intro';
-import { unit2Advanced } from './unit-02-advanced';
+import { unit1Intro } from './unit-01-intro/index.js';
+import { unit2Advanced } from './unit-02-advanced/index.js';
 
 export const expressCourse = {
     id: 'express',

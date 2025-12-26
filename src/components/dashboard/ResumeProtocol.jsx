@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RiPlayCircleLine, RiArrowRightLine, RiFocus2Line, RiLoader4Line } from 'react-icons/ri';
 import { SiHtml5, SiCss3, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiVuedotjs, SiExpress, SiGit, SiTailwindcss, SiTypescript, SiPython, SiNextdotjs, SiPhp, SiMysql, SiMongodb } from 'react-icons/si';
 import { useProgress } from '../../contexts/ProgressProvider';
-import { getCourse } from '../../data/courses';
+import { getCourse } from '../../data/curriculumStructure';
 
 const ICON_MAP = {
     'html5': SiHtml5, 'css3': SiCss3, 'tailwind': SiTailwindcss, 'js-basics': SiJavascript,

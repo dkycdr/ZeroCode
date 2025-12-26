@@ -1,10 +1,10 @@
 
-import { unit1Intro } from './unit-1-intro';
-import { unit2Traversal } from './unit-2-traversal';
-import { unit3Manipulation } from './unit-3-manipulation';
-import { unit4Events } from './unit-4-events';
-import { unit5Forms } from './unit-5-forms';
-import { unit6Project } from './unit-6-project';
+import { unit1Intro } from './unit-1-intro.js';
+import { unit2Traversal } from './unit-2-traversal.js';
+import { unit3Manipulation } from './unit-3-manipulation.js';
+import { unit4Events } from './unit-4-events.js';
+import { unit5Forms } from './unit-5-forms.js';
+import { unit6Project } from './unit-6-project.js';
 
 export const domCourse = {
     id: 'dom',

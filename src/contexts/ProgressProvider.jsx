@@ -18,9 +18,12 @@ const ITEM_XP = {
 export const ProgressProvider = ({ children }) => {
     const { user, updateLeaderboardStats, updateStreak } = useAuth();
     const [completedCourses, setCompletedCourses] = useState([]);
+    const [completedCourseVersions, setCompletedCourseVersions] = useState({});
     const [completedItems, setCompletedItems] = useState([]);
+    const [unitHistory, setUnitHistory] = useState({}); // { unitId: Set(itemIds) } for Ghost Progress
     const [recentActivity, setRecentActivity] = useState([]); // Array of { item_id, completed_at, ... }
     const [reward, setReward] = useState(null);
+    const [unitReward, setUnitReward] = useState(null);
     const [rewardCallback, setRewardCallback] = useState(null); // callback function
     const [loading, setLoading] = useState(true);
     const [userStats, setUserStats] = useState({
@@ -192,7 +195,7 @@ export const ProgressProvider = ({ children }) => {
         try {
             // Load completed courses
             const courses = await sql`
-                SELECT course_id 
+                SELECT course_id, version 
                 FROM course_progress 
                 WHERE user_id = ${user.id} AND completed = true
             `;
@@ -205,8 +208,66 @@ export const ProgressProvider = ({ children }) => {
             `;
 
             setCompletedCourses(courses.map(c => c.course_id));
+
+            // Map course versions for update checking
+            // Fallback to '1.0.0' since DB column might not exist yet
+            const versions = {};
+            courses.forEach(c => {
+                versions[c.course_id] = c.version || '1.0.0';
+            });
+            setCompletedCourseVersions(versions);
+
             setCompletedItems(items.map(i => i.item_id));
             setRecentActivity(items);
+
+            // Populate Unit History (Ghost Item Detection)
+            const uMap = {};
+            const LEGACY_MAPPING = {
+                'html5-unit-4-multimedia': ['multimedia', 'audio', 'video', 'svg', 'media', 'hero', 'player'],
+                'css3-unit-15': ['profile', 'card', 'blueprint'],
+                'html5-unit-3-forms': ['form', 'input', 'valid', 'check', 'radio', 'signup', 'pizza'],
+                'html5-unit-5-tables': ['html5-5-', 'table', 'row', 'cell', 'colspan', 'rowspan'],
+                'html5-unit-1-structure': ['html5-u1', 'dom', 'structure', 'head', 'body', 'box', 'model', 'margin', 'padding', 'u1-'],
+                'html5-unit-6-accessibility': ['a11y', 'aria', 'accessib', 'wcag', 'contrast', 'unit-6', 'u6-'],
+                'html5-unit-8-real-projects': ['portfolio', 'project', 'landing', 'business', 'unit-8', 'u8-'],
+                'html5-unit-7-best-practices': ['clean', 'spaghetti', 'formatter', 'refactor', 'unit-7', 'u7-']
+            };
+
+            // Unit ID Migration Map (Old -> New)
+            // This ensures users with old IDs still get mapped to the new Unit version for "Ghost Progress" checks
+            const ID_REDIRECTS = {
+                'css3-unit-15': 'css3-unit-15-profile-masterclass',
+                'unit-6-accessibility': 'html5-unit-6-accessibility',
+                'html5-unit-1': 'html5-unit-1-structure',
+                'html5-unit-8': 'html5-unit-8-real-projects',
+                'html5-unit-7': 'html5-unit-7-best-practices'
+            };
+
+            items.forEach(i => {
+                let unitId = i.unit_id;
+
+                // 1. Fallback for Legacy Data (null unit_id)
+                if (!unitId && i.item_id) {
+                    const idLower = i.item_id.toLowerCase();
+                    for (const [uId, keywords] of Object.entries(LEGACY_MAPPING)) {
+                        if (keywords.some(k => idLower.includes(k))) {
+                            unitId = uId;
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Apply Redirects for Renamed Units (Must happen AFTER Legacy Mapping)
+                if (unitId && ID_REDIRECTS[unitId]) {
+                    unitId = ID_REDIRECTS[unitId];
+                }
+
+                if (unitId) {
+                    if (!uMap[unitId]) uMap[unitId] = new Set();
+                    uMap[unitId].add(i.item_id);
+                }
+            });
+            setUnitHistory(uMap);
 
             // Enhance items with XP calculation capability
             // We need to lookup types. This is heavy if done entirely client side without a cache.
@@ -305,10 +366,10 @@ export const ProgressProvider = ({ children }) => {
 
         try {
             await sql`
-                INSERT INTO course_progress (user_id, course_id, completed, completed_at)
-                VALUES (${user.id}, ${courseId}, true, NOW())
+                INSERT INTO course_progress (user_id, course_id, completed, completed_at, version)
+                VALUES (${user.id}, ${courseId}, true, NOW(), ${version || '1.0.0'})
                 ON CONFLICT (user_id, course_id) 
-                DO UPDATE SET completed = true, completed_at = NOW()
+                DO UPDATE SET completed = true, completed_at = NOW(), version = EXCLUDED.version
             `;
 
             const newCourses = [...new Set([...completedCourses, courseId])];
@@ -386,6 +447,40 @@ export const ProgressProvider = ({ children }) => {
 
                 // SYNC TO LEADERBOARD
                 updateLeaderboardStats(newXp, currentStats.modulesCleared);
+
+                // UNIT COMPLETION CHECK
+                if (courseId && unitId) {
+                    try {
+                        const unit = await sql`
+                            SELECT item_id FROM item_progress 
+                            WHERE user_id = ${user.id} AND course_id = ${courseId} AND unit_id = ${unitId} AND completed = true
+                        `;
+
+                        // Get all items defined for this unit
+                        const { getUnit } = await import('../data/courses/index');
+                        const unitData = getUnit(courseId, unitId);
+
+                        if (unitData && unitData.items.length > 0) {
+                            const completedUnitItems = unit.map(i => i.item_id);
+                            const allCompleted = unitData.items.every(item =>
+                                completedUnitItems.includes(item.id) || item.id === itemId
+                            );
+
+                            if (allCompleted) {
+                                const { courses: courseMeta } = await import('../data/curriculumStructure');
+                                setUnitReward({
+                                    unitTitle: unitData.title,
+                                    courseTitle: courseMeta[courseId]?.title || courseId,
+                                    courseIcon: courseMeta[courseId]?.icon,
+                                    userName: user.name
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error checking unit completion:', e);
+                    }
+                }
+
                 return true; // Reward earned
             } else {
                 // ALREADY COMPLETED - BUT TRIGGER REWARD ANYWAY (User Requirement)
@@ -462,11 +557,17 @@ export const ProgressProvider = ({ children }) => {
         }
     };
 
+    const clearUnitReward = () => {
+        setUnitReward(null);
+    };
+
     const isItemCompleted = (itemId) => {
         return completedItems.includes(itemId);
     };
 
-    const isCourseCompleted = (courseId) => {
+    const isCourseCompleted = (courseId, currentVersion = null) => {
+        // If currentVersion is provided, check if stored version matches
+        // For now, simpler check: just check existence
         return completedCourses.includes(courseId);
     };
 
@@ -484,6 +585,7 @@ export const ProgressProvider = ({ children }) => {
 
             setCompletedCourses([]);
             setCompletedItems([]);
+            setUnitHistory({});
             setUserStats({
                 streak: 0,
                 focusTime: '0h 0m',
@@ -499,6 +601,38 @@ export const ProgressProvider = ({ children }) => {
         }
     };
 
+    const checkUnitStatus = (unitId, unitVersion = '1.0.0', courseId) => {
+        // 1. Ghost Progress Check (Orphaned Items)
+        // If user has history in DB for this unitId, but ZERO progress in the current unit items,
+        // it means the content has been completely swapped/refactored.
+        if (unitId && unitHistory[unitId] && unitHistory[unitId].size > 0) {
+            return 'update_available';
+        }
+
+        // 2. Main Version Check
+        // Check if the Course itself has a recorded version
+        const userCourseVersion = completedCourseVersions[courseId];
+
+        // Simple SemVer compare (Major.Minor.Patch)
+        const isNewer = (v1, v2) => {
+            if (!v1 || !v2) return false;
+            const p1 = v1.split('.').map(Number);
+            const p2 = v2.split('.').map(Number);
+            for (let i = 0; i < 3; i++) {
+                if ((p1[i] || 0) > (p2[i] || 0)) return true;
+                if ((p1[i] || 0) < (p2[i] || 0)) return false;
+            }
+            return false;
+        };
+
+        if (userCourseVersion && isNewer(unitVersion, userCourseVersion)) {
+            return 'update_available';
+        }
+
+        // Default to active/locked logic handle by UI usually, but here we explicitly return update flag.
+        return 'current';
+    };
+
     const value = {
         completedCourses,
         completedItems,
@@ -506,13 +640,17 @@ export const ProgressProvider = ({ children }) => {
         userStats,
         loading,
         reward,
+        unitReward,
+        setUnitReward,
         clearReward,
+        clearUnitReward,
         markCourseComplete,
         markItemComplete,
         isItemCompleted,
         isCourseCompleted,
         getCourseItemsCompleted,
-        resetProgress
+        resetProgress,
+        checkUnitStatus
     };
 
     return (

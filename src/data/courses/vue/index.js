@@ -1,7 +1,7 @@
 
 
-import { unit1Intro } from './unit-01-intro';
-import { unit2Components } from './unit-02-components';
+import { unit1Intro } from './unit-01-intro/index.js';
+import { unit2Components } from './unit-02-components/index.js';
 
 export const vueCourse = {
     id: 'vue',

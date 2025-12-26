@@ -8,6 +8,7 @@ import { getCourseWithContent, CONTENT_TYPES, getCourseProgress } from '../data/
 import { BookOpen, Code, HelpCircle, Rocket, FileText, ChevronRight, CheckCircle2, Circle, Clock, ArrowLeft, Crown, Lock, Terminal, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import RealisticDNA from '../components/RealisticDNA';
+import UpdateBadge from '../components/dashboard/UpdateBadge';
 
 const WHATSAPP_NUMBER = '6283875727384';
 
@@ -23,7 +24,7 @@ export default function CourseSyllabus() {
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [expandedUnits, setExpandedUnits] = useState({});
-    const { completedItems } = useProgress();
+    const { completedItems, checkUnitStatus } = useProgress();
     const { user, canAccessCourse, subscriptionTier } = useAuth();
     const hasAccess = canAccessCourse(courseId, course?.level);
 
@@ -259,6 +260,10 @@ export default function CourseSyllabus() {
                                                         MODULE_{String(unitIndex + 1).padStart(2, '0')}
                                                     </span>
                                                     {isUnitComplete && <CheckCircle2 size={12} className="text-emerald-500" />}
+                                                    {/* Update Badge Injection */}
+                                                    {checkUnitStatus && checkUnitStatus(unit.id, unit.version, courseId) === 'update_available' && (
+                                                        <UpdateBadge />
+                                                    )}
                                                 </div>
 
                                                 <h3 className={clsx(

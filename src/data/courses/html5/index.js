@@ -1,14 +1,15 @@
-import { unit0AbsoluteBeginner } from './unit-0-absolute-beginner';
-import { unit1HtmlBasics } from './unit-1-html-basics';
-import { unit2SemanticHtml } from './unit-2-semantic-html';
-import { unit3FormsInput } from './unit-3-forms-input';
-import { unit4Multimedia } from './unit-4-multimedia';
-import { unit5Tables } from './unit-5-tables';
-import { unit6Accessibility } from './unit-6-accessibility';
-import { unit7BestPractices } from './unit-7-best-practices';
-import { unit8RealProjects } from './unit-8-real-projects';
-import { unit9HtmlApis } from './unit-9-html-apis';
-import { unit10Pwa } from './unit-10-pwa';
+// HTML5 Course - Modular Structure
+import { unit0AbsoluteBeginner } from './unit-0-absolute-beginner/index.js';
+import { unit1Structure } from './unit-1-structure/index.js';
+import { unit2HTMLSemantics } from './unit-2-semantics/index.js';
+import { unit3Forms } from './unit-3-forms/index.js';
+import { unit4Multimedia } from './unit-4-multimedia/index.js';
+import { unit5Tables } from './unit-5-tables/index.js';
+import { unit6Accessibility } from './unit-6-accessibility/index.js';
+import { unit7BestPractices } from './unit-7-best-practices/index.js';
+import { unit8RealProjects } from './unit-8-real-projects/index.js';
+import { unit9HtmlApis } from './unit-9-html-apis/index.js';
+import { unit10Pwa } from './unit-10-pwa/index.js';
 
 export const html5Course = {
     id: 'html5',
@@ -19,9 +20,9 @@ export const html5Course = {
     duration: '35-40 hours',
     units: [
         unit0AbsoluteBeginner,
-        unit1HtmlBasics,
-        unit2SemanticHtml,
-        unit3FormsInput,
+        unit1Structure,
+        unit2HTMLSemantics,
+        unit3Forms,
         unit4Multimedia,
         unit5Tables,
         unit6Accessibility,

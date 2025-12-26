@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RiOrganizationChart, RiExpandDiagonalLine, RiCloseLine, RiDatabase2Line, RiFocus2Line, RiCodeBoxLine, RiGitMergeLine, RiCheckDoubleLine, RiExpandUpDownLine, RiSubtractLine, RiFullscreenLine } from 'react-icons/ri';
 import { SiHtml5, SiCss3, SiJavascript, SiReact, SiNodedotjs, SiPostgresql, SiVuedotjs, SiExpress, SiGit, SiTailwindcss, SiTypescript, SiMongodb, SiPython, SiNextdotjs, SiPhp, SiMysql } from 'react-icons/si';
 import { useProgress } from '../../contexts/ProgressProvider';
-import { getCourse } from '../../data/courses';
+import { getCourseWithContent } from '../../data/courses/index.js';
+import UpdateBadge from './UpdateBadge';
 import clsx from 'clsx';
 
 // ------------------------------------------------------------------
@@ -39,6 +40,17 @@ const getRank = (percentage) => {
     return { label: 'TRAINEE', color: 'text-zinc-500', border: 'border-zinc-700' };
 };
 
+
+const UpdateBadgeWrapper = ({ unit, courseId }) => {
+    const { checkUnitStatus } = useProgress();
+    // Verify checkUnitStatus exists to prevent crashes if context is old
+    if (!checkUnitStatus) return null;
+
+    const status = checkUnitStatus(unit.id, unit.version, courseId);
+
+    if (status === 'update_available') return <UpdateBadge />;
+    return null;
+};
 export default function NeuralTechTreeWidget() {
     const { completedCourses, completedItems } = useProgress();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -88,7 +100,7 @@ export default function NeuralTechTreeWidget() {
         let completedItemsGlobal = 0;
 
         Object.entries(SKILL_MAP).forEach(([courseId, meta]) => {
-            const course = getCourse(courseId);
+            const course = getCourseWithContent(courseId);
             if (!course) return;
 
             const unitsData = [];
@@ -438,8 +450,14 @@ export default function NeuralTechTreeWidget() {
                                                 >
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div className="flex flex-col">
-                                                            <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-1">UNIT_{String(i + 1).padStart(2, '0')}</p>
-                                                            <h4 className="text-[13px] font-black text-white transition-colors uppercase tracking-tight leading-none">{unit.title}</h4>
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">UNIT_{String(i + 1).padStart(2, '0')}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="text-[13px] font-black text-white transition-colors uppercase tracking-tight leading-none">{unit.title}</h4>
+                                                                {/* Badge Injection */}
+                                                                <UpdateBadgeWrapper unit={unit} courseId={selectedCourseId} />
+                                                            </div>
                                                         </div>
                                                         <div className="px-2 py-1 bg-cyan-950/40 border border-cyan-500/30 rounded-sm">
                                                             <span className="text-xs font-black font-mono text-cyan-400 tabular-nums">{unit.progress}%</span>

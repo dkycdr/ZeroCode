@@ -1,6 +1,6 @@
 
-import { unit1Fundamentals } from './unit-01-fundamentals';
-import { unit2Joins } from './unit-02-joins';
+import { unit1Fundamentals } from './unit-01-fundamentals/index.js';
+import { unit2Joins } from './unit-02-joins/index.js';
 
 export const postgresqlCourse = {
     id: 'postgresql',

@@ -1,15 +1,15 @@
-import { unit0AbsoluteBeginner } from './unit-0-absolute-beginner.js';
-import { unit1VariablesDataTypes } from './unit-1-variables-datatypes.js';
-import { unit2OperatorsExpressions } from './unit-2-operators-expressions.js';
-import { unit3ControlFlow } from './unit-3-control-flow.js';
-import { unit4Functions } from './unit-4-functions.js';
-import { unit5Arrays } from './unit-5-arrays.js';
-import { unit6Objects } from './unit-6-objects.js';
-import { unit7DOM } from './unit-7-dom.js';
-import { unit8DebuggingErrors } from './unit-8-debugging-errors.js';
-import { unit9AsyncBasics } from './unit-9-async-basics.js';
-import { unit10BestPractices } from './unit-10-best-practices.js';
-import { unit11Capstone } from './unit-11-capstone.js';
+// JavaScript Basics - Modular Structure
+import { unit0Introduction } from './unit-0-introduction/index.js';
+import { unit1Variables } from './unit-1-variables/index.js';
+import { unit2Operators } from './unit-2-operators/index.js';
+import { unit3ControlFlow } from './unit-3-control-flow/index.js';
+import { unit4Loops } from './unit-4-loops/index.js';
+import { unit5Functions } from './unit-5-functions/index.js';
+import { unit6Arrays } from './unit-6-arrays/index.js';
+import { unit7Objects } from './unit-7-objects/index.js';
+import { unit8DOM } from './unit-8-dom/index.js';
+import { unit9Async } from './unit-9-async/index.js';
+import { unit10Capstone } from './unit-10-capstone/index.js';
 
 export const jsBasicsCourse = {
     id: 'js-basics',
@@ -19,17 +19,16 @@ export const jsBasicsCourse = {
     difficulty: 'Beginner to Intermediate',
     duration: '45-55 hours',
     units: [
-        unit0AbsoluteBeginner,
-        unit1VariablesDataTypes,
-        unit2OperatorsExpressions,
+        unit0Introduction,
+        unit1Variables,
+        unit2Operators,
         unit3ControlFlow,
-        unit4Functions,
-        unit5Arrays,
-        unit6Objects,
-        unit7DOM,
-        unit8DebuggingErrors,
-        unit9AsyncBasics,
-        unit10BestPractices,
-        unit11Capstone
+        unit4Loops,
+        unit5Functions,
+        unit6Arrays,
+        unit7Objects,
+        unit8DOM,
+        unit9Async,
+        unit10Capstone
     ]
 };

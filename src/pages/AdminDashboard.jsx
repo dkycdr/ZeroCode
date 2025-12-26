@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, SUBSCRIPTION_TIERS } from '../contexts/AuthProvider';
+import { AuthProvider, useAuth, SUBSCRIPTION_TIERS } from '../contexts/AuthProvider';
+import { useProgress } from '../contexts/ProgressProvider';
 import TopNavbar from '../components/layout/TopNavbar';
 import {
     Users, Search, Check, X, Crown, Shield, ArrowLeft,
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react';
 import {
     RiUserFollowLine, RiUserStarLine, RiUserSettingsLine,
-    RiArrowRightUpLine, RiGlobalLine, RiTimeLine
+    RiArrowRightUpLine, RiGlobalLine, RiTimeLine, RiAwardLine
 } from 'react-icons/ri';
 import clsx from 'clsx';
 
@@ -34,6 +35,7 @@ const TIER_OPTIONS = [
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const { isAdmin, getAllUsers, updateUserSubscription, getAdminAnalytics, getAdminActivity } = useAuth();
+    const { setUnitReward } = useProgress();
     const [users, setUsers] = useState([]);
     const [analytics, setAnalytics] = useState(null);
     const [logs, setLogs] = useState([]);
@@ -57,7 +59,7 @@ export default function AdminDashboard() {
     const loadData = async (query = searchQuery) => {
         // Fix: If called by event handler, query might be an Event object
         const finalQuery = typeof query === 'string' ? query : searchQuery;
-        
+
         // Only set loading true if we don't have users yet (prevent complete UI collapse)
         if (users.length === 0) {
             setLoading(true);
@@ -297,6 +299,19 @@ export default function AdminDashboard() {
                                 <button className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-400 transition-all hover:shadow-[0_0_30px_rgba(129,140,248,0.3)]">
                                     <Download size={16} />
                                     <span>Export CSV</span>
+                                </button>
+                                <button
+                                    onClick={() => setUnitReward({
+                                        unitId: 'unit-01',
+                                        unitTitle: 'Neural Network Fundamentals',
+                                        courseId: 'python',
+                                        courseTitle: 'Python for AI Mastery',
+                                        userName: 'Admin Preview'
+                                    })}
+                                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-500 transition-all hover:shadow-[0_0_30px_rgba(79,70,229,0.3)]"
+                                >
+                                    <RiAwardLine size={16} />
+                                    <span>Preview Unit Card</span>
                                 </button>
                             </div>
                         </div>
@@ -652,51 +667,55 @@ export default function AdminDashboard() {
 
                     </div>
                 </main>
-            </div>
+            </div >
 
             {/* CONFIRMATION OVERLAY */}
-            {isConfirmOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-xl animate-fade-in px-4">
-                    <div className="bg-zinc-900 border border-white/10 rounded-[3rem] p-12 max-w-md w-full shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-scale-in relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 text-amber-500/5 -rotate-12">
-                            <Shield size={200} />
-                        </div>
-                        <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-amber-500/20 shadow-[0_0_40px_rgba(245,158,11,0.1)]">
-                            <RiUserSettingsLine size={40} />
-                        </div>
-                        <h2 className="text-2xl font-black text-center text-white mb-2 tracking-tighter uppercase">Initialize Upgrade</h2>
-                        <p className="text-zinc-500 text-center text-xs mb-10 leading-relaxed font-mono px-4">
-                            Authorized personnel: <span className="text-white font-bold">{pendingUpdate?.userName}</span> will be granted <span className="text-amber-400 font-bold uppercase tracking-widest">{pendingUpdate?.tier}</span> level clearance.
-                        </p>
-                        <div className="grid grid-cols-1 gap-3">
-                            <button
-                                onClick={handleUpdateTier}
-                                disabled={updating}
-                                className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-400 transition-all active:scale-95 shadow-xl disabled:opacity-50"
-                            >
-                                {updating ? 'EXECUTING...' : 'Authorize Clearance'}
-                            </button>
-                            <button
-                                onClick={() => setIsConfirmOpen(false)}
-                                className="w-full py-4 bg-transparent text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:text-white transition-all"
-                            >
-                                Abort Mission
-                            </button>
+            {
+                isConfirmOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-xl animate-fade-in px-4">
+                        <div className="bg-zinc-900 border border-white/10 rounded-[3rem] p-12 max-w-md w-full shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-scale-in relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-8 text-amber-500/5 -rotate-12">
+                                <Shield size={200} />
+                            </div>
+                            <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-amber-500/20 shadow-[0_0_40px_rgba(245,158,11,0.1)]">
+                                <RiUserSettingsLine size={40} />
+                            </div>
+                            <h2 className="text-2xl font-black text-center text-white mb-2 tracking-tighter uppercase">Initialize Upgrade</h2>
+                            <p className="text-zinc-500 text-center text-xs mb-10 leading-relaxed font-mono px-4">
+                                Authorized personnel: <span className="text-white font-bold">{pendingUpdate?.userName}</span> will be granted <span className="text-amber-400 font-bold uppercase tracking-widest">{pendingUpdate?.tier}</span> level clearance.
+                            </p>
+                            <div className="grid grid-cols-1 gap-3">
+                                <button
+                                    onClick={handleUpdateTier}
+                                    disabled={updating}
+                                    className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-400 transition-all active:scale-95 shadow-xl disabled:opacity-50"
+                                >
+                                    {updating ? 'EXECUTING...' : 'Authorize Clearance'}
+                                </button>
+                                <button
+                                    onClick={() => setIsConfirmOpen(false)}
+                                    className="w-full py-4 bg-transparent text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:text-white transition-all"
+                                >
+                                    Abort Mission
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* MESSAGE FEEDBACK */}
-            {message && (
-                <div className={clsx(
-                    "fixed bottom-8 right-8 z-[110] px-6 py-4 rounded-2xl border flex items-center gap-4 animate-slide-in-right shadow-2xl backdrop-blur-md",
-                    message.type === 'success' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"
-                )}>
-                    {message.type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
-                    <div className="text-xs font-bold uppercase tracking-widest">{message.text}</div>
-                </div>
-            )}
-        </div>
+            {
+                message && (
+                    <div className={clsx(
+                        "fixed bottom-8 right-8 z-[110] px-6 py-4 rounded-2xl border flex items-center gap-4 animate-slide-in-right shadow-2xl backdrop-blur-md",
+                        message.type === 'success' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+                    )}>
+                        {message.type === 'success' ? <Check size={20} /> : <AlertCircle size={20} />}
+                        <div className="text-xs font-bold uppercase tracking-widest">{message.text}</div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

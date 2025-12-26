@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthProvider';
 import { ProgressProvider, useProgress } from './contexts/ProgressProvider';
 import { NotesProvider } from './contexts/NotesProvider';
 import RewardOverlay from './components/dashboard/RewardOverlay';
+import UnitAchievementCard from './components/dashboard/UnitAchievementCard';
 import LandingPage from './pages/LandingPage';
 import LearningLayout from './pages/LearningLayout';
 import CourseSyllabus from './pages/CourseSyllabus';
@@ -15,6 +16,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAccess from './pages/AdminAccess';
+import AdminRegexPlayground from './pages/AdminRegexPlayground';
 import Library from './pages/Library';
 import Migrate from './pages/Migrate';
 import Forum from './pages/Forum';
@@ -24,6 +26,7 @@ import Features from './pages/Features';
 import Specializations from './pages/Specializations';
 import Changelog from './pages/Changelog';
 import ArchivesPage from './pages/ArchivesPage';
+import AchievementShowcase from './pages/AchievementShowcase';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -68,8 +71,13 @@ const GlobalChatbotWrapper = () => {
 
 // Global Reward Manager Component
 const GlobalRewardManager = () => {
-    const { reward, clearReward } = useProgress();
-    return <RewardOverlay reward={reward} onClose={clearReward} />;
+    const { reward, clearReward, unitReward, clearUnitReward } = useProgress();
+    return (
+        <>
+            <RewardOverlay reward={reward} onClose={clearReward} />
+            <UnitAchievementCard unitData={unitReward} onClose={clearUnitReward} />
+        </>
+    );
 };
 
 import GithubCallback from './pages/GithubCallback';
@@ -89,6 +97,7 @@ function App() {
 
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/auth/github/callback" element={<GithubCallback />} />
+                            <Route path="/showcase" element={<AchievementShowcase />} />
                             <Route path="/login" element={
                                 <PublicRoute>
                                     <Login />
@@ -113,6 +122,11 @@ function App() {
                             <Route path="/admin" element={
                                 <AdminRoute>
                                     <AdminDashboard />
+                                </AdminRoute>
+                            } />
+                            <Route path="/admin/regex" element={
+                                <AdminRoute>
+                                    <AdminRegexPlayground />
                                 </AdminRoute>
                             } />
 

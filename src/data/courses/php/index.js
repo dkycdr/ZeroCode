@@ -1,11 +1,11 @@
 
-import { unit1Intro } from './unit-1-intro';
-import { unit2Control } from './unit-2-control';
-import { unit3Forms } from './unit-3-forms';
-import { unit4Arrays } from './unit-4-arrays';
-import { unit5Functions } from './unit-5-functions';
-import { unit6OOP } from './unit-6-oop';
-import { unit7Project } from './unit-7-project';
+import { unit1Intro } from './unit-1-intro.js';
+import { unit2Control } from './unit-2-control.js';
+import { unit3Forms } from './unit-3-forms.js';
+import { unit4Arrays } from './unit-4-arrays.js';
+import { unit5Functions } from './unit-5-functions.js';
+import { unit6OOP } from './unit-6-oop.js';
+import { unit7Project } from './unit-7-project.js';
 
 export const phpCourse = {
     id: 'php',

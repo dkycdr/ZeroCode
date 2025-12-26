@@ -1,10 +1,10 @@
-import { unit1Fundamentals } from './unit-1-fundamentals';
-import { unit2DataFetching } from './unit-2-data-fetching';
-import { unit3ApiRoutes } from './unit-3-api-routes';
-import { unit4ClientServer } from './unit-4-client-server';
-import { unit5AuthMiddleware } from './unit-5-auth-middleware';
-import { unit6OptimizationDeploy } from './unit-6-optimization-deploy';
-import { unit7CapstoneProject } from './unit-7-capstone-project';
+import { unit1Fundamentals } from './unit-1-fundamentals.js';
+import { unit2DataFetching } from './unit-2-data-fetching.js';
+import { unit3ApiRoutes } from './unit-3-api-routes.js';
+import { unit4ClientServer } from './unit-4-client-server.js';
+import { unit5AuthMiddleware } from './unit-5-auth-middleware.js';
+import { unit6OptimizationDeploy } from './unit-6-optimization-deploy.js';
+import { unit7CapstoneProject } from './unit-7-capstone-project.js';
 
 export const nextjsCourse = {
     id: 'nextjs',

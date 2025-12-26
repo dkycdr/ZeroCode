@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { RiTimeLine, RiFireLine, RiTrophyLine, RiStackLine, RiArrowUpLine, RiLoader4Line } from 'react-icons/ri';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { LEVELS, getCoursesByLevel } from '../../data/courses';
+import { LEVELS } from '../../data/curriculumStructure';
+import { courseContent } from '../../data/courses/index.js';
 import { useProgress } from '../../contexts/ProgressProvider';
 
 export default function StatsOverview({ progress, stats }) {
@@ -14,8 +15,8 @@ export default function StatsOverview({ progress, stats }) {
         let totalUnits = 0;
         let clearedUnits = 0;
 
-        // Iterate all levels to get all courses
-        const allCourses = Object.values(LEVELS).flatMap(level => getCoursesByLevel(level.id));
+        // Iterate all courses from courseContent which has units
+        const allCourses = Object.values(courseContent);
 
         allCourses.forEach(course => {
             if (course.units) {
