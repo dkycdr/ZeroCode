@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './AuthProvider';
 import { sql } from '../lib/neon';
 import { CONTENT_TYPES } from '../data/curriculumStructure';
@@ -31,11 +31,22 @@ export const ProgressProvider = ({ children }) => {
         focusTime: '0h 0m',
         modulesCleared: 0,
         totalFocusMinutes: 0,
+        focusBreakdown: {
+            doc: 0,
+            lab: 0,
+            quiz: 0,
+            project: 0
+        },
         xp: 0,
         level: 1,
         nextLevelXp: 400,
         levelProgress: 0
     });
+
+    // Session tracking for actual focus time
+    const sessionStartRef = useRef(null);
+    const currentItemRef = useRef(null);
+    const currentContentTypeRef = useRef(null);
 
     useEffect(() => {
         if (user) {
@@ -48,6 +59,12 @@ export const ProgressProvider = ({ children }) => {
                 focusTime: '0h 0m',
                 modulesCleared: 0,
                 totalFocusMinutes: 0,
+                focusBreakdown: {
+                    doc: 0,
+                    lab: 0,
+                    quiz: 0,
+                    project: 0
+                },
                 xp: 0,
                 level: 1,
                 nextLevelXp: 400,
@@ -114,12 +131,8 @@ export const ProgressProvider = ({ children }) => {
             }
         }
 
-        // 2. Calculate Estimated Focus Time (15 mins per item)
-        const totalItems = itemsWithDates.length;
-        const totalMinutes = totalItems * 15;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        const focusTime = `${hours}h ${minutes}m`;
+        // Focus time is now tracked via actual session time, not estimated
+        // (removed old 15-minute-per-item estimate)
 
         // 3. Calculate XP & Level
         // We need to know the TYPE of each item to calculate XP.
@@ -333,9 +346,31 @@ export const ProgressProvider = ({ children }) => {
                 }
             }
 
-            const totalMinutes = items.length * 15;
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
+            // Load actual focus time from database
+            let actualFocusMinutes = 0;
+            let focusBreakdown = { doc: 0, lab: 0, quiz: 0, project: 0 };
+            try {
+                const statsResult = await sql`
+                    SELECT total_focus_minutes, focus_minutes_doc, focus_minutes_lab, focus_minutes_quiz, focus_minutes_project 
+                    FROM user_dashboard_stats 
+                    WHERE user_id = ${user.id}
+                `;
+                if (statsResult.length > 0) {
+                    actualFocusMinutes = statsResult[0].total_focus_minutes || 0;
+                    focusBreakdown = {
+                        doc: statsResult[0].focus_minutes_doc || 0,
+                        lab: statsResult[0].focus_minutes_lab || 0,
+                        quiz: statsResult[0].focus_minutes_quiz || 0,
+                        project: statsResult[0].focus_minutes_project || 0
+                    };
+                }
+            } catch (e) {
+                console.warn('Could not load focus time from DB');
+                // No fallback - focus time defaults to 0 if DB fails
+            }
+
+            const hours = Math.floor(actualFocusMinutes / 60);
+            const minutes = actualFocusMinutes % 60;
             const focusTime = `${hours}h ${minutes}m`;
 
             const { level, nextLevelXp, progress } = calculateLevel(calculatedXp);
@@ -344,7 +379,8 @@ export const ProgressProvider = ({ children }) => {
                 streak: user?.streak_count || 0,
                 focusTime,
                 modulesCleared: courses.length,
-                totalFocusMinutes: totalMinutes,
+                totalFocusMinutes: actualFocusMinutes,
+                focusBreakdown,
                 xp: calculatedXp,
                 level,
                 nextLevelXp,
@@ -416,7 +452,8 @@ export const ProgressProvider = ({ children }) => {
                 // Get stats before update
                 const { level: currentLevel, nextLevelXp: oldNextXp, progress: oldProgress } = calculateLevel(currentStats.xp);
 
-                const newMins = currentStats.totalFocusMinutes + 15;
+                // Focus time is tracked via session, not per-item estimate
+                const newMins = currentStats.totalFocusMinutes;
                 const newXp = currentStats.xp + gainedXp;
                 const { level: newLevel, nextLevelXp, progress: newProgress } = calculateLevel(newXp);
 
@@ -516,7 +553,8 @@ export const ProgressProvider = ({ children }) => {
 
                 const currentStats = userStats;
                 const { level: currentLevel } = calculateLevel(currentStats.xp);
-                const newMins = currentStats.totalFocusMinutes + 15;
+                // Focus time is tracked via session, not per-item estimate
+                const newMins = currentStats.totalFocusMinutes;
                 const newXp = currentStats.xp + gainedXp;
                 const { level: newLevel, nextLevelXp, progress: newProgress } = calculateLevel(newXp);
 
@@ -633,6 +671,103 @@ export const ProgressProvider = ({ children }) => {
         return 'current';
     };
 
+    // Start tracking session time when user opens a learning item
+    // contentType: 'doc' | 'lab' | 'quiz' | 'project'
+    const startSession = useCallback((itemId, contentType = 'lab', courseId = '', unitId = '') => {
+        sessionStartRef.current = Date.now();
+        currentItemRef.current = { id: itemId, courseId, unitId };
+        currentContentTypeRef.current = contentType;
+    }, []);
+
+    // End session and save accumulated time by content type
+    const endSession = useCallback(async () => {
+        if (!sessionStartRef.current || !user) return 0;
+
+        const elapsed = Math.floor((Date.now() - sessionStartRef.current) / 1000 / 60); // minutes
+        const contentType = currentContentTypeRef.current || 'lab';
+        const itemInfo = currentItemRef.current || {};
+        const itemId = typeof itemInfo === 'string' ? itemInfo : itemInfo.id || '';
+        const courseId = itemInfo.courseId || '';
+        const unitId = itemInfo.unitId || '';
+
+        sessionStartRef.current = null;
+        currentItemRef.current = null;
+        currentContentTypeRef.current = null;
+
+        if (elapsed > 0 && elapsed < 180) { // Cap at 3 hours per session to avoid stale tabs
+            try {
+                // Update local state immediately
+                setUserStats(prev => {
+                    const newTotal = prev.totalFocusMinutes + elapsed;
+                    const h = Math.floor(newTotal / 60);
+                    const m = newTotal % 60;
+                    return {
+                        ...prev,
+                        totalFocusMinutes: newTotal,
+                        focusTime: `${h}h ${m}m`,
+                        focusBreakdown: {
+                            ...prev.focusBreakdown,
+                            [contentType]: (prev.focusBreakdown[contentType] || 0) + elapsed
+                        }
+                    };
+                });
+
+                // Save to database - update both total and type-specific column
+                const columnMap = {
+                    doc: 'focus_minutes_doc',
+                    lab: 'focus_minutes_lab',
+                    quiz: 'focus_minutes_quiz',
+                    project: 'focus_minutes_project'
+                };
+
+                const column = columnMap[contentType] || 'focus_minutes_lab';
+
+                await sql`
+                    UPDATE user_dashboard_stats 
+                    SET total_focus_minutes = total_focus_minutes + ${elapsed},
+                        ${sql.unsafe(column)} = ${sql.unsafe(column)} + ${elapsed},
+                        last_activity_at = NOW(),
+                        updated_at = NOW()
+                    WHERE user_id = ${user.id}
+                `;
+
+                // Also log per-item for detailed breakdown (silently fail if table doesn't exist yet)
+                if (itemId && courseId) {
+                    try {
+                        await sql`
+                            INSERT INTO focus_time_log (user_id, item_id, course_id, unit_id, content_type, duration_minutes, started_at, ended_at)
+                            VALUES (${user.id}, ${itemId}, ${courseId}, ${unitId}, ${contentType}, ${elapsed}, ${new Date(Date.now() - elapsed * 60000).toISOString()}, NOW())
+                        `;
+                    } catch (logErr) {
+                        // Table might not exist yet, silently ignore
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to save focus time:', err);
+            }
+        }
+
+        return elapsed;
+    }, [user]);
+
+    // Auto-save session on page unload
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (sessionStartRef.current && user) {
+                const elapsed = Math.floor((Date.now() - sessionStartRef.current) / 1000 / 60);
+                const contentType = currentContentTypeRef.current || 'lab';
+                if (elapsed > 0 && elapsed < 180) {
+                    // Use sendBeacon for reliable unload saving
+                    const data = JSON.stringify({ userId: user.id, minutes: elapsed, type: contentType });
+                    navigator.sendBeacon('/api/track-focus', data);
+                }
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [user]);
+
     const value = {
         completedCourses,
         completedItems,
@@ -650,7 +785,9 @@ export const ProgressProvider = ({ children }) => {
         isCourseCompleted,
         getCourseItemsCompleted,
         resetProgress,
-        checkUnitStatus
+        checkUnitStatus,
+        startSession,
+        endSession
     };
 
     return (

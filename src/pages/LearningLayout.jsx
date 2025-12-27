@@ -22,7 +22,7 @@ import confetti from 'canvas-confetti';
 export default function LearningLayout() {
     const { courseId, itemId } = useParams();
     const navigate = useNavigate();
-    const { completedItems, markItemComplete, reward, clearReward } = useProgress(); // Destructure reward stats
+    const { completedItems, markItemComplete, reward, clearReward, startSession, endSession } = useProgress();
 
     const [item, setItem] = useState(null);
     const [activeFile, setActiveFile] = useState('index.html');
@@ -44,6 +44,30 @@ export default function LearningLayout() {
 
     // Terminal State for Git Course
     const [virtualGitState, setVirtualGitState] = useState(null);
+
+    // Start session tracking when item loads
+    useEffect(() => {
+        const currentItem = getItem(courseId, itemId);
+        if (itemId && currentItem) {
+            // Determine content type for focus tracking
+            let contentType = 'lab'; // default
+            if (currentItem.type === CONTENT_TYPES.INFORMATIONAL) {
+                contentType = 'doc';
+            } else if (currentItem.type === CONTENT_TYPES.QUIZ) {
+                contentType = 'quiz';
+            } else if (currentItem.type === CONTENT_TYPES.PROJECT) {
+                contentType = 'project';
+            } else if (currentItem.type === CONTENT_TYPES.LESSON) {
+                contentType = 'lab';
+            }
+            // Pass courseId and unitId for per-item focus logging
+            startSession(itemId, contentType, courseId, currentItem.unitId || '');
+        }
+        // End session when leaving this item
+        return () => {
+            endSession();
+        };
+    }, [itemId, courseId, startSession, endSession]);
 
     useEffect(() => {
         const currentItem = getItem(courseId, itemId);
