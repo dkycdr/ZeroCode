@@ -38,19 +38,92 @@ Bring the changes from \`origin/main\` into your local \`main\` branch.
     ],
     tasks: [
         {
-            id: 'fetch-remote',
-            description: 'Fetch the latest updates from the origin remote',
-            regex: 'COMMAND:git fetch'
+            id: 1,
+            description: 'Check current status: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Pre-fetch Status',
+                strategy: 'See your current working state before fetching.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'diff-tracking',
-            description: 'Compare current branch with the remote tracking branch',
-            regex: 'COMMAND:git diff main origin/main'
+            id: 2,
+            description: 'Fetch updates from origin: "git fetch origin"',
+            completed: false,
+            regex: /\s*git\s+fetch\s+origin?\s*/,
+            hint: {
+                concept: 'Fetching',
+                strategy: 'Downloads remote data without changing working directory.',
+                solution: 'git fetch origin'
+            }
         },
         {
-            id: 'merge-upstream',
-            description: 'Merge origin/main into the current branch',
-            regex: 'COMMAND:git merge origin/main'
+            id: 3,
+            description: 'View fetched branches: "git branch -r"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-r\s*/,
+            hint: {
+                concept: 'Remote Branches',
+                strategy: 'Shows all remote-tracking branches.',
+                solution: 'git branch -r'
+            }
+        },
+        {
+            id: 4,
+            description: 'Compare local vs remote: "git diff main origin/main"',
+            completed: false,
+            regex: /\s*git\s+diff\s+main\s+origin\/main\s*/,
+            hint: {
+                concept: 'Local vs Remote Diff',
+                strategy: 'See what changed on remote since your last sync.',
+                solution: 'git diff main origin/main'
+            }
+        },
+        {
+            id: 5,
+            description: 'View commit difference: "git log main..origin/main --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+main\.\.origin\/main\s*/,
+            hint: {
+                concept: 'Commit Comparison',
+                strategy: 'Shows commits on remote not yet in local.',
+                solution: 'git log main..origin/main --oneline'
+            }
+        },
+        {
+            id: 6,
+            description: 'Merge remote changes: "git merge origin/main"',
+            completed: false,
+            regex: /\s*git\s+merge\s+origin\/main\s*/,
+            hint: {
+                concept: 'Merging Remote',
+                strategy: 'Integrates remote changes into your local branch.',
+                solution: 'git merge origin/main'
+            }
+        },
+        {
+            id: 7,
+            description: 'Verify merge: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Merge Verification',
+                strategy: 'Check that remote commits are now in local history.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 8,
+            description: 'Alternative: Use git pull (fetch + merge): "git pull origin main"',
+            completed: false,
+            regex: /\s*git\s+pull\s+origin\s+main\s*/,
+            hint: {
+                concept: 'Pull Shortcut',
+                strategy: 'git pull = git fetch + git merge in one command.',
+                solution: 'git pull origin main'
+            }
         }
     ]
 };

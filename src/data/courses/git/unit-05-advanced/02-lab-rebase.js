@@ -41,20 +41,92 @@ After squashing, rename the final combined commit to "feat: implement secure log
     ],
     tasks: [
         {
-            id: 'start-rebase',
-            description: 'Start interactive rebase for the last 3 commits',
-            regex: 'COMMAND:git rebase -i HEAD~3'
+            id: 1,
+            description: 'View current messy history: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Pre-rebase History',
+                strategy: 'See the commits you are about to squash.',
+                solution: 'git log --oneline'
+            }
         },
         {
-            id: 'commit-count',
-            description: 'Ensure only 1 commit remains after squashing',
-            // Check that the history length on this branch is reduced relative to start
-            regex: 'COMMIT_COUNT:2' // Assuming initial commit + 1 squashed feature commit
+            id: 2,
+            description: 'Start interactive rebase: "git rebase -i HEAD~3"',
+            completed: false,
+            regex: /\s*git\s+rebase\s+-i\s+HEAD~\d+\s*/,
+            hint: {
+                concept: 'Interactive Rebase',
+                strategy: 'Opens editor to modify last n commits.',
+                solution: 'git rebase -i HEAD~3'
+            }
         },
         {
-            id: 'commit-msg',
-            description: 'Verify final commit message is "feat: implement secure login"',
-            regex: 'COMMIT_MSG:feat: implement secure login'
+            id: 3,
+            description: 'Change second commit to "squash" (s)',
+            completed: false,
+            regex: /\s*s\s+/,
+            hint: {
+                concept: 'Squash Command',
+                strategy: 'Change "pick" to "s" or "squash" to combine with previous.',
+                solution: 'Change "pick abc123" to "s abc123"'
+            }
+        },
+        {
+            id: 4,
+            description: 'Change third commit to "squash" (s)',
+            completed: false,
+            regex: /\s*s\s+/,
+            hint: {
+                concept: 'Multiple Squash',
+                strategy: 'All squashed commits combine into the first "pick".',
+                solution: 'Change "pick def456" to "s def456"'
+            }
+        },
+        {
+            id: 5,
+            description: 'Save and exit editor (simulation)',
+            completed: false,
+            regex: /\s*:wq\s*/,
+            hint: {
+                concept: 'Vim Save',
+                strategy: 'In vim, :wq saves and exits.',
+                solution: ':wq'
+            }
+        },
+        {
+            id: 6,
+            description: 'Write new combined commit message',
+            completed: false,
+            regex: /\s*feat:\s+implement\s+secure\s+login\s*/,
+            hint: {
+                concept: 'Combined Message',
+                strategy: 'Write a clean message describing all the work.',
+                solution: 'feat: implement secure login'
+            }
+        },
+        {
+            id: 7,
+            description: 'View clean history: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Post-rebase History',
+                strategy: 'Should now show fewer, cleaner commits.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 8,
+            description: 'Continue with normal workflow',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'Confirm rebase completed successfully.',
+                solution: 'git status'
+            }
         }
     ]
 };

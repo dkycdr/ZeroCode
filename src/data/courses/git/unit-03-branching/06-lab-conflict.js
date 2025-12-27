@@ -52,24 +52,92 @@ Stage the resolved \`styles.css\` and commit with the message "Merge: Resolve UI
     },
     tasks: [
         {
-            id: 'trigger-conflict',
-            description: 'Trigger the conflict by merging feature-ui',
-            regex: 'MERGE_CONFLICT:styles.css'
+            id: 1,
+            description: 'Check you are on main: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Pre-merge Position',
+                strategy: 'Must be on target branch (main) before merging.',
+                solution: 'git branch'
+            }
         },
         {
-            id: 'resolve-content',
-            description: 'Resolve the conflict (background should be midnightblue)',
-            regex: 'FILE:styles.css,MATCH:background: midnightblue,NOT_MATCH:<<<<<<'
+            id: 2,
+            description: 'Trigger the conflict: "git merge feature-ui"',
+            completed: false,
+            regex: /\s*git\s+merge\s+feature-ui\s*/,
+            hint: {
+                concept: 'Triggering Conflict',
+                strategy: 'Git will detect conflicting changes and stop.',
+                solution: 'git merge feature-ui'
+            }
         },
         {
-            id: 'stage-resolve',
-            description: 'Stage the resolved file',
-            regex: 'STAGED:styles.css'
+            id: 3,
+            description: 'Check status to see conflicted files: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Conflict Status',
+                strategy: 'Shows "both modified" for conflicted files.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'finish-merge',
-            description: 'Commit the resolution',
-            regex: 'COMMIT_MSG:.*Resolve UI color conflict.*'
+            id: 4,
+            description: 'View the conflict markers: "cat styles.css"',
+            completed: false,
+            regex: /\s*cat\s+styles\.css\s*/,
+            hint: {
+                concept: 'Conflict Analysis',
+                strategy: 'Look for <<<<<<<, =======, and >>>>>>> markers.',
+                solution: 'cat styles.css'
+            }
+        },
+        {
+            id: 5,
+            description: 'Edit the file to resolve (keep midnightblue, remove markers)',
+            completed: false,
+            regex: /\s*(nano|vim|code|sed)\s+.*styles\.css.*/,
+            hint: {
+                concept: 'Manual Resolution',
+                strategy: 'Edit file to remove markers and keep desired code.',
+                solution: 'nano styles.css (then manually edit)'
+            }
+        },
+        {
+            id: 6,
+            description: 'Stage resolved file: "git add styles.css"',
+            completed: false,
+            regex: /\s*git\s+add\s+styles\.css\s*/,
+            hint: {
+                concept: 'Marking Resolved',
+                strategy: 'git add tells Git the conflict is resolved.',
+                solution: 'git add styles.css'
+            }
+        },
+        {
+            id: 7,
+            description: 'Complete merge: git commit -m "Merge: Resolve UI conflict"',
+            completed: false,
+            regex: /\s*git\s+commit\s+-m\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Merge Commit',
+                strategy: 'Finalize the merge with a descriptive message.',
+                solution: 'git commit -m "Merge: Resolve UI color conflict"'
+            }
+        },
+        {
+            id: 8,
+            description: 'Verify merge complete: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Merge Verification',
+                strategy: 'Should show the merge commit in history.',
+                solution: 'git log --oneline'
+            }
         }
     ]
 };

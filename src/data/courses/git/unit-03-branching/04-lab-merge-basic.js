@@ -47,24 +47,92 @@ Now that the work is in \`main\`, the feature branch pointer is no longer needed
     },
     tasks: [
         {
-            id: 'switch-main',
-            description: 'Switch back to the main branch',
-            regex: 'BRANCH_ACTIVE:main'
+            id: 1,
+            description: 'Check current branch: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Pre-merge Check',
+                strategy: 'Verify you are on main before merging.',
+                solution: 'git branch'
+            }
         },
         {
-            id: 'merge-feature',
-            description: 'Merge feature-dark-mode into main',
-            regex: 'COMMAND:git merge feature-dark-mode'
+            id: 2,
+            description: 'Switch to main: "git switch main"',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+main\s*/,
+            hint: {
+                concept: 'Target Branch',
+                strategy: 'You must be on the branch you want to merge INTO.',
+                solution: 'git switch main'
+            }
         },
         {
-            id: 'verify-content',
-            description: 'Verify app.js includes the new code',
-            regex: 'FILE:app.js,MATCH:Dark Mode Activated'
+            id: 3,
+            description: 'View log before merge: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Pre-merge History',
+                strategy: 'See your current commits before merging.',
+                solution: 'git log --oneline'
+            }
         },
         {
-            id: 'delete-branch',
-            description: 'Delete the merged feature-dark-mode branch',
-            regex: 'COMMAND:git branch -d feature-dark-mode'
+            id: 4,
+            description: 'Merge feature branch: "git merge feature-dark-mode"',
+            completed: false,
+            regex: /\s*git\s+merge\s+feature-dark-mode\s*/,
+            hint: {
+                concept: 'Merging',
+                strategy: 'Brings commits from feature branch into current branch.',
+                solution: 'git merge feature-dark-mode'
+            }
+        },
+        {
+            id: 5,
+            description: 'View log after merge: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Post-merge History',
+                strategy: 'Should now include commits from the feature branch.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 6,
+            description: 'Verify app.js has dark mode code: "cat app.js"',
+            completed: false,
+            regex: /\s*cat\s+app\.js\s*/,
+            hint: {
+                concept: 'Content Verification',
+                strategy: 'Confirm the merged changes are in your files.',
+                solution: 'cat app.js'
+            }
+        },
+        {
+            id: 7,
+            description: 'Delete merged branch: "git branch -d feature-dark-mode"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-d\s+feature-dark-mode\s*/,
+            hint: {
+                concept: 'Branch Cleanup',
+                strategy: '-d deletes merged branches. -D forces delete unmerged.',
+                solution: 'git branch -d feature-dark-mode'
+            }
+        },
+        {
+            id: 8,
+            description: 'List branches to confirm deletion: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Cleanup Verification',
+                strategy: 'The deleted branch should no longer appear.',
+                solution: 'git branch'
+            }
         }
     ]
 };

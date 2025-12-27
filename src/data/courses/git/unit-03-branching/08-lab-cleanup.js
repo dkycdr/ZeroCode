@@ -41,24 +41,92 @@ List your branches one last time to ensure only \`main\` remains.
     },
     tasks: [
         {
-            id: 'list-branches',
-            description: 'List all branches',
-            regex: 'COMMAND:git branch'
+            id: 1,
+            description: 'List all branches: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Branch Inventory',
+                strategy: 'See all local branches before cleanup.',
+                solution: 'git branch'
+            }
         },
         {
-            id: 'delete-safe',
-            description: 'Delete the old-feature branch safely',
-            regex: 'COMMAND:git branch -d old-feature'
+            id: 2,
+            description: 'View merged branches: "git branch --merged"',
+            completed: false,
+            regex: /\s*git\s+branch\s+--merged\s*/,
+            hint: {
+                concept: 'Merged Branches',
+                strategy: 'Shows branches that have been merged into current branch.',
+                solution: 'git branch --merged'
+            }
         },
         {
-            id: 'delete-force',
-            description: 'Force delete the failed-research branch',
-            regex: 'COMMAND:git branch -D failed-research'
+            id: 3,
+            description: 'View unmerged branches: "git branch --no-merged"',
+            completed: false,
+            regex: /\s*git\s+branch\s+--no-merged\s*/,
+            hint: {
+                concept: 'Unmerged Branches',
+                strategy: 'Shows branches with work not yet merged.',
+                solution: 'git branch --no-merged'
+            }
         },
         {
-            id: 'final-check',
+            id: 4,
+            description: 'Delete merged branch safely: "git branch -d old-feature"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-d\s+old-feature\s*/,
+            hint: {
+                concept: 'Safe Delete',
+                strategy: '-d only deletes if branch is fully merged.',
+                solution: 'git branch -d old-feature'
+            }
+        },
+        {
+            id: 5,
+            description: 'Try deleting unmerged branch with -d (will fail)',
+            completed: false,
+            regex: /\s*git\s+branch\s+-d\s+failed-research\s*/,
+            hint: {
+                concept: 'Safe Delete Protection',
+                strategy: 'Git refuses to delete unmerged work with -d.',
+                solution: 'git branch -d failed-research'
+            }
+        },
+        {
+            id: 6,
+            description: 'Force delete unmerged: "git branch -D failed-research"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-D\s+failed-research\s*/,
+            hint: {
+                concept: 'Force Delete',
+                strategy: '-D (capital) forces deletion even if unmerged.',
+                solution: 'git branch -D failed-research'
+            }
+        },
+        {
+            id: 7,
             description: 'List branches to verify cleanup',
-            regex: 'COMMAND:git branch,RESULT:.*main.*'
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Cleanup Verification',
+                strategy: 'Only main should remain.',
+                solution: 'git branch'
+            }
+        },
+        {
+            id: 8,
+            description: 'Prune remote-tracking branches: "git fetch --prune"',
+            completed: false,
+            regex: /\s*git\s+fetch\s+--prune\s*/,
+            hint: {
+                concept: 'Remote Cleanup',
+                strategy: 'Removes references to deleted remote branches.',
+                solution: 'git fetch --prune'
+            }
         }
     ]
 };

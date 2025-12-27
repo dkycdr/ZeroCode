@@ -11,6 +11,7 @@ import { quiz2Mastery } from './10-quiz-mastery.js';
 
 export const unit1Introduction = {
     id: 'git-unit-1',
+    version: '1.0.0',
     title: 'Unit 1: Protocol Initialization',
     description: 'Master the distributed architecture. understand the "Why" behind the "How" and perform your first commits.',
     items: [

@@ -11,6 +11,7 @@ import { quiz2Conflicts } from './10-quiz-conflicts.js';
 
 export const unit3Branching = {
     id: 'git-unit-3',
+    version: '1.0.0',
     title: 'Unit 3: Parallel Universes (Branching) 🌿',
     description: 'Master the power of concurrent development, internal pointer mechanics, and advanced conflict resolution.',
     items: [

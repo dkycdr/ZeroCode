@@ -81,5 +81,44 @@ git merge --abort
 This resets your project to exactly how it was before you started the merge. No harm done.
 
 You are now ready to handle the "Heat of Battle" in collaborative development.
+
+---
+
+## 7. Common Mistakes
+
+> [!CAUTION]
+> **Common Mistake**: "I deleted the conflict markers but my code is still broken"
+>
+> **Why it happens**: You removed markers but didn't properly combine the logic from both sides.
+>
+> **How to fix**: Carefully read BOTH versions and decide what the correct merged code should be. Test after resolving.
+
+> [!CAUTION]
+> **Common Mistake**: "I accidentally committed the conflict markers (<<<<<<<, =======, >>>>>>>)"
+>
+> **Why it happens**: Rushed resolution without checking if markers were fully removed.
+>
+> **How to fix**: Edit the file to remove markers, then \`git add\` and \`git commit --amend\`.
+>
+> **Prevention**: Always search for "<<<<<<" before committing resolved files.
+
+> [!CAUTION]
+> **Common Mistake**: "I chose 'accept mine' and lost their important changes"
+>
+> **Why it happens**: Using merge tools blindly without understanding both changes.
+>
+> **How to fix**: \`git reflog\` to find the commit before merge, cherry-pick their changes.
+>
+> **Prevention**: Read both versions carefully. When in doubt, keep both and refactor.
+
+---
+
+## 8. Key Takeaways
+
+✅ **Three-way merge** uses Base + Ours + Theirs
+✅ Conflict markers show exactly where the conflict is
+✅ Remove ALL markers before committing
+✅ \`git merge --abort\` to escape a messy merge
+✅ Merge often to avoid mega-conflicts
 `
 };

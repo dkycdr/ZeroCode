@@ -35,19 +35,92 @@ Check the commit history to ensure there is only **one** commit and it has the c
     ],
     tasks: [
         {
-            id: 'fix-message',
-            description: 'Amend the last commit message to "Initial project setup with documentation"',
-            regex: 'COMMIT_MSG:Initial project setup with documentation'
+            id: 1,
+            description: 'View current commit history: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Pre-amend Check',
+                strategy: 'See the current commit message before amending.',
+                solution: 'git log --oneline'
+            }
         },
         {
-            id: 'add-forgotten',
-            description: 'Stage the README.md and amend the last commit',
-            regex: 'AMENDED_FILES:README.md'
+            id: 2,
+            description: 'Amend commit message: git commit --amend -m "Initial project setup"',
+            completed: false,
+            regex: /\s*git\s+commit\s+--amend\s+-m\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Amending Message',
+                strategy: 'Changes the message of the most recent commit.',
+                solution: 'git commit --amend -m "Initial project setup with documentation"'
+            }
         },
         {
-            id: 'verify-history',
-            description: 'Run the command to see the simplified log',
-            regex: 'COMMAND:git log --oneline'
+            id: 3,
+            description: 'View updated history',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Verify Message',
+                strategy: 'Confirm the commit message was updated.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 4,
+            description: 'Make a change to README.md',
+            completed: false,
+            regex: /\s*echo\s+.*>>\s*README\.md\s*/,
+            hint: {
+                concept: 'File Modification',
+                strategy: 'Add content to README to stage for amending.',
+                solution: 'echo "Updated" >> README.md'
+            }
+        },
+        {
+            id: 5,
+            description: 'Stage the updated README: "git add README.md"',
+            completed: false,
+            regex: /\s*git\s+add\s+README\.md\s*/,
+            hint: {
+                concept: 'Staging for Amend',
+                strategy: 'Stage files you want to add to the previous commit.',
+                solution: 'git add README.md'
+            }
+        },
+        {
+            id: 6,
+            description: 'Amend without changing message: "git commit --amend --no-edit"',
+            completed: false,
+            regex: /\s*git\s+commit\s+--amend\s+--no-edit\s*/,
+            hint: {
+                concept: 'Silent Amend',
+                strategy: 'Adds staged files to last commit without editing message.',
+                solution: 'git commit --amend --no-edit'
+            }
+        },
+        {
+            id: 7,
+            description: 'View the amended commit details: "git show HEAD"',
+            completed: false,
+            regex: /\s*git\s+show\s+HEAD\s*/,
+            hint: {
+                concept: 'Commit Details',
+                strategy: 'Shows full details including the amended files.',
+                solution: 'git show HEAD'
+            }
+        },
+        {
+            id: 8,
+            description: 'Confirm only one commit exists: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'History Verification',
+                strategy: 'Should still show only one commit (amended, not new).',
+                solution: 'git log --oneline'
+            }
         }
     ]
 };

@@ -51,24 +51,92 @@ Switch to \`main\` and merge \`upstream/main\` into it.
     },
     tasks: [
         {
-            id: 'remote-v',
-            description: 'Check existing remotes',
-            regex: 'COMMAND:git remote -v'
+            id: 1,
+            description: 'Check current remotes: "git remote -v"',
+            completed: false,
+            regex: /\s*git\s+remote\s+-v\s*/,
+            hint: {
+                concept: 'Remote Inventory',
+                strategy: 'You should only see origin.',
+                solution: 'git remote -v'
+            }
         },
         {
-            id: 'add-upstream',
-            description: 'Add upstream remote "https://github.com/framework/core.git"',
-            regex: 'COMMAND:git remote add upstream'
+            id: 2,
+            description: 'Add upstream remote: git remote add upstream https://github.com/framework/core.git',
+            completed: false,
+            regex: /\s*git\s+remote\s+add\s+upstream\s+https?:\/\/\S+\s*/,
+            hint: {
+                concept: 'Adding Upstream',
+                strategy: 'upstream points to original repo you forked from.',
+                solution: 'git remote add upstream https://github.com/framework/core.git'
+            }
         },
         {
-            id: 'fetch-upstream',
-            description: 'Fetch changes from upstream',
-            regex: 'COMMAND:git fetch' // any fetch or fetch upstream
+            id: 3,
+            description: 'Verify remotes: "git remote -v"',
+            completed: false,
+            regex: /\s*git\s+remote\s+-v\s*/,
+            hint: {
+                concept: 'Remote Verification',
+                strategy: 'Should now show origin AND upstream.',
+                solution: 'git remote -v'
+            }
         },
         {
-            id: 'merge-upstream',
-            description: 'Merge upstream/main into local main',
-            regex: 'COMMAND:git merge upstream/main'
+            id: 4,
+            description: 'Fetch from upstream: "git fetch upstream"',
+            completed: false,
+            regex: /\s*git\s+fetch\s+upstream\s*/,
+            hint: {
+                concept: 'Fetching Upstream',
+                strategy: 'Downloads changes from original repo.',
+                solution: 'git fetch upstream'
+            }
+        },
+        {
+            id: 5,
+            description: 'View upstream branches: "git branch -r"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-r\s*/,
+            hint: {
+                concept: 'Remote Branches',
+                strategy: 'Should show upstream/main.',
+                solution: 'git branch -r'
+            }
+        },
+        {
+            id: 6,
+            description: 'Switch to main: "git switch main"',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+main\s*/,
+            hint: {
+                concept: 'Target Branch',
+                strategy: 'Merge into your local main.',
+                solution: 'git switch main'
+            }
+        },
+        {
+            id: 7,
+            description: 'Merge upstream: "git merge upstream/main"',
+            completed: false,
+            regex: /\s*git\s+merge\s+upstream\/main\s*/,
+            hint: {
+                concept: 'Syncing Fork',
+                strategy: 'Brings original repo changes into your fork.',
+                solution: 'git merge upstream/main'
+            }
+        },
+        {
+            id: 8,
+            description: 'Push synced changes: "git push origin main"',
+            completed: false,
+            regex: /\s*git\s+push\s+origin\s+main\s*/,
+            hint: {
+                concept: 'Updating Fork',
+                strategy: 'Push synced changes to your GitHub fork.',
+                solution: 'git push origin main'
+            }
         }
     ]
 };

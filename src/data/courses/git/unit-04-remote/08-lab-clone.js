@@ -36,19 +36,92 @@ Use a command to show a detailed report of the connection between your local clo
     files: [], // Empty because user starts by cloning
     tasks: [
         {
-            id: 'clone-repo',
-            description: 'Clone the hyperloop-alpha repository',
-            regex: 'COMMAND:git clone https://github.com/zerocode/hyperloop-alpha.git'
+            id: 1,
+            description: 'Clone the repo: git clone https://github.com/zerocode/hyperloop-alpha.git',
+            completed: false,
+            regex: /\s*git\s+clone\s+https?:\/\/\S+\s*/,
+            hint: {
+                concept: 'Cloning',
+                strategy: 'Downloads entire repository including history.',
+                solution: 'git clone https://github.com/zerocode/hyperloop-alpha.git'
+            }
         },
         {
-            id: 'check-git-folder',
-            description: 'Check for the existence of the .git folder',
-            regex: 'COMMAND:ls -a'
+            id: 2,
+            description: 'Enter the project directory: "cd hyperloop-alpha"',
+            completed: false,
+            regex: /\s*cd\s+hyperloop-alpha\s*/,
+            hint: {
+                concept: 'Navigation',
+                strategy: 'Move into the cloned directory.',
+                solution: 'cd hyperloop-alpha'
+            }
         },
         {
-            id: 'remote-show',
-            description: 'Show detailed remote configuration',
-            regex: 'COMMAND:git remote show origin'
+            id: 3,
+            description: 'List all files including hidden: "ls -la"',
+            completed: false,
+            regex: /\s*ls\s+(-la|-al|-a)\s*/,
+            hint: {
+                concept: 'Hidden Files',
+                strategy: 'The .git folder should exist.',
+                solution: 'ls -la'
+            }
+        },
+        {
+            id: 4,
+            description: 'Check remote configuration: "git remote -v"',
+            completed: false,
+            regex: /\s*git\s+remote\s+-v\s*/,
+            hint: {
+                concept: 'Remote Setup',
+                strategy: 'origin is automatically configured after clone.',
+                solution: 'git remote -v'
+            }
+        },
+        {
+            id: 5,
+            description: 'View detailed remote info: "git remote show origin"',
+            completed: false,
+            regex: /\s*git\s+remote\s+show\s+origin\s*/,
+            hint: {
+                concept: 'Remote Details',
+                strategy: 'Shows HEAD branch, tracking branches, etc.',
+                solution: 'git remote show origin'
+            }
+        },
+        {
+            id: 6,
+            description: 'View commit history: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Clone History',
+                strategy: 'You have full project history locally.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 7,
+            description: 'List all branches (local + remote): "git branch -a"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-a\s*/,
+            hint: {
+                concept: 'All Branches',
+                strategy: 'Shows local branches and remote-tracking branches.',
+                solution: 'git branch -a'
+            }
+        },
+        {
+            id: 8,
+            description: 'Check current status: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Ready to Work',
+                strategy: 'Should show clean working tree on main branch.',
+                solution: 'git status'
+            }
         }
     ]
 };

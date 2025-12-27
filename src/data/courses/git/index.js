@@ -1,3 +1,4 @@
+import { unit0WhyGit } from './unit-0-why-git/index.js';
 import { unit1Introduction } from './unit-01-introduction/index.js';
 import { unit2Workflow } from './unit-02-workflow/index.js';
 import { unit3Branching } from './unit-03-branching/index.js';
@@ -13,6 +14,7 @@ export const gitCourse = {
     difficulty: 'Beginner',
     duration: '20 hours',
     units: [
+        unit0WhyGit,
         unit1Introduction,
         unit2Workflow,
         unit3Branching,

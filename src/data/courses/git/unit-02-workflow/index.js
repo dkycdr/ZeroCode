@@ -11,6 +11,7 @@ import { quiz2Tactical } from './10-quiz-tactical.js';
 
 export const unit2Workflow = {
     id: 'git-unit-2',
+    version: '1.0.0',
     title: 'Unit 2: The Standard Workflow ⚙️',
     description: 'Master the daily cycle: Ignoring noise, auditing changes, and fixing mistakes with precision.',
     items: [

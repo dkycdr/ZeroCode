@@ -11,6 +11,7 @@ import { quiz2Collaborative } from './10-quiz-collaborative';
 
 export const unit4Remote = {
     id: 'unit-04-remote',
+    version: '1.0.0',
     title: 'Collaborative Coding: Remote & GitHub',
     description: 'Master the art of distributed version control, remote synchronization, and GitHub workflows.',
     items: [

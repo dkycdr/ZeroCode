@@ -40,19 +40,92 @@ Push your \`main\` branch to the \`origin\` remote. Because this is the first pu
     ],
     tasks: [
         {
-            id: 'check-remote',
-            description: 'Check existing remotes with verbose output',
-            regex: 'COMMAND:git remote -v'
+            id: 1,
+            description: 'Check existing remotes: "git remote -v"',
+            completed: false,
+            regex: /\s*git\s+remote\s+-v\s*/,
+            hint: {
+                concept: 'Remote Listing',
+                strategy: '-v shows URLs for fetch and push.',
+                solution: 'git remote -v'
+            }
         },
         {
-            id: 'add-remote',
-            description: 'Add remote "origin" pointing to the GitHub URL',
-            regex: 'COMMAND:git remote add origin https://github.com/zerocode/nexus-ai.git'
+            id: 2,
+            description: 'Add origin remote: git remote add origin https://github.com/zerocode/nexus-ai.git',
+            completed: false,
+            regex: /\s*git\s+remote\s+add\s+origin\s+https?:\/\/\S+\s*/,
+            hint: {
+                concept: 'Adding Remote',
+                strategy: 'origin is the conventional name for the primary remote.',
+                solution: 'git remote add origin https://github.com/zerocode/nexus-ai.git'
+            }
         },
         {
-            id: 'push-main',
-            description: 'Push main to origin and set upstream',
-            regex: 'COMMAND:git push -u origin main'
+            id: 3,
+            description: 'Verify remote was added: "git remote -v"',
+            completed: false,
+            regex: /\s*git\s+remote\s+-v\s*/,
+            hint: {
+                concept: 'Remote Verification',
+                strategy: 'Should now show origin with URL.',
+                solution: 'git remote -v'
+            }
+        },
+        {
+            id: 4,
+            description: 'Push main with upstream: "git push -u origin main"',
+            completed: false,
+            regex: /\s*git\s+push\s+-u\s+origin\s+main\s*/,
+            hint: {
+                concept: 'First Push',
+                strategy: '-u sets upstream tracking for future pulls.',
+                solution: 'git push -u origin main'
+            }
+        },
+        {
+            id: 5,
+            description: 'Check branch tracking: "git branch -vv"',
+            completed: false,
+            regex: /\s*git\s+branch\s+-vv\s*/,
+            hint: {
+                concept: 'Tracking Verification',
+                strategy: 'Shows which remote branch each local branch tracks.',
+                solution: 'git branch -vv'
+            }
+        },
+        {
+            id: 6,
+            description: 'View remote details: "git remote show origin"',
+            completed: false,
+            regex: /\s*git\s+remote\s+show\s+origin\s*/,
+            hint: {
+                concept: 'Remote Details',
+                strategy: 'Shows full info about the remote.',
+                solution: 'git remote show origin'
+            }
+        },
+        {
+            id: 7,
+            description: 'Make a change and push: git push',
+            completed: false,
+            regex: /\s*git\s+push\s*$/,
+            hint: {
+                concept: 'Subsequent Push',
+                strategy: 'After -u, just git push works.',
+                solution: 'git push'
+            }
+        },
+        {
+            id: 8,
+            description: 'Check push log: "git log origin/main --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+origin\/main\s+--oneline\s*/,
+            hint: {
+                concept: 'Remote History',
+                strategy: 'Shows commits on the remote branch.',
+                solution: 'git log origin/main --oneline'
+            }
         }
     ]
 };

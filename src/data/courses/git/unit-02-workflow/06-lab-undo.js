@@ -35,19 +35,92 @@ Use the classic reset command to empty the entire Staging Area in one move.
     ],
     tasks: [
         {
-            id: 'unstage-secret',
-            description: 'Unstage the secrets.env file',
-            regex: 'UNSTAGED:config/secrets.env'
+            id: 1,
+            description: 'Check status to see staged files',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Pre-undo Status',
+                strategy: 'See what is staged before deciding what to undo.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'restore-config',
-            description: 'Discard changes in config.js',
-            regex: 'RESTORED:src/config.js'
+            id: 2,
+            description: 'Unstage secrets.env: "git restore --staged config/secrets.env"',
+            completed: false,
+            regex: /\s*git\s+restore\s+--staged\s+config\/secrets\.env\s*/,
+            hint: {
+                concept: 'Unstaging Files',
+                strategy: 'Move file from staging back to working directory (keeps changes).',
+                solution: 'git restore --staged config/secrets.env'
+            }
         },
         {
-            id: 'reset-all',
-            description: 'Run the command to clear the entire staging area',
-            regex: 'COMMAND:git reset HEAD'
+            id: 3,
+            description: 'Verify secrets.env is no longer staged',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'The file should now appear as "modified" (red) not "staged" (green).',
+                solution: 'git status'
+            }
+        },
+        {
+            id: 4,
+            description: 'Discard changes in config.js: "git restore src/config.js"',
+            completed: false,
+            regex: /\s*git\s+restore\s+src\/config\.js\s*/,
+            hint: {
+                concept: 'Discarding Changes',
+                strategy: 'DESTRUCTIVE: Reverts file to last committed version.',
+                solution: 'git restore src/config.js'
+            }
+        },
+        {
+            id: 5,
+            description: 'Verify config.js is restored',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Clean Status',
+                strategy: 'The file should no longer appear as modified.',
+                solution: 'git status'
+            }
+        },
+        {
+            id: 6,
+            description: 'Stage everything: "git add ."',
+            completed: false,
+            regex: /\s*git\s+add\s+\.\s*/,
+            hint: {
+                concept: 'Bulk Staging',
+                strategy: 'Stage all files to practice resetting.',
+                solution: 'git add .'
+            }
+        },
+        {
+            id: 7,
+            description: 'Reset all staged files: "git reset HEAD"',
+            completed: false,
+            regex: /\s*git\s+reset\s+HEAD\s*/,
+            hint: {
+                concept: 'Bulk Unstaging',
+                strategy: 'Clears the entire staging area at once.',
+                solution: 'git reset HEAD'
+            }
+        },
+        {
+            id: 8,
+            description: 'Final status check - should show no staged files',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Clean Staging',
+                strategy: 'All files should be in working directory, none staged.',
+                solution: 'git status'
+            }
         }
     ]
 };

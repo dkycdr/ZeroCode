@@ -11,6 +11,7 @@ import { quizStrategies } from './10-quiz-strategies.js';
 
 export const unit06Team = {
     id: 'git-06-team',
+    version: '1.0.0',
     title: 'Unit 6: Team Collaboration 🤝',
     description: 'Master the art of Pull Requests, Code Reviews, and Forking Workflows.',
     items: [

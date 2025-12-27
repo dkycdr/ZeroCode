@@ -100,5 +100,33 @@ It contains a sorted list of:
 
 When you run \`git add\`, Git calculates the SHA-1 of the file content, adds the blob to \`.git/objects\`, and updates the entry in \`.git/index\`.
 It does **not** create a new commit object yet. This is why \`git add\` is fast.
+
+---
+
+## 6. Common Mistakes
+
+> [!CAUTION]
+> **Common Mistake**: "I ran git commit but my changes aren't in the commit!"
+>
+> **Why it happens**: You forgot to \`git add\` before committing. Changes stay in Working Directory.
+>
+> **How to fix**: Run \`git add <files>\` then \`git commit --amend\` to add to the previous commit.
+
+> [!CAUTION]
+> **Common Mistake**: "I accidentally staged files I didn't want to commit"
+>
+> **Why it happens**: Using \`git add .\` stages everything including temporary files.
+>
+> **How to fix**: Run \`git restore --staged <file>\` to unstage specific files.
+
+---
+
+## 7. Key Takeaways
+
+✅ **Working Directory** = Your actual files (modified, untracked)
+✅ **Staging Area** = Ready for commit (staged)
+✅ **Repository** = Permanent history (committed)
+✅ Use staging to create **atomic commits**
+✅ \`git add\` moves to staging, \`git commit\` saves to history
 `
 };

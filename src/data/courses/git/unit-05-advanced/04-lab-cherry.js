@@ -51,20 +51,92 @@ Cherry-pick that specific commit into your \`main\` branch.
     },
     tasks: [
         {
-            id: 'find-commit',
-            description: 'Identify the commit (simulated step - check log)',
-            regex: 'COMMAND:git log'
+            id: 1,
+            description: 'Switch to feature-payment: "git switch feature-payment"',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+feature-payment\s*/,
+            hint: {
+                concept: 'Branch Navigation',
+                strategy: 'Go to the branch containing the commit you need.',
+                solution: 'git switch feature-payment'
+            }
         },
         {
-            id: 'switch-main',
-            description: 'Switch back to the main branch',
-            regex: 'BRANCH_ACTIVE:main'
+            id: 2,
+            description: 'View commit log: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Finding Commits',
+                strategy: 'Identify the hash of the commit you need.',
+                solution: 'git log --oneline'
+            }
         },
         {
-            id: 'cherry-pick-success',
-            description: 'Cherry-pick the fix. Verify commit message exists in main.',
-            // We check if the commit message "fix: critical payment bug" now exists in main
-            regex: 'COMMIT_MSG:fix: critical payment bug'
+            id: 3,
+            description: 'Copy the hash of "fix: critical payment bug" commit',
+            completed: false,
+            regex: /\s*fix999\s*/,
+            hint: {
+                concept: 'Selecting Commit',
+                strategy: 'Note the short hash (e.g., fix999).',
+                solution: 'Remember: fix999'
+            }
+        },
+        {
+            id: 4,
+            description: 'Switch back to main: "git switch main"',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+main\s*/,
+            hint: {
+                concept: 'Target Branch',
+                strategy: 'Cherry-pick applies to current branch.',
+                solution: 'git switch main'
+            }
+        },
+        {
+            id: 5,
+            description: 'Cherry-pick the fix: "git cherry-pick fix999"',
+            completed: false,
+            regex: /\s*git\s+cherry-pick\s+\w+\s*/,
+            hint: {
+                concept: 'Cherry-picking',
+                strategy: 'Applies just that one commit to current branch.',
+                solution: 'git cherry-pick fix999'
+            }
+        },
+        {
+            id: 6,
+            description: 'View log to confirm: "git log --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+--oneline\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'The fix commit should now appear in main.',
+                solution: 'git log --oneline'
+            }
+        },
+        {
+            id: 7,
+            description: 'Check the file content: "cat src/payment.js"',
+            completed: false,
+            regex: /\s*cat\s+src\/payment\.js\s*/,
+            hint: {
+                concept: 'Content Verification',
+                strategy: 'Confirm the fix is applied.',
+                solution: 'cat src/payment.js'
+            }
+        },
+        {
+            id: 8,
+            description: 'Check status: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Final Check',
+                strategy: 'Should show clean working tree.',
+                solution: 'git status'
+            }
         }
     ]
 };

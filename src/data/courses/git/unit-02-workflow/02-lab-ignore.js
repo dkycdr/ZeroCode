@@ -53,29 +53,92 @@ Ignore the entire \`dist/\` directory and any files inside the \`config/\` folde
     ],
     tasks: [
         {
-            id: 'create-gitignore',
-            description: 'Create a .gitignore file in the project root',
-            regex: 'EXISTS:.gitignore'
+            id: 1,
+            description: 'Check current status to see all untracked files',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Pre-ignore Check',
+                strategy: 'See which files Git is currently tracking before creating .gitignore.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'ignore-logs',
-            description: 'Ignore all .log files',
-            regex: 'FILE:.gitignore,MATCH:.*\\.log.*'
+            id: 2,
+            description: 'Create .gitignore file: touch .gitignore',
+            completed: false,
+            regex: /\s*touch\s+\.gitignore\s*/,
+            hint: {
+                concept: 'Creating .gitignore',
+                strategy: 'Use touch command to create the file.',
+                solution: 'touch .gitignore'
+            }
         },
         {
-            id: 'ignore-env',
-            description: 'Ignore the .env file',
-            regex: 'FILE:.gitignore,MATCH:\\.env'
+            id: 3,
+            description: 'Add *.log to ignore all log files',
+            completed: false,
+            regex: /\*\.log/,
+            hint: {
+                concept: 'Wildcard Patterns',
+                strategy: 'Use * as wildcard to match any filename ending in .log.',
+                solution: 'echo "*.log" >> .gitignore'
+            }
         },
         {
-            id: 'ignore-dist',
-            description: 'Ignore the dist/ directory',
-            regex: 'FILE:.gitignore,MATCH:dist/.*'
+            id: 4,
+            description: 'Add .env to ignore environment secrets',
+            completed: false,
+            regex: /\.env/,
+            hint: {
+                concept: 'Security Ignore',
+                strategy: 'NEVER commit .env files - they contain secrets!',
+                solution: 'echo ".env" >> .gitignore'
+            }
         },
         {
-            id: 'ignore-local-config',
-            description: 'Ignore any local_ config files in the config directory',
-            regex: 'FILE:.gitignore,MATCH:config/local_.*'
+            id: 5,
+            description: 'Add dist/ to ignore the build directory',
+            completed: false,
+            regex: /dist\//,
+            hint: {
+                concept: 'Directory Ignore',
+                strategy: 'Trailing slash indicates a directory.',
+                solution: 'echo "dist/" >> .gitignore'
+            }
+        },
+        {
+            id: 6,
+            description: 'Add node_modules/ to ignore dependencies',
+            completed: false,
+            regex: /node_modules\//,
+            hint: {
+                concept: 'Dependencies',
+                strategy: 'Never commit node_modules - use package.json instead.',
+                solution: 'echo "node_modules/" >> .gitignore'
+            }
+        },
+        {
+            id: 7,
+            description: 'Add config/local_* to ignore local configs',
+            completed: false,
+            regex: /config\/local_/,
+            hint: {
+                concept: 'Pattern Matching',
+                strategy: 'Combine path with wildcard for specific patterns.',
+                solution: 'echo "config/local_*" >> .gitignore'
+            }
+        },
+        {
+            id: 8,
+            description: 'Verify ignored files with git status',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'Ignored files should no longer appear in git status.',
+                solution: 'git status'
+            }
         }
     ]
 };

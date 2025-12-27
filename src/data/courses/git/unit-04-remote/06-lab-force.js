@@ -37,19 +37,92 @@ Instead of a raw force push, use the **"lease"** flag to push your amended histo
     ],
     tasks: [
         {
-            id: 'amend-commit',
-            description: 'Amend the last commit message',
-            regex: 'COMMAND:git commit --amend'
+            id: 1,
+            description: 'View current commit: "git log -1 --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+-1\s+--oneline\s*/,
+            hint: {
+                concept: 'Pre-amend Check',
+                strategy: 'See the current commit message before amending.',
+                solution: 'git log -1 --oneline'
+            }
         },
         {
-            id: 'failed-push',
-            description: 'Attempt a standard push (and see it fail)',
-            regex: 'COMMAND:git push origin main'
+            id: 2,
+            description: 'Amend commit message: git commit --amend -m "feat: implement neural processing engine"',
+            completed: false,
+            regex: /\s*git\s+commit\s+--amend\s+-m\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Amending',
+                strategy: 'Changes the message of the last commit.',
+                solution: 'git commit --amend -m "feat: implement neural processing engine"'
+            }
         },
         {
-            id: 'safe-force-push',
-            description: 'Perform a safe force push with lease',
-            regex: 'COMMAND:git push --force-with-lease'
+            id: 3,
+            description: 'Verify amended message: "git log -1 --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+-1\s+--oneline\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'Confirm the message was updated.',
+                solution: 'git log -1 --oneline'
+            }
+        },
+        {
+            id: 4,
+            description: 'Try standard push (will fail): "git push origin main"',
+            completed: false,
+            regex: /\s*git\s+push\s+origin\s+main\s*/,
+            hint: {
+                concept: 'Push Rejection',
+                strategy: 'Remote history differs from local - push rejected.',
+                solution: 'git push origin main'
+            }
+        },
+        {
+            id: 5,
+            description: 'View the error message',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Understanding Rejection',
+                strategy: 'Git says "non-fast-forward" - histories diverged.',
+                solution: 'git status'
+            }
+        },
+        {
+            id: 6,
+            description: 'Safe force push: "git push --force-with-lease origin main"',
+            completed: false,
+            regex: /\s*git\s+push\s+--force-with-lease\s+origin\s+main\s*/,
+            hint: {
+                concept: 'Safe Force Push',
+                strategy: 'Only overwrites if no new commits on remote.',
+                solution: 'git push --force-with-lease origin main'
+            }
+        },
+        {
+            id: 7,
+            description: 'Verify push succeeded: "git log origin/main --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+origin\/main\s+--oneline\s*/,
+            hint: {
+                concept: 'Remote Verification',
+                strategy: 'Confirm remote has your amended commit.',
+                solution: 'git log origin/main --oneline'
+            }
+        },
+        {
+            id: 8,
+            description: 'Compare local and remote: "git diff main origin/main"',
+            completed: false,
+            regex: /\s*git\s+diff\s+main\s+origin\/main\s*/,
+            hint: {
+                concept: 'Sync Check',
+                strategy: 'Should show no differences (in sync).',
+                solution: 'git diff main origin/main'
+            }
         }
     ]
 };

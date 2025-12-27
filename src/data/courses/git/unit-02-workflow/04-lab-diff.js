@@ -39,24 +39,92 @@ Check the diff between your current working state and the **HEAD** (the last com
     ],
     tasks: [
         {
-            id: 'check-unstaged',
-            description: 'Run the command to see unstaged changes',
-            regex: 'COMMAND:git diff'
+            id: 1,
+            description: 'Check status to see modified files',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Pre-diff Status',
+                strategy: 'See which files are modified before checking the diff.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'stage-auth',
-            description: 'Stage the auth.js file',
-            regex: 'STAGED:src/auth.js'
+            id: 2,
+            description: 'View unstaged changes: "git diff"',
+            completed: false,
+            regex: /\s*git\s+diff\s*$/,
+            hint: {
+                concept: 'Unstaged Diff',
+                strategy: 'git diff shows changes in working directory not yet staged.',
+                solution: 'git diff'
+            }
         },
         {
-            id: 'check-staged',
-            description: 'Run the command to see staged changes',
-            regex: 'COMMAND:git diff --staged'
+            id: 3,
+            description: 'Stage auth.js: "git add src/auth.js"',
+            completed: false,
+            regex: /\s*git\s+add\s+src\/auth\.js\s*/,
+            hint: {
+                concept: 'Staging for Diff',
+                strategy: 'Stage a file to move it to the "ready to commit" area.',
+                solution: 'git add src/auth.js'
+            }
         },
         {
-            id: 'check-head',
-            description: 'Run the command to see all changes relative to HEAD',
-            regex: 'COMMAND:git diff HEAD'
+            id: 4,
+            description: 'View staged changes: "git diff --staged"',
+            completed: false,
+            regex: /\s*git\s+diff\s+--staged\s*/,
+            hint: {
+                concept: 'Staged Diff',
+                strategy: 'Shows what will be committed (staged changes only).',
+                solution: 'git diff --staged'
+            }
+        },
+        {
+            id: 5,
+            description: 'View all changes vs HEAD: "git diff HEAD"',
+            completed: false,
+            regex: /\s*git\s+diff\s+HEAD\s*/,
+            hint: {
+                concept: 'Full Diff',
+                strategy: 'Shows ALL changes (staged + unstaged) compared to last commit.',
+                solution: 'git diff HEAD'
+            }
+        },
+        {
+            id: 6,
+            description: 'View diff for specific file: "git diff src/main.js"',
+            completed: false,
+            regex: /\s*git\s+diff\s+\S+\.js\s*/,
+            hint: {
+                concept: 'File-specific Diff',
+                strategy: 'Specify a file path to see changes only in that file.',
+                solution: 'git diff src/main.js'
+            }
+        },
+        {
+            id: 7,
+            description: 'View word-level diff: "git diff --word-diff"',
+            completed: false,
+            regex: /\s*git\s+diff\s+--word-diff\s*/,
+            hint: {
+                concept: 'Word Diff',
+                strategy: 'Shows changes at word level instead of line level.',
+                solution: 'git diff --word-diff'
+            }
+        },
+        {
+            id: 8,
+            description: 'View diff with stats: "git diff --stat"',
+            completed: false,
+            regex: /\s*git\s+diff\s+--stat\s*/,
+            hint: {
+                concept: 'Diff Statistics',
+                strategy: 'Shows summary of files changed and lines added/removed.',
+                solution: 'git diff --stat'
+            }
         }
     ]
 };

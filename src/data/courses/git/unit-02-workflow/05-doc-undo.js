@@ -98,5 +98,37 @@ git restore -p filename.js
 Git will show you chunks of changes and ask: "Discard this chunk? [y,n,q,a,d,j,J,g,/,e,?]".
 
 You are now equipped with the ultimate "Oops" buttons.
+
+---
+
+## 7. Common Mistakes
+
+> [!CAUTION]
+> **Common Mistake**: "I ran git reset --hard and lost all my work!"
+>
+> **Why it happens**: \`--hard\` deletes ALL uncommitted changes permanently.
+>
+> **How to fix**: If you committed before, use \`git reflog\` to find and restore. If never committed, the work is gone.
+>
+> **Prevention**: Always commit frequently. Use \`git stash\` to save work temporarily.
+
+> [!CAUTION]
+> **Common Mistake**: "I wanted to undo staging but accidentally discarded my changes"
+>
+> **Why it happens**: Confusing \`git restore --staged\` (safe) with \`git restore\` (destructive).
+>
+> **How to fix**: If discarded, check \`git reflog\` or your editor's local history.
+>
+> **Prevention**: Always use \`--staged\` flag when you just want to unstage.
+
+---
+
+## 8. Key Takeaways
+
+✅ \`git restore <file>\` = Discard changes (DESTRUCTIVE)
+✅ \`git restore --staged <file>\` = Unstage (SAFE)
+✅ \`git reset --hard\` = Nuclear option (DANGEROUS)
+✅ \`git reflog\` = Your safety net for committed work
+✅ Commit frequently to have restore points
 `
 };

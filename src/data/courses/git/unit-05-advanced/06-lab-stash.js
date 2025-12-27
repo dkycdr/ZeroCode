@@ -38,21 +38,92 @@ Pretend you fixed the bug on main. Now, bring your stashed work back using **pop
     ],
     tasks: [
         {
-            id: 'stash-changes',
-            description: 'Stash your current changes',
-            regex: 'COMMAND:git stash' // Only matches the simple stash command or 'git stash push'
+            id: 1,
+            description: 'Check messy status: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Pre-stash Status',
+                strategy: 'See your modified files before stashing.',
+                solution: 'git status'
+            }
         },
         {
-            id: 'verify-clean',
-            description: 'Verify working directory is clean',
-            // Check that staging and working directory are empty via status command or internal state? 
-            // Better to check specific command usage in history or state.
-            regex: 'COMMAND:git status'
+            id: 2,
+            description: 'Stash your changes: "git stash"',
+            completed: false,
+            regex: /\s*git\s+stash\s*$/,
+            hint: {
+                concept: 'Basic Stash',
+                strategy: 'Saves changes and reverts working directory to HEAD.',
+                solution: 'git stash'
+            }
         },
         {
-            id: 'pop-stash',
-            description: 'Bring the changes back with pop',
-            regex: 'COMMAND:git stash pop'
+            id: 3,
+            description: 'Verify clean directory: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Clean Working Tree',
+                strategy: 'Should say "nothing to commit".',
+                solution: 'git status'
+            }
+        },
+        {
+            id: 4,
+            description: 'View stash list: "git stash list"',
+            completed: false,
+            regex: /\s*git\s+stash\s+list\s*/,
+            hint: {
+                concept: 'Stash Stack',
+                strategy: 'Shows all stashed entries.',
+                solution: 'git stash list'
+            }
+        },
+        {
+            id: 5,
+            description: 'Pretend to fix bug on main (switch branches, etc)',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+main\s*/,
+            hint: {
+                concept: 'Emergency Fix',
+                strategy: 'You can now safely work on other branches.',
+                solution: 'git switch main'
+            }
+        },
+        {
+            id: 6,
+            description: 'Restore stashed work: "git stash pop"',
+            completed: false,
+            regex: /\s*git\s+stash\s+pop\s*/,
+            hint: {
+                concept: 'Pop Stash',
+                strategy: 'Restores changes and removes from stash stack.',
+                solution: 'git stash pop'
+            }
+        },
+        {
+            id: 7,
+            description: 'Verify restored changes: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Restored Status',
+                strategy: 'Your modifications should be back.',
+                solution: 'git status'
+            }
+        },
+        {
+            id: 8,
+            description: 'Alternative: Stash with message: git stash push -m "WIP dashboard"',
+            completed: false,
+            regex: /\s*git\s+stash\s+push\s+-m\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Named Stash',
+                strategy: 'Give stashes descriptive names.',
+                solution: 'git stash push -m "WIP dashboard"'
+            }
         }
     ]
 };

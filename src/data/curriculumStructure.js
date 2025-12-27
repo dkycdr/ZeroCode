@@ -83,7 +83,7 @@ export const courses = {
         prerequisites: [],
         shortDesc: 'Version Control, Commits, Branches, Pull Requests',
         icon: 'git',
-        totalUnits: 6
+        totalUnits: 7
     },
     'tailwind': {
         id: 'tailwind',
@@ -94,7 +94,7 @@ export const courses = {
         prerequisites: [], // Beginner courses are always accessible
         shortDesc: 'Utility-first CSS, Responsive Design, Components',
         icon: 'tailwind',
-        totalUnits: 10
+        totalUnits: 11
     },
     'python': {
         id: 'python',

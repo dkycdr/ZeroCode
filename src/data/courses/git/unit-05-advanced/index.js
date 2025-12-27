@@ -11,6 +11,7 @@ import { quiz2Debug } from './10-quiz-debug';
 
 export const unit5Advanced = {
     id: 'unit-05-advanced',
+    version: '1.0.0',
     title: 'Advanced Workflows: Rewrite & Debug',
     description: 'Master advanced Git operations: Interactive Rebase, Cherry-pick, Stash, and Bisect.',
     items: [

@@ -62,24 +62,92 @@ Push the changes to \`origin\`. This automatically updates the PR.
     },
     tasks: [
         {
-            id: 'check-branch',
-            description: 'Ensure you are on feature-login',
-            regex: 'BRANCH_ACTIVE:feature-login'
+            id: 1,
+            description: 'Check current branch: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Branch Check',
+                strategy: 'Verify you are on feature-login.',
+                solution: 'git branch'
+            }
         },
         {
-            id: 'fix-code',
-            description: 'Fix the hardcoded secret',
-            regex: 'FILE_CONTAINS:src/auth.js:process.env.SECRET_KEY'
+            id: 2,
+            description: 'View the problematic code: "cat src/auth.js"',
+            completed: false,
+            regex: /\s*cat\s+src\/auth\.js\s*/,
+            hint: {
+                concept: 'Review Issue',
+                strategy: 'Find the hardcoded secret.',
+                solution: 'cat src/auth.js'
+            }
         },
         {
-            id: 'commit-fix',
-            description: 'Commit the "fix: remove hardcoded secret"',
-            regex: 'COMMIT_MSG:fix: remove hardcoded secret'
+            id: 3,
+            description: 'Edit auth.js to use environment variable',
+            completed: false,
+            regex: /\s*(nano|vim|code|sed)\s+.*auth\.js.*/,
+            hint: {
+                concept: 'Fixing Issue',
+                strategy: 'Replace "admin123" with process.env.SECRET_KEY.',
+                solution: 'nano src/auth.js'
+            }
         },
         {
-            id: 'push-update',
-            description: 'Push the update to origin',
-            regex: 'COMMAND:git push'
+            id: 4,
+            description: 'View the diff: "git diff"',
+            completed: false,
+            regex: /\s*git\s+diff\s*$/,
+            hint: {
+                concept: 'Review Changes',
+                strategy: 'Verify your fix is correct.',
+                solution: 'git diff'
+            }
+        },
+        {
+            id: 5,
+            description: 'Stage and commit: git commit -am "fix: remove hardcoded secret"',
+            completed: false,
+            regex: /\s*git\s+commit\s+-am?\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Committing Fix',
+                strategy: 'Commit with descriptive message.',
+                solution: 'git commit -am "fix: remove hardcoded secret"'
+            }
+        },
+        {
+            id: 6,
+            description: 'Push to update PR: "git push"',
+            completed: false,
+            regex: /\s*git\s+push\s*/,
+            hint: {
+                concept: 'Updating PR',
+                strategy: 'Push updates the PR automatically.',
+                solution: 'git push'
+            }
+        },
+        {
+            id: 7,
+            description: 'View push confirmation: "git log origin/feature-login --oneline"',
+            completed: false,
+            regex: /\s*git\s+log\s+origin\/feature-login\s+--oneline\s*/,
+            hint: {
+                concept: 'Push Verification',
+                strategy: 'Confirm your fix is on remote.',
+                solution: 'git log origin/feature-login --oneline'
+            }
+        },
+        {
+            id: 8,
+            description: 'Check status: "git status"',
+            completed: false,
+            regex: /\s*git\s+status\s*/,
+            hint: {
+                concept: 'Final Check',
+                strategy: 'Should show clean working tree.',
+                solution: 'git status'
+            }
         }
     ]
 };

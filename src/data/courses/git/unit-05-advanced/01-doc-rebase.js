@@ -98,5 +98,44 @@ graph TD
 
 > [!WARNING]
 > **The Golden Rule**: Never rebase public history! If you rebase commits that others have pulled, you will break their repositories. Only rebase your local, private branches.
+
+---
+
+## 6. Common Mistakes
+
+> [!CAUTION]
+> **Common Mistake**: "I rebased a public branch and now my teammates can't push!"
+>
+> **Why it happens**: Rebase rewrites commit hashes. Their local history no longer matches remote.
+>
+> **How to fix**: They need to \`git fetch\` and \`git reset --hard origin/branch\`. All local work is lost.
+>
+> **Prevention**: NEVER rebase branches that have been pushed and shared. Only rebase local branches.
+
+> [!CAUTION]
+> **Common Mistake**: "I got stuck in rebase conflict hell"
+>
+> **Why it happens**: Each commit is replayed, so conflicts may appear multiple times.
+>
+> **How to fix**: \`git rebase --abort\` to escape. Consider using merge instead.
+>
+> **Prevention**: Rebase onto main frequently to resolve conflicts incrementally.
+
+> [!CAUTION]
+> **Common Mistake**: "I accidentally dropped commits I needed"
+>
+> **Why it happens**: Changing 'pick' to 'drop' or deleting lines removes commits.
+>
+> **How to fix**: \`git reflog\` shows all commits including "deleted" ones. Cherry-pick them back.
+
+---
+
+## 7. Key Takeaways
+
+✅ \`git rebase -i HEAD~n\` to rewrite last n commits
+✅ **squash** combines commits, **fixup** combines silently
+✅ **NEVER** rebase public/shared branches
+✅ Rebase creates NEW commits with NEW hashes
+✅ Use for cleaning up messy local history before merging
 `
 };

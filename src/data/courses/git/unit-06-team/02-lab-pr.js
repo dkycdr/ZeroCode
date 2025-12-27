@@ -77,25 +77,92 @@ It MUST contain:
     },
     tasks: [
         {
-            id: 'switch-branch',
-            description: 'Switch to feature-navbar branch',
-            regex: 'BRANCH_ACTIVE:feature-navbar'
+            id: 1,
+            description: 'Check current branch: "git branch"',
+            completed: false,
+            regex: /\s*git\s+branch\s*$/,
+            hint: {
+                concept: 'Current Position',
+                strategy: 'Verify you are on main before switching.',
+                solution: 'git branch'
+            }
         },
         {
-            id: 'commit-fix',
-            description: 'Commit the fix with "feat: add home link"',
-            regex: 'COMMIT_MSG:feat: add home link'
+            id: 2,
+            description: 'Switch to feature branch: "git switch feature-navbar"',
+            completed: false,
+            regex: /\s*git\s+(switch|checkout)\s+feature-navbar\s*/,
+            hint: {
+                concept: 'Branch Switch',
+                strategy: 'Move to the feature branch to verify work.',
+                solution: 'git switch feature-navbar'
+            }
         },
         {
-            id: 'push-origin',
-            description: 'Push navigation branch to origin',
-            // Our useVirtualGit prints "Pushing to origin/..."
-            regex: 'COMMAND:git push'
+            id: 3,
+            description: 'View the Nav.js file: "cat src/components/Nav.js"',
+            completed: false,
+            regex: /\s*cat\s+src\/components\/Nav\.js\s*/,
+            hint: {
+                concept: 'Code Review',
+                strategy: 'Check the current state of the file.',
+                solution: 'cat src/components/Nav.js'
+            }
         },
         {
-            id: 'create-pr-desc',
-            description: 'Create PR_DESC.md with required fields',
-            regex: 'FILE_CONTAINS:PR_DESC.md:Adds global navigation bar'
+            id: 4,
+            description: 'Edit Nav.js to fix the missing href',
+            completed: false,
+            regex: /\s*(nano|vim|code|sed)\s+.*Nav\.js.*/,
+            hint: {
+                concept: 'Bug Fix',
+                strategy: 'Add href="/home" to the anchor tag.',
+                solution: 'nano src/components/Nav.js'
+            }
+        },
+        {
+            id: 5,
+            description: 'Stage and commit: git commit -am "fix: add missing home link"',
+            completed: false,
+            regex: /\s*git\s+commit\s+-am?\s+["'].*["']\s*/,
+            hint: {
+                concept: 'Quick Commit',
+                strategy: '-am stages modified files and commits in one step.',
+                solution: 'git commit -am "fix: add missing home link"'
+            }
+        },
+        {
+            id: 6,
+            description: 'Push feature branch: "git push -u origin feature-navbar"',
+            completed: false,
+            regex: /\s*git\s+push\s+(-u\s+)?origin\s+feature-navbar\s*/,
+            hint: {
+                concept: 'Push Feature',
+                strategy: 'Push branch to remote to create PR.',
+                solution: 'git push -u origin feature-navbar'
+            }
+        },
+        {
+            id: 7,
+            description: 'Create PR description file: echo "..." > PR_DESC.md',
+            completed: false,
+            regex: /\s*(echo|cat|nano|vim)\s+.*PR_DESC\.md.*/,
+            hint: {
+                concept: 'PR Description',
+                strategy: 'Create file with Summary and Type fields.',
+                solution: 'echo "Summary: Adds global navigation bar\nType: Feature" > PR_DESC.md'
+            }
+        },
+        {
+            id: 8,
+            description: 'Verify PR description: "cat PR_DESC.md"',
+            completed: false,
+            regex: /\s*cat\s+PR_DESC\.md\s*/,
+            hint: {
+                concept: 'Verification',
+                strategy: 'Check the PR description is complete.',
+                solution: 'cat PR_DESC.md'
+            }
         }
     ]
 };
