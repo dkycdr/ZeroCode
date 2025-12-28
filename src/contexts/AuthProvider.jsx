@@ -1,14 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { sql } from '../lib/neon';
-import bcrypt from 'bcryptjs';
-import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from '../lib/emailService';
+import api from '../lib/api-client';
 
 const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
-
-// Admin secret code - managed via environment variables
-const ADMIN_SECRET_CODE = import.meta.env.VITE_ADMIN_SECRET_CODE;
 
 // Subscription tier access levels
 export const SUBSCRIPTION_TIERS = {
@@ -76,61 +71,46 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData, password) => {
         try {
-            const passwordHash = await bcrypt.hash(password, 10);
+            const response = await api.auth.register(userData.email, password, userData.name);
 
-            const result = await sql`
-                INSERT INTO users (email, password_hash, name, is_admin, subscription_tier)
-                VALUES (${userData.email}, ${passwordHash}, ${userData.name}, false, 'free')
-                RETURNING id, email, name, phone, avatar, is_admin, subscription_tier, subscription_date, joined_date, created_at
-            `;
+            if (!response.success) {
+                return { success: false, error: response.error };
+            }
 
-            const newUser = result[0];
-            localStorage.setItem('zerocode_user', JSON.stringify(newUser));
-            setUser(newUser);
-
-            return { success: true };
+            // Note: User needs to verify email before logging in
+            // Don't auto-login here, redirect to verification page instead
+            return {
+                success: true,
+                message: 'Registration successful! Please check your email for verification code.',
+                user: response.user
+            };
         } catch (error) {
             console.error('Registration error:', error);
-            if (error.message.includes('duplicate key')) {
-                return { success: false, error: 'Email already registered' };
-            }
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Registration failed' };
         }
     };
 
     const login = async (email, password) => {
         try {
-            const result = await sql`
-                SELECT id, email, password_hash, name, phone, avatar, border, is_admin, subscription_tier, subscription_date, joined_date, created_at, streak_count, last_activity
-                FROM users WHERE email = ${email}
-            `;
+            const response = await api.auth.login(email, password);
 
-            if (result.length === 0) {
-                return { success: false, error: 'User not found' };
+            if (!response.success) {
+                return { success: false, error: response.error, code: response.code };
             }
 
-            const dbUser = result[0];
-            const isValid = await bcrypt.compare(password, dbUser.password_hash);
-            if (!isValid) {
-                return { success: false, error: 'Invalid password' };
-            }
+            // Store user data with JWT token
+            const userWithToken = {
+                ...response.user,
+                token: response.token
+            };
 
-            const { password_hash, ...userWithoutPassword } = dbUser;
-
-            // Auto-update streak on login
-            const streakResult = await updateStreak(dbUser);
-            if (streakResult.success) {
-                userWithoutPassword.streak_count = streakResult.newStreak;
-                userWithoutPassword.last_activity = streakResult.lastActivity;
-            }
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithoutPassword));
-            setUser(userWithoutPassword);
+            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
+            setUser(userWithToken);
 
             return { success: true };
         } catch (error) {
             console.error('Login error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Login failed' };
         }
     };
 
@@ -181,29 +161,31 @@ export const AuthProvider = ({ children }) => {
     };
 
     const verifyAdminCode = async (code) => {
-        if (code !== ADMIN_SECRET_CODE) {
-            return { success: false, error: 'Invalid admin code' };
-        }
-
         if (!user?.id) {
             return { success: false, error: 'Not logged in' };
         }
 
         try {
-            const result = await sql`
-                UPDATE users
-                SET is_admin = true, subscription_tier = 'admin'
-                WHERE id = ${user.id}
-                RETURNING id, email, name, phone, is_admin, subscription_tier, subscription_date, joined_date
-            `;
+            const response = await api.auth.verifyAdminCode(code);
 
-            const updatedUser = result[0];
+            if (!response.success) {
+                return { success: false, error: response.error };
+            }
+
+            // Update local user state
+            const updatedUser = {
+                ...user,
+                subscription_tier: 'admin',
+                is_admin: true
+            };
+
             localStorage.setItem('zerocode_user', JSON.stringify(updatedUser));
             setUser(updatedUser);
 
             return { success: true };
         } catch (error) {
-            return { success: false, error: error.message };
+            console.error('Admin verification error:', error);
+            return { success: false, error: error.message || 'Verification failed' };
         }
     };
 
@@ -392,143 +374,70 @@ export const AuthProvider = ({ children }) => {
 
     const verifyEmail = async (email, code) => {
         try {
-            const result = await sql`
-                SELECT id, email_verification_code, email_verification_expires, is_email_verified
-                FROM users WHERE email = ${email}
-            `;
+            const response = await api.auth.verifyEmail(email, code);
 
-            if (result.length === 0) {
-                return { success: false, error: 'User not found' };
+            if (!response.success) {
+                return { success: false, error: response.error, code: response.code };
             }
 
-            const dbUser = result[0];
+            // Store user data with JWT token (auto-login after verification)
+            const userWithToken = {
+                ...response.user,
+                token: response.token
+            };
 
-            // Check if already verified
-            if (dbUser.is_email_verified) {
-                return { success: true, message: 'Email already verified' };
-            }
+            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
+            setUser(userWithToken);
 
-            // Check if code matches
-            if (dbUser.email_verification_code !== code) {
-                return { success: false, error: 'Invalid verification code' };
-            }
-
-            // Check if code expired
-            if (new Date() > new Date(dbUser.email_verification_expires)) {
-                return { success: false, error: 'Verification code expired' };
-            }
-
-            // Mark as verified
-            const updateResult = await sql`
-                UPDATE users
-                SET is_email_verified = true, email_verification_code = NULL, email_verification_expires = NULL
-                WHERE email = ${email}
-                RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date
-            `;
-
-            const verifiedUser = updateResult[0];
-            localStorage.setItem('zerocode_user', JSON.stringify(verifiedUser));
-            setUser(verifiedUser);
-
-            // Send welcome email
-            await sendWelcomeEmail(email, verifiedUser.name);
-
-            return { success: true, user: verifiedUser };
+            return { success: true, message: response.message, user: response.user };
         } catch (error) {
             console.error('Verification error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Verification failed' };
         }
     };
 
     const resendVerificationCode = async (email) => {
         try {
-            const result = await sql`
-                SELECT id, name FROM users WHERE email = ${email}
-            `;
+            const response = await api.auth.resendVerification(email);
 
-            if (result.length === 0) {
-                return { success: false, error: 'User not found' };
+            if (!response.success) {
+                return { success: false, error: response.error };
             }
 
-            const verificationCode = generateVerificationCode();
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-            await sql`
-                UPDATE users
-                SET email_verification_code = ${verificationCode}, email_verification_expires = ${expiresAt}
-                WHERE email = ${email}
-            `;
-
-            await sendVerificationEmail(email, verificationCode);
-
-            return { success: true, message: 'Verification code sent' };
+            return { success: true, message: response.message };
         } catch (error) {
             console.error('Resend error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Failed to resend code' };
         }
     };
 
     const requestPasswordReset = async (email) => {
         try {
-            const result = await sql`
-                SELECT id, name FROM users WHERE email = ${email}
-            `;
+            const response = await api.auth.requestPasswordReset(email);
 
-            if (result.length === 0) {
-                return { success: true, message: 'If email exists, reset code sent' };
+            if (!response.success) {
+                return { success: false, error: response.error };
             }
 
-            const resetCode = generateVerificationCode();
-            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-
-            await sql`
-                UPDATE users
-                SET password_reset_code = ${resetCode}, password_reset_expires = ${expiresAt}
-                WHERE email = ${email}
-            `;
-
-            await sendPasswordResetEmail(email, resetCode);
-
-            return { success: true, message: 'Reset link sent to email' };
+            return { success: true, message: response.message };
         } catch (error) {
-            console.error('Password reset error:', error);
-            return { success: false, error: error.message };
+            console.error('Password reset request error:', error);
+            return { success: false, error: error.message || 'Failed to request reset' };
         }
     };
 
     const resetPassword = async (email, code, newPassword) => {
         try {
-            const result = await sql`
-                SELECT id, password_reset_code, password_reset_expires
-                FROM users WHERE email = ${email}
-            `;
+            const response = await api.auth.resetPassword(email, code, newPassword);
 
-            if (result.length === 0) {
-                return { success: false, error: 'User not found' };
+            if (!response.success) {
+                return { success: false, error: response.error };
             }
 
-            const user = result[0];
-
-            if (user.password_reset_code !== code) {
-                return { success: false, error: 'Invalid reset code' };
-            }
-
-            if (new Date() > new Date(user.password_reset_expires)) {
-                return { success: false, error: 'Reset code expired' };
-            }
-
-            const passwordHash = await bcrypt.hash(newPassword, 10);
-
-            await sql`
-                UPDATE users
-                SET password_hash = ${passwordHash}, password_reset_code = NULL, password_reset_expires = NULL
-                WHERE id = ${user.id}
-            `;
-
-            return { success: true, message: 'Password reset successfully' };
+            return { success: true, message: response.message };
         } catch (error) {
             console.error('Password reset error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || 'Failed to reset password' };
         }
     };
 
