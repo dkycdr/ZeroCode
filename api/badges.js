@@ -1,25 +1,27 @@
 import { sql } from '../src/lib/neon.js';
+import { cors } from './middleware/cors.js';
 
 /**
  * Badges API - handles badge operations
  * Actions: load, unlock
- * Uses manual JWT parsing with Buffer (Node.js compatible) to avoid dependencies
+ * Uses manual JWT parsing with Buffer to avoid jsonwebtoken dependency issues
+ * Wrapped with CORS middleware for consistent behavior
  */
-export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+async function handler(req, res) {
+    // Debug: Log all headers to verify token presence
+    console.log('Badges API Headers:', JSON.stringify(req.headers, null, 2));
 
     // Manual JWT parsing
     const authHeader = req.headers.authorization;
+
     if (!authHeader?.startsWith('Bearer ')) {
-        console.warn('Badges API: No Bearer token provided');
-        return res.status(401).json({ success: false, error: 'Unauthorized: Missing token' });
+        console.warn('Badges API: No Bearer token provided in Authorization header');
+        console.warn('Received Authorization:', authHeader);
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized: Missing token',
+            debug: 'Token not found in headers'
+        });
     }
 
     let userId;
@@ -31,12 +33,9 @@ export default async function handler(req, res) {
             throw new Error('Invalid token structure');
         }
 
-        // Decode payload (2nd part)
-        // Handle Base64Url to Base64 conversion (replace - with +, _ with /)
+        // Decode payload (2nd part) using Buffer
         const base64Url = parts[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-        // Use Buffer for decoding in Node.js environment
         const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
         const payload = JSON.parse(jsonPayload);
 
@@ -56,9 +55,9 @@ export default async function handler(req, res) {
     try {
         switch (action) {
             case 'load':
-                return handleLoadBadges(req, res, userId);
+                return await handleLoadBadges(req, res, userId);
             case 'unlock':
-                return handleUnlockBadge(req, res, userId);
+                return await handleUnlockBadge(req, res, userId);
             default:
                 return res.status(400).json({ success: false, error: 'Invalid action' });
         }
@@ -166,3 +165,5 @@ async function handleUnlockBadge(req, res, userId) {
         });
     }
 }
+
+export default cors(handler);
