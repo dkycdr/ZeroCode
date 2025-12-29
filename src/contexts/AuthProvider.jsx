@@ -62,9 +62,20 @@ export const AuthProvider = ({ children }) => {
         const sessionUser = localStorage.getItem('zerocode_user');
         if (sessionUser) {
             try {
-                setUser(JSON.parse(sessionUser));
+                const parsedUser = JSON.parse(sessionUser);
+                // Validate structure: must have token
+                if (parsedUser && parsedUser.token) {
+                    setUser(parsedUser);
+                } else {
+                    // Invalid session structure, clear it
+                    console.warn('Auth: Invalid session found (no token), clearing...');
+                    localStorage.removeItem('zerocode_user');
+                    setUser(null);
+                }
             } catch (e) {
+                console.error('Auth: Session parse error', e);
                 localStorage.removeItem('zerocode_user');
+                setUser(null);
             }
         }
         setLoading(false);
