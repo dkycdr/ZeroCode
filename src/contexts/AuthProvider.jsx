@@ -62,20 +62,9 @@ export const AuthProvider = ({ children }) => {
         const sessionUser = localStorage.getItem('zerocode_user');
         if (sessionUser) {
             try {
-                const parsedUser = JSON.parse(sessionUser);
-                // Validate structure: must have token
-                if (parsedUser && parsedUser.token) {
-                    setUser(parsedUser);
-                } else {
-                    // Invalid session structure, clear it
-                    console.warn('Auth: Invalid session found (no token), clearing...');
-                    localStorage.removeItem('zerocode_user');
-                    setUser(null);
-                }
+                setUser(JSON.parse(sessionUser));
             } catch (e) {
-                console.error('Auth: Session parse error', e);
                 localStorage.removeItem('zerocode_user');
-                setUser(null);
             }
         }
         setLoading(false);
@@ -261,8 +250,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGoogle = async (googleData) => {
-        const isDev = import.meta.env.DEV;
-
         try {
             let googleUser;
 
@@ -282,58 +269,43 @@ export const AuthProvider = ({ children }) => {
 
             const { email, name, sub: googleId, picture } = googleUser;
 
-            if (isDev) {
-                // Development mode: Use direct SQL (no API available)
-                let result = await sql`
-                    SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
-                    FROM users WHERE email = ${email} OR google_id = ${String(googleId)}
+            // Check if user exists
+            let result = await sql`
+                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
+                FROM users WHERE email = ${email}
+            `;
+
+            let dbUser;
+            if (result.length === 0) {
+                // Create new user from Google
+                const verificationCode = generateVerificationCode();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+                const createResult = await sql`
+                    INSERT INTO users (email, name, google_id, subscription_tier, email_verification_code, email_verification_expires, avatar, is_email_verified)
+                    VALUES (${email}, ${name}, ${googleId}, 'free', ${verificationCode}, ${expiresAt}, ${picture}, true)
+                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
                 `;
 
-                let dbUser;
-                if (result.length === 0) {
-                    // Create new user from Google
-                    const createResult = await sql`
-                        INSERT INTO users (email, name, google_id, subscription_tier, avatar, is_email_verified)
-                        VALUES (${email}, ${name}, ${String(googleId)}, 'free', ${picture}, true)
-                        RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
-                    `;
-                    dbUser = createResult[0];
-                } else {
-                    dbUser = result[0];
-                    if (!dbUser.google_id) {
-                        await sql`UPDATE users SET google_id = ${String(googleId)} WHERE id = ${dbUser.id}`;
-                    }
-                }
+                dbUser = createResult[0];
 
-                // In dev mode, add a placeholder token (not used for auth, but prevents errors)
-                const userWithDevToken = { ...dbUser, token: 'dev-mode-token' };
-                localStorage.setItem('zerocode_user', JSON.stringify(userWithDevToken));
-                setUser(userWithDevToken);
-                await updateStreak(userWithDevToken);
-                return { success: true, user: userWithDevToken };
+                // Auto-verify likely trusted, but logic kept as is in original for Google
             } else {
-                // Production mode: Use API to get proper JWT token
-                const response = await api.auth.socialLogin('google', {
-                    email,
-                    name,
-                    id: googleId,
-                    picture
-                });
+                dbUser = result[0];
 
-                if (!response.success) {
-                    return { success: false, error: response.error };
+                // Link Google ID if not present
+                if (!dbUser.google_id) {
+                    await sql`UPDATE users SET google_id = ${googleId} WHERE id = ${dbUser.id}`;
                 }
-
-                const userWithToken = {
-                    ...response.user,
-                    token: response.token
-                };
-
-                localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-                setUser(userWithToken);
-                await updateStreak(userWithToken);
-                return { success: true, user: userWithToken };
             }
+
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
+
+            // Update Streak
+            await updateStreak(dbUser);
+
+            return { success: true, user: dbUser };
         } catch (error) {
             console.error('Google login error:', error);
             return { success: false, error: error.message };
@@ -341,75 +313,59 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGithub = async (githubProfile) => {
-        const isDev = import.meta.env.DEV;
-
         try {
             const { email, name, id: githubId, avatar_url, login } = githubProfile;
             const displayName = name || login;
-            const primaryEmail = email || `github_${githubId}@placeholder.com`;
+            const primaryEmail = email; // Note: GitHub API might not return email if private, requires checking emails endpoint
 
-            if (!email && !githubId) {
+            if (!primaryEmail && !githubId) {
                 return { success: false, error: 'Could not retrieve email or ID from GitHub' };
             }
 
-            if (isDev) {
-                // Development mode: Use direct SQL (no API available)
-                let result = await sql`
-                    SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
-                    FROM users 
-                    WHERE github_id = ${String(githubId)} OR email = ${primaryEmail}
+            // Check if user exists by GitHub ID first, then Email
+            let result = await sql`
+                SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
+                FROM users 
+                WHERE github_id = ${String(githubId)} 
+                OR (email = ${primaryEmail} AND email IS NOT NULL)
+            `;
+
+            let dbUser;
+            if (result.length === 0) {
+                // New User
+                const verificationCode = generateVerificationCode();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+                const createResult = await sql`
+                    INSERT INTO users (email, name, github_id, subscription_tier, email_verification_code, email_verification_expires, avatar, is_email_verified)
+                    VALUES (${primaryEmail || `github_${githubId}@placeholder.com`}, ${displayName}, ${String(githubId)}, 'free', ${verificationCode}, ${expiresAt}, ${avatar_url}, ${!!primaryEmail})
+                    RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
                 `;
+                dbUser = createResult[0];
 
-                let dbUser;
-                if (result.length === 0) {
-                    // Create new user
-                    const createResult = await sql`
-                        INSERT INTO users (email, name, github_id, subscription_tier, avatar, is_email_verified)
-                        VALUES (${primaryEmail}, ${displayName}, ${String(githubId)}, 'free', ${avatar_url}, true)
-                        RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
-                    `;
-                    dbUser = createResult[0];
-                } else {
-                    dbUser = result[0];
-                    if (!dbUser.github_id) {
-                        await sql`UPDATE users SET github_id = ${String(githubId)} WHERE id = ${dbUser.id}`;
-                    }
-                    if (!dbUser.avatar && avatar_url) {
-                        await sql`UPDATE users SET avatar = ${avatar_url} WHERE id = ${dbUser.id}`;
-                        dbUser.avatar = avatar_url;
-                    }
-                }
-
-                // In dev mode, add a placeholder token
-                const userWithDevToken = { ...dbUser, token: 'dev-mode-token' };
-                localStorage.setItem('zerocode_user', JSON.stringify(userWithDevToken));
-                setUser(userWithDevToken);
-                await updateStreak(userWithDevToken);
-                return { success: true, user: userWithDevToken };
             } else {
-                // Production mode: Use API to get proper JWT token
-                const response = await api.auth.socialLogin('github', {
-                    email: primaryEmail,
-                    name: displayName,
-                    id: githubId,
-                    avatar_url,
-                    login
-                });
+                dbUser = result[0];
 
-                if (!response.success) {
-                    return { success: false, error: response.error };
+                // Link GitHub ID if missing
+                if (!dbUser.github_id) {
+                    await sql`UPDATE users SET github_id = ${String(githubId)} WHERE id = ${dbUser.id}`;
+                    dbUser.github_id = String(githubId);
                 }
 
-                const userWithToken = {
-                    ...response.user,
-                    token: response.token
-                };
-
-                localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-                setUser(userWithToken);
-                await updateStreak(userWithToken);
-                return { success: true, user: userWithToken };
+                // Update Avatar if missing
+                if (!dbUser.avatar && avatar_url) {
+                    await sql`UPDATE users SET avatar = ${avatar_url} WHERE id = ${dbUser.id}`;
+                    dbUser.avatar = avatar_url;
+                }
             }
+
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
+
+            // Update Streak
+            await updateStreak(dbUser);
+
+            return { success: true, user: dbUser };
 
         } catch (error) {
             console.error('GitHub login error:', error);

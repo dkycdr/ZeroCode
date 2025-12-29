@@ -9,15 +9,11 @@ function getAuthToken() {
     const userStr = localStorage.getItem('zerocode_user');
     if (userStr) {
         try {
-            const userData = JSON.parse(userStr);
-            if (!userData.token) console.warn('Auth: User found but no token');
-            return userData.token;
+            return JSON.parse(userStr).token;
         } catch (e) {
-            console.error('Auth: Parse error', e);
             return null;
         }
     }
-    console.warn('Auth: No user found in localStorage');
     return null;
 }
 
@@ -90,13 +86,6 @@ export const authAPI = {
             method: 'POST',
             body: JSON.stringify({ adminCode })
         });
-    },
-
-    async socialLogin(provider, profile) {
-        return apiRequest('/auth?action=social-login', {
-            method: 'POST',
-            body: JSON.stringify({ provider, profile })
-        });
     }
 };
 
@@ -167,14 +156,10 @@ export const leaderboardAPI = {
  */
 export const badgesAPI = {
     async load() {
-        const token = getAuthToken();
-        const query = token ? `&token=${token}` : '';
-        return apiRequest(`/badges?action=load${query}`, { method: 'GET' });
+        return apiRequest('/badges?action=load', { method: 'GET' });
     },
     async unlock(badgeId, xpBonus) {
-        const token = getAuthToken();
-        const query = token ? `&token=${token}` : '';
-        return apiRequest(`/badges?action=unlock${query}`, {
+        return apiRequest('/badges?action=unlock', {
             method: 'POST',
             body: JSON.stringify({ badgeId, xpBonus })
         });
