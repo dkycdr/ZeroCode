@@ -5,6 +5,7 @@ import { NotesProvider } from './contexts/NotesProvider';
 import GlobalKeyboardShortcuts from './components/GlobalKeyboardShortcuts';
 import RewardOverlay from './components/dashboard/RewardOverlay';
 import UnitAchievementCard from './components/dashboard/UnitAchievementCard';
+import BadgeUnlockModal from './components/dashboard/BadgeUnlockModal';
 import LandingPage from './pages/LandingPage';
 import LearningLayout from './pages/LearningLayout';
 import CourseSyllabus from './pages/CourseSyllabus';
@@ -72,11 +73,16 @@ const GlobalChatbotWrapper = () => {
 
 // Global Reward Manager Component
 const GlobalRewardManager = () => {
-    const { reward, clearReward, unitReward, clearUnitReward } = useProgress();
+    const { reward, clearReward, unitReward, clearUnitReward, pendingBadge, setPendingBadge } = useProgress();
     return (
         <>
             <RewardOverlay reward={reward} onClose={clearReward} />
             <UnitAchievementCard unitData={unitReward} onClose={clearUnitReward} />
+            <BadgeUnlockModal
+                badge={pendingBadge}
+                isOpen={!!pendingBadge}
+                onClose={() => setPendingBadge(null)}
+            />
         </>
     );
 };

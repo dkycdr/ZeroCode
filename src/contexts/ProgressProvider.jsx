@@ -3,6 +3,8 @@ import { useAuth } from './AuthProvider';
 import { sql } from '../lib/neon';
 import { CONTENT_TYPES } from '../data/curriculumStructure';
 import { getAllItems } from '../data/courses/index';
+import { checkNewBadges, BADGES } from '../data/badges';
+import api from '../lib/api-client';
 
 const ProgressContext = createContext({});
 
@@ -22,6 +24,8 @@ export const ProgressProvider = ({ children }) => {
     const [completedItems, setCompletedItems] = useState([]);
     const [unitHistory, setUnitHistory] = useState({}); // { unitId: Set(itemIds) } for Ghost Progress
     const [recentActivity, setRecentActivity] = useState([]); // Array of { item_id, completed_at, ... }
+    const [earnedBadges, setEarnedBadges] = useState([]); // Badge IDs the user has earned
+    const [pendingBadge, setPendingBadge] = useState(null); // Badge to show in unlock modal
     const [reward, setReward] = useState(null);
     const [unitReward, setUnitReward] = useState(null);
     const [rewardCallback, setRewardCallback] = useState(null); // callback function
@@ -390,6 +394,76 @@ export const ProgressProvider = ({ children }) => {
             // SYNC TO LEADERBOARD
             updateLeaderboardStats(calculatedXp, courses.length);
 
+            // Load earned badges and auto-sync any that should be unlocked
+            try {
+                const isDev = import.meta.env.DEV;
+                let currentBadges = [];
+
+                if (isDev) {
+                    // Direct SQL in dev mode
+                    const badges = await sql`
+                        SELECT badge_id FROM user_badges WHERE user_id = ${user.id}
+                    `;
+                    currentBadges = badges.map(b => b.badge_id);
+                } else {
+                    // Use API in production
+                    const badgeResult = await api.badges.load();
+                    if (badgeResult.success) {
+                        currentBadges = badgeResult.badges || [];
+                        if (badgeResult.pendingBadges?.length > 0) {
+                            setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
+                        }
+                    }
+                }
+
+                // Auto-sync: Check for badges that qualify but aren't unlocked yet
+                const totalHours = actualFocusMinutes / 60;
+                const stats = {
+                    completedItems: items.length,
+                    coursesCompleted: courses.length,
+                    totalFocusHours: totalHours,
+                    maxStreak: user?.streak_count || streak,
+                    hasPerfectQuiz: false,
+                    sectionsVisited: 5
+                };
+
+                const qualifyingBadges = checkNewBadges(stats, currentBadges);
+
+                // Auto-unlock any qualifying badges
+                for (const badge of qualifyingBadges) {
+                    try {
+                        if (isDev) {
+                            // Check if badge already exists before inserting
+                            const existing = await sql`
+                                SELECT id FROM user_badges 
+                                WHERE user_id = ${user.id} AND badge_id = ${badge.id}
+                            `;
+
+                            if (existing.length === 0) {
+                                // New badge - insert and award XP
+                                await sql`
+                                    INSERT INTO user_badges (user_id, badge_id) 
+                                    VALUES (${user.id}, ${badge.id})
+                                `;
+                                await sql`
+                                    UPDATE users SET points = points + ${badge.xpBonus} WHERE id = ${user.id}
+                                `;
+                                console.log(`Badge unlocked: ${badge.id}, +${badge.xpBonus} XP`);
+                            }
+                        } else {
+                            await api.badges.unlock(badge.id, badge.xpBonus);
+                        }
+                        currentBadges.push(badge.id);
+                    } catch (unlockErr) {
+                        console.warn('Failed to auto-unlock badge:', badge.id, unlockErr);
+                    }
+                }
+
+                setEarnedBadges(currentBadges);
+            } catch (e) {
+                console.warn('Could not load badges:', e.message);
+            }
+
         } catch (error) {
             console.error('Error loading progress:', error);
         } finally {
@@ -484,6 +558,43 @@ export const ProgressProvider = ({ children }) => {
 
                 // SYNC TO LEADERBOARD
                 updateLeaderboardStats(newXp, currentStats.modulesCleared);
+
+                // CHECK FOR NEW BADGES
+                try {
+                    const totalHours = currentStats.totalFocusMinutes / 60;
+                    const stats = {
+                        completedItems: newItems.length,
+                        coursesCompleted: currentStats.modulesCleared,
+                        totalFocusHours: totalHours,
+                        maxStreak: streakResult?.newStreak || currentStats.streak,
+                        hasPerfectQuiz: false, // TODO: Track this
+                        sectionsVisited: 5 // Assume visited for now
+                    };
+                    const newBadges = checkNewBadges(stats, earnedBadges);
+
+                    if (newBadges.length > 0) {
+                        const firstBadge = newBadges[0];
+                        // Unlock badge
+                        const isDev = import.meta.env.DEV;
+                        if (isDev) {
+                            await sql`
+                                INSERT INTO user_badges (user_id, badge_id) 
+                                VALUES (${user.id}, ${firstBadge.id})
+                                ON CONFLICT (user_id, badge_id) DO NOTHING
+                            `;
+                            // Award XP bonus
+                            await sql`
+                                UPDATE users SET points = points + ${firstBadge.xpBonus} WHERE id = ${user.id}
+                            `;
+                        } else {
+                            await api.badges.unlock(firstBadge.id, firstBadge.xpBonus);
+                        }
+                        setEarnedBadges(prev => [...prev, firstBadge.id]);
+                        setPendingBadge(firstBadge);
+                    }
+                } catch (badgeErr) {
+                    console.warn('Badge check failed:', badgeErr);
+                }
 
                 // UNIT COMPLETION CHECK
                 if (courseId && unitId) {
@@ -776,6 +887,9 @@ export const ProgressProvider = ({ children }) => {
         loading,
         reward,
         unitReward,
+        earnedBadges,
+        pendingBadge,
+        setPendingBadge,
         setUnitReward,
         clearReward,
         clearUnitReward,

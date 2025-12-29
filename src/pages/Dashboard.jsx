@@ -8,6 +8,7 @@ import CourseCard from '../components/dashboard/CourseCard';
 import ResumeProtocol from '../components/dashboard/ResumeProtocol';
 import ResourceMonitor from '../components/dashboard/ResourceMonitor';
 import ArchivesWidget from '../components/dashboard/ArchivesWidget';
+import BadgesWidget from '../components/dashboard/BadgesWidget';
 // import { SkillAnalyticsWidget } from '../components/dashboard/SkillAnalyticsWidget';
 import NeuralTechTreeWidget from '../components/dashboard/NeuralTechTreeWidget';
 import CyberDeckWidget from '../components/dashboard/CyberDeckWidget';
@@ -19,10 +20,17 @@ import clsx from 'clsx';
 
 export default function Dashboard() {
     const [selectedLevel, setSelectedLevel] = useState('all');
-    const { completedCourses, loading, userStats } = useProgress();
+    const { completedCourses, completedItems, loading, userStats, earnedBadges = [] } = useProgress();
     const { user, canAccessCourse, subscriptionTier } = useAuth();
 
     const progress = getOverallProgress(completedCourses);
+
+    // Extended stats for badge calculation
+    const extendedStats = {
+        ...userStats,
+        completedItemsCount: completedItems?.length || 0,
+        coursesCompletedCount: completedCourses?.length || 0,
+    };
 
     if (loading) {
         return (
@@ -54,6 +62,7 @@ export default function Dashboard() {
                                 <div className="col-span-2"><ArchivesWidget /></div>
                                 <div className="col-span-2"><CyberDeckWidget /></div>
                             </div>
+                            <BadgesWidget earnedBadgeIds={earnedBadges} userStats={extendedStats} />
                         </div>
 
                         {/* CENTER/RIGHT COLUMN: Hero & Learning */}

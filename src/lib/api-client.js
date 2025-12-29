@@ -151,5 +151,20 @@ export const leaderboardAPI = {
     }
 };
 
-const api = { auth: authAPI, progress: progressAPI, ai: aiAPI, notes: notesAPI, leaderboard: leaderboardAPI };
+/**
+ * Badges API - achievement system
+ */
+export const badgesAPI = {
+    async load() {
+        return apiRequest('/badges?action=load', { method: 'GET' });
+    },
+    async unlock(badgeId, xpBonus) {
+        return apiRequest('/badges?action=unlock', {
+            method: 'POST',
+            body: JSON.stringify({ badgeId, xpBonus })
+        });
+    }
+};
+
+const api = { auth: authAPI, progress: progressAPI, ai: aiAPI, notes: notesAPI, leaderboard: leaderboardAPI, badges: badgesAPI };
 export default api;
