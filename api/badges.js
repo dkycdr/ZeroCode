@@ -3,7 +3,7 @@ import { sql } from '../src/lib/neon.js';
 /**
  * Badges API - handles badge operations
  * Actions: load, unlock
- * Uses manual JWT parsing (no external jwt package dependency)
+ * Uses manual JWT parsing with Buffer (Node.js compatible) to avoid dependencies
  */
 export default async function handler(req, res) {
     // CORS headers
@@ -15,25 +15,40 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Manual JWT parsing (like handleVerifyAdmin in auth.js)
+    // Manual JWT parsing
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+        console.warn('Badges API: No Bearer token provided');
+        return res.status(401).json({ success: false, error: 'Unauthorized: Missing token' });
     }
 
     let userId;
     try {
         const token = authHeader.replace('Bearer ', '');
-        // Decode JWT payload (base64) without verification
-        // Note: In production this should verify signature, but for now just decode
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const parts = token.split('.');
+
+        if (parts.length !== 3) {
+            throw new Error('Invalid token structure');
+        }
+
+        // Decode payload (2nd part)
+        // Handle Base64Url to Base64 conversion (replace - with +, _ with /)
+        const base64Url = parts[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+        // Use Buffer for decoding in Node.js environment
+        const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+        const payload = JSON.parse(jsonPayload);
+
         userId = payload.id;
 
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Invalid token' });
+            console.warn('Badges API: Token payload missing user ID');
+            return res.status(401).json({ success: false, error: 'Invalid token: No User ID' });
         }
     } catch (e) {
-        return res.status(401).json({ success: false, error: 'Invalid token format' });
+        console.error('Badges API: Token parsing failed:', e.message);
+        return res.status(401).json({ success: false, error: 'Invalid token format: ' + e.message });
     }
 
     const action = req.query.action;
