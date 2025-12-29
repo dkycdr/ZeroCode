@@ -1,20 +1,15 @@
 /**
  * API Client for secure backend communication
- * Replaces direct SQL imports with HTTP requests to backend API endpoints
+ * Uses consolidated API endpoints with query params for action routing
  */
 
-// API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-/**
- * Get authentication token from localStorage
- */
 function getAuthToken() {
     const userStr = localStorage.getItem('zerocode_user');
     if (userStr) {
         try {
-            const user = JSON.parse(userStr);
-            return user.token;
+            return JSON.parse(userStr).token;
         } catch (e) {
             return null;
         }
@@ -22,92 +17,72 @@ function getAuthToken() {
     return null;
 }
 
-/**
- * Make authenticated API request
- */
 async function apiRequest(endpoint, options = {}) {
     const token = getAuthToken();
-
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
-
-    // Add authorization header if token exists
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const config = {
-        ...options,
-        headers
-    };
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const url = `${API_BASE_URL}${endpoint}`;
 
     try {
-        const response = await fetch(url, config);
+        const response = await fetch(url, { ...options, headers });
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || `HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
         return data;
     } catch (error) {
-        console.error(`API request failed: ${endpoint}`, error);
+        console.error(`API failed: ${endpoint}`, error);
         throw error;
     }
 }
 
 /**
- * Authentication API endpoints
+ * Auth API - consolidated endpoint with action param
  */
 export const authAPI = {
     async register(email, password, name) {
-        return apiRequest('/auth/register', {
+        return apiRequest('/auth?action=register', {
             method: 'POST',
             body: JSON.stringify({ email, password, name })
         });
     },
 
     async login(email, password) {
-        return apiRequest('/auth/login', {
+        return apiRequest('/auth?action=login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
     },
 
     async verifyEmail(email, code) {
-        return apiRequest('/auth/verify-email', {
+        return apiRequest('/auth?action=verify-email', {
             method: 'POST',
             body: JSON.stringify({ email, code })
         });
     },
 
     async resendVerification(email) {
-        return apiRequest('/auth/resend-verification', {
+        return apiRequest('/auth?action=resend-verification', {
             method: 'POST',
             body: JSON.stringify({ email })
         });
     },
 
     async requestPasswordReset(email) {
-        return apiRequest('/auth/request-reset', {
+        return apiRequest('/auth?action=request-reset', {
             method: 'POST',
             body: JSON.stringify({ email })
         });
     },
 
     async resetPassword(email, code, newPassword) {
-        return apiRequest('/auth/reset-password', {
+        return apiRequest('/auth?action=reset-password', {
             method: 'POST',
             body: JSON.stringify({ email, code, newPassword })
         });
     },
 
     async verifyAdminCode(adminCode) {
-        return apiRequest('/auth/verify-admin', {
+        return apiRequest('/auth?action=verify-admin', {
             method: 'POST',
             body: JSON.stringify({ adminCode })
         });
@@ -115,41 +90,35 @@ export const authAPI = {
 };
 
 /**
- * Progress API endpoints
+ * Progress API - consolidated endpoint
  */
 export const progressAPI = {
     async loadProgress() {
-        return apiRequest('/progress/load', {
-            method: 'GET'
-        });
+        return apiRequest('/progress?action=load', { method: 'GET' });
     },
 
     async markComplete(itemId, courseId, unitId, contentType, quizScore = null, code = null) {
-        return apiRequest('/progress/mark-complete', {
+        return apiRequest('/progress?action=mark-complete', {
             method: 'POST',
             body: JSON.stringify({ itemId, courseId, unitId, contentType, quizScore, code })
         });
     },
 
     async updateStreak() {
-        return apiRequest('/progress/update-streak', {
-            method: 'POST'
-        });
+        return apiRequest('/progress?action=update-streak', { method: 'POST' });
     },
 
     async getStats() {
-        return apiRequest('/progress/get-stats', {
-            method: 'GET'
-        });
+        return apiRequest('/progress?action=load', { method: 'GET' });
     }
 };
 
 /**
- * AI Chat API
+ * AI Chat API - consolidated endpoint
  */
 export const aiAPI = {
     async chat(message, context = null) {
-        return apiRequest('/ai/chat', {
+        return apiRequest('/ai?action=chat', {
             method: 'POST',
             body: JSON.stringify({ message, context })
         });
@@ -157,44 +126,30 @@ export const aiAPI = {
 };
 
 /**
- * Notes API
+ * Notes API - consolidated endpoint
  */
 export const notesAPI = {
     async save(courseId, itemId, content) {
-        return apiRequest('/notes/save', {
+        return apiRequest('/notes?action=save', {
             method: 'POST',
             body: JSON.stringify({ courseId, itemId, content })
         });
     },
 
     async load(courseId = null) {
-        const query = courseId ? `?courseId=${courseId}` : '';
-        return apiRequest(`/notes/load${query}`, {
-            method: 'GET'
-        });
+        const query = courseId ? `&courseId=${courseId}` : '';
+        return apiRequest(`/notes?action=load${query}`, { method: 'GET' });
     }
 };
 
 /**
- * Leaderboard API
+ * Leaderboard API (existing endpoint)
  */
 export const leaderboardAPI = {
     async getLeaderboard() {
-        return apiRequest('/leaderboard', {
-            method: 'GET'
-        });
+        return apiRequest('/leaderboard', { method: 'GET' });
     }
 };
 
-/**
- * Export default API object
- */
-const api = {
-    auth: authAPI,
-    progress: progressAPI,
-    ai: aiAPI,
-    notes: notesAPI,
-    leaderboard: leaderboardAPI
-};
-
+const api = { auth: authAPI, progress: progressAPI, ai: aiAPI, notes: notesAPI, leaderboard: leaderboardAPI };
 export default api;
