@@ -5,8 +5,10 @@ import { neon } from '@neondatabase/serverless';
 // In production, use API routes/backend
 
 // Support both Vite (import.meta.env) and Vercel serverless (process.env)
-const databaseUrl = typeof process !== 'undefined' && process.env?.DATABASE_URL
-  ? process.env.DATABASE_URL
+// Support both Vite (import.meta.env) and Vercel serverless (process.env)
+// We check process.env.VITE_NEON_DATABASE_URL too because Vercel often exposes it if defined in dashboard
+const databaseUrl = (typeof process !== 'undefined' && (process.env?.DATABASE_URL || process.env?.VITE_NEON_DATABASE_URL))
+  ? (process.env.DATABASE_URL || process.env.VITE_NEON_DATABASE_URL)
   : (typeof import.meta !== 'undefined' && import.meta.env?.VITE_NEON_DATABASE_URL
     ? import.meta.env.VITE_NEON_DATABASE_URL
     : null);
