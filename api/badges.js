@@ -12,21 +12,29 @@ async function handler(req, res) {
     console.log('Badges API Headers:', JSON.stringify(req.headers, null, 2));
 
     // Manual JWT parsing
-    const authHeader = req.headers.authorization;
+    let authHeader = req.headers.authorization;
+    let token;
 
+    // Fallback: Check query param if header is missing
     if (!authHeader?.startsWith('Bearer ')) {
-        console.warn('Badges API: No Bearer token provided in Authorization header');
-        console.warn('Received Authorization:', authHeader);
-        return res.status(401).json({
-            success: false,
-            error: 'Unauthorized: Missing token',
-            debug: 'Token not found in headers'
-        });
+        if (req.query.token) {
+            console.log('Badges API: Using token from query param');
+            token = req.query.token;
+        } else {
+            console.warn('Badges API: No Bearer token provided in Authorization header');
+            console.warn('Received Authorization:', authHeader);
+            return res.status(401).json({
+                success: false,
+                error: 'Unauthorized: Missing token',
+                debug: 'Token not found in headers or query'
+            });
+        }
+    } else {
+        token = authHeader.replace('Bearer ', '');
     }
 
     let userId;
     try {
-        const token = authHeader.replace('Bearer ', '');
         const parts = token.split('.');
 
         if (parts.length !== 3) {

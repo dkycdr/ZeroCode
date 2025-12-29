@@ -156,10 +156,14 @@ export const leaderboardAPI = {
  */
 export const badgesAPI = {
     async load() {
-        return apiRequest('/badges?action=load', { method: 'GET' });
+        const token = getAuthToken();
+        const query = token ? `&token=${token}` : '';
+        return apiRequest(`/badges?action=load${query}`, { method: 'GET' });
     },
     async unlock(badgeId, xpBonus) {
-        return apiRequest('/badges?action=unlock', {
+        const token = getAuthToken();
+        const query = token ? `&token=${token}` : '';
+        return apiRequest(`/badges?action=unlock${query}`, {
             method: 'POST',
             body: JSON.stringify({ badgeId, xpBonus })
         });
