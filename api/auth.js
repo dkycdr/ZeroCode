@@ -44,13 +44,14 @@ async function handleLogin(req, res) {
 
     const user = users[0];
 
-    if (!user.is_email_verified) {
-        return res.status(403).json({
-            success: false,
-            error: 'Email not verified',
-            code: 'EMAIL_NOT_VERIFIED'
-        });
-    }
+    // TEMPORARILY DISABLED: Email verification check
+    // if (!user.is_email_verified) {
+    //     return res.status(403).json({
+    //         success: false,
+    //         error: 'Email not verified',
+    //         code: 'EMAIL_NOT_VERIFIED'
+    //     });
+    // }
 
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
