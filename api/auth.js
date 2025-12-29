@@ -2,7 +2,6 @@ import { sql } from '../src/lib/neon.js';
 import bcrypt from 'bcryptjs';
 import { cors } from './middleware/cors.js';
 import { rateLimit } from './middleware/rateLimit.js';
-import { generateToken } from './middleware/auth.js';
 import { isValidEmail, isValidPassword, sanitizeString } from './middleware/validate.js';
 import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail } from '../src/lib/emailService.js';
 
