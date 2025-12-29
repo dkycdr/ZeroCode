@@ -16,7 +16,7 @@
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-<img src="https://img.shields.io/badge/VERSION-2.7.0--beta.1-00ff9f?style=for-the-badge&logo=v&logoColor=white&labelColor=0a0e27" alt="Version"/>
+<img src="https://img.shields.io/badge/VERSION-2.7.1--beta.1-00ff9f?style=for-the-badge&logo=v&logoColor=white&labelColor=0a0e27" alt="Version"/>
 <img src="https://img.shields.io/badge/COURSES-19-00d9ff?style=for-the-badge&logo=bookstack&logoColor=white&labelColor=0a0e27" alt="Courses"/>
 <img src="https://img.shields.io/badge/TECH-React%2019-61dafb?style=for-the-badge&logo=react&logoColor=white&labelColor=0a0e27" alt="React"/>
 <img src="https://img.shields.io/badge/STATUS-ONLINE-00ff9f?style=for-the-badge&logo=statuspage&logoColor=white&labelColor=0a0e27" alt="Status"/>
@@ -316,6 +316,35 @@ $ node server.js
 | 100% | 🏆 **MASTER DOJO** | ![amber](https://img.shields.io/badge/●-f59e0b?style=flat-square) | All perks |
 
 </div>
+
+</details>
+
+<details>
+<summary><b>🏆 ACHIEVEMENT BADGE SYSTEM</b></summary>
+
+<br/>
+
+Collect badges by completing milestones across 5 categories:
+
+<div align="center">
+
+| Category | Badges | Description |
+|:---------|:------:|:------------|
+| ⚡ **Progress** | 5 | Complete items (1 → 500) |
+| 🧠 **Focus** | 4 | Study time (1h → 100h) |
+| 🔥 **Streak** | 3 | Daily streaks (7d → 100d) |
+| 📚 **Course** | 3 | Complete courses (1 → 6) |
+| ✨ **Special** | 2 | Perfect scores, exploration |
+
+</div>
+
+**Rarity Tiers:**
+```
+COMMON     ░░░░  +50-100 XP
+UNCOMMON   ▓▓░░  +100-250 XP
+RARE       ▓▓▓░  +250-500 XP
+LEGENDARY  ████  +500-2000 XP
+```
 
 </details>
 

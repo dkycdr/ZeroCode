@@ -399,21 +399,27 @@ export const ProgressProvider = ({ children }) => {
                 const isDev = import.meta.env.DEV;
                 let currentBadges = [];
 
-                if (isDev) {
-                    // Direct SQL in dev mode
-                    const badges = await sql`
-                        SELECT badge_id FROM user_badges WHERE user_id = ${user.id}
-                    `;
-                    currentBadges = badges.map(b => b.badge_id);
-                } else {
-                    // Use API in production
-                    const badgeResult = await api.badges.load();
-                    if (badgeResult.success) {
-                        currentBadges = badgeResult.badges || [];
-                        if (badgeResult.pendingBadges?.length > 0) {
-                            setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
+                // Load existing badges
+                try {
+                    if (isDev) {
+                        const badges = await sql`
+                            SELECT badge_id FROM user_badges WHERE user_id = ${user.id}
+                        `;
+                        currentBadges = badges.map(b => b.badge_id);
+                    } else {
+                        const badgeResult = await api.badges.load();
+                        if (badgeResult.success) {
+                            currentBadges = badgeResult.badges || [];
+                            if (badgeResult.pendingBadges?.length > 0) {
+                                setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
+                            }
+                        } else {
+                            console.warn('Failed to load badges from API:', badgeResult.error);
                         }
                     }
+                } catch (loadErr) {
+                    console.warn('Badge load error:', loadErr.message);
+                    // Continue with empty badges - will sync on next load
                 }
 
                 // Auto-sync: Check for badges that qualify but aren't unlocked yet
@@ -429,18 +435,22 @@ export const ProgressProvider = ({ children }) => {
 
                 const qualifyingBadges = checkNewBadges(stats, currentBadges);
 
+                if (qualifyingBadges.length > 0) {
+                    console.log(`[Badges] ${qualifyingBadges.length} badges qualify for unlock:`, qualifyingBadges.map(b => b.id));
+                }
+
                 // Auto-unlock any qualifying badges
                 for (const badge of qualifyingBadges) {
                     try {
+                        let unlockResult;
+
                         if (isDev) {
-                            // Check if badge already exists before inserting
                             const existing = await sql`
                                 SELECT id FROM user_badges 
                                 WHERE user_id = ${user.id} AND badge_id = ${badge.id}
                             `;
 
                             if (existing.length === 0) {
-                                // New badge - insert and award XP
                                 await sql`
                                     INSERT INTO user_badges (user_id, badge_id) 
                                     VALUES (${user.id}, ${badge.id})
@@ -448,20 +458,28 @@ export const ProgressProvider = ({ children }) => {
                                 await sql`
                                     UPDATE users SET points = points + ${badge.xpBonus} WHERE id = ${user.id}
                                 `;
-                                console.log(`Badge unlocked: ${badge.id}, +${badge.xpBonus} XP`);
+                                console.log(`[Badges] Unlocked: ${badge.id}, +${badge.xpBonus} XP`);
+                                unlockResult = { success: true, unlocked: true };
+                            } else {
+                                unlockResult = { success: true, alreadyUnlocked: true };
                             }
                         } else {
-                            await api.badges.unlock(badge.id, badge.xpBonus);
+                            // Production - use API
+                            unlockResult = await api.badges.unlock(badge.id, badge.xpBonus);
+                            console.log(`[Badges] API unlock result for ${badge.id}:`, unlockResult);
                         }
-                        currentBadges.push(badge.id);
+
+                        if (unlockResult?.success && !unlockResult?.alreadyUnlocked) {
+                            currentBadges.push(badge.id);
+                        }
                     } catch (unlockErr) {
-                        console.warn('Failed to auto-unlock badge:', badge.id, unlockErr);
+                        console.error('Failed to auto-unlock badge:', badge.id, unlockErr);
                     }
                 }
 
                 setEarnedBadges(currentBadges);
             } catch (e) {
-                console.warn('Could not load badges:', e.message);
+                console.error('Could not load badges:', e.message);
             }
 
         } catch (error) {
