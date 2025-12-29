@@ -261,6 +261,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGoogle = async (googleData) => {
+        const isDev = import.meta.env.DEV;
+
         try {
             let googleUser;
 
@@ -280,31 +282,58 @@ export const AuthProvider = ({ children }) => {
 
             const { email, name, sub: googleId, picture } = googleUser;
 
-            // Use API endpoint for social login to get proper JWT token
-            const response = await api.auth.socialLogin('google', {
-                email,
-                name,
-                id: googleId,
-                picture
-            });
+            if (isDev) {
+                // Development mode: Use direct SQL (no API available)
+                let result = await sql`
+                    SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
+                    FROM users WHERE email = ${email} OR google_id = ${String(googleId)}
+                `;
 
-            if (!response.success) {
-                return { success: false, error: response.error };
+                let dbUser;
+                if (result.length === 0) {
+                    // Create new user from Google
+                    const createResult = await sql`
+                        INSERT INTO users (email, name, google_id, subscription_tier, avatar, is_email_verified)
+                        VALUES (${email}, ${name}, ${String(googleId)}, 'free', ${picture}, true)
+                        RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar
+                    `;
+                    dbUser = createResult[0];
+                } else {
+                    dbUser = result[0];
+                    if (!dbUser.google_id) {
+                        await sql`UPDATE users SET google_id = ${String(googleId)} WHERE id = ${dbUser.id}`;
+                    }
+                }
+
+                // In dev mode, add a placeholder token (not used for auth, but prevents errors)
+                const userWithDevToken = { ...dbUser, token: 'dev-mode-token' };
+                localStorage.setItem('zerocode_user', JSON.stringify(userWithDevToken));
+                setUser(userWithDevToken);
+                await updateStreak(userWithDevToken);
+                return { success: true, user: userWithDevToken };
+            } else {
+                // Production mode: Use API to get proper JWT token
+                const response = await api.auth.socialLogin('google', {
+                    email,
+                    name,
+                    id: googleId,
+                    picture
+                });
+
+                if (!response.success) {
+                    return { success: false, error: response.error };
+                }
+
+                const userWithToken = {
+                    ...response.user,
+                    token: response.token
+                };
+
+                localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
+                setUser(userWithToken);
+                await updateStreak(userWithToken);
+                return { success: true, user: userWithToken };
             }
-
-            // Store user data with JWT token
-            const userWithToken = {
-                ...response.user,
-                token: response.token
-            };
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-            setUser(userWithToken);
-
-            // Update Streak
-            await updateStreak(userWithToken);
-
-            return { success: true, user: userWithToken };
         } catch (error) {
             console.error('Google login error:', error);
             return { success: false, error: error.message };
@@ -312,41 +341,75 @@ export const AuthProvider = ({ children }) => {
     };
 
     const loginWithGithub = async (githubProfile) => {
+        const isDev = import.meta.env.DEV;
+
         try {
             const { email, name, id: githubId, avatar_url, login } = githubProfile;
             const displayName = name || login;
-            const primaryEmail = email;
+            const primaryEmail = email || `github_${githubId}@placeholder.com`;
 
-            if (!primaryEmail && !githubId) {
+            if (!email && !githubId) {
                 return { success: false, error: 'Could not retrieve email or ID from GitHub' };
             }
 
-            // Use API endpoint for social login to get proper JWT token
-            const response = await api.auth.socialLogin('github', {
-                email: primaryEmail || `github_${githubId}@placeholder.com`,
-                name: displayName,
-                id: githubId,
-                avatar_url,
-                login
-            });
+            if (isDev) {
+                // Development mode: Use direct SQL (no API available)
+                let result = await sql`
+                    SELECT id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
+                    FROM users 
+                    WHERE github_id = ${String(githubId)} OR email = ${primaryEmail}
+                `;
 
-            if (!response.success) {
-                return { success: false, error: response.error };
+                let dbUser;
+                if (result.length === 0) {
+                    // Create new user
+                    const createResult = await sql`
+                        INSERT INTO users (email, name, github_id, subscription_tier, avatar, is_email_verified)
+                        VALUES (${primaryEmail}, ${displayName}, ${String(githubId)}, 'free', ${avatar_url}, true)
+                        RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
+                    `;
+                    dbUser = createResult[0];
+                } else {
+                    dbUser = result[0];
+                    if (!dbUser.github_id) {
+                        await sql`UPDATE users SET github_id = ${String(githubId)} WHERE id = ${dbUser.id}`;
+                    }
+                    if (!dbUser.avatar && avatar_url) {
+                        await sql`UPDATE users SET avatar = ${avatar_url} WHERE id = ${dbUser.id}`;
+                        dbUser.avatar = avatar_url;
+                    }
+                }
+
+                // In dev mode, add a placeholder token
+                const userWithDevToken = { ...dbUser, token: 'dev-mode-token' };
+                localStorage.setItem('zerocode_user', JSON.stringify(userWithDevToken));
+                setUser(userWithDevToken);
+                await updateStreak(userWithDevToken);
+                return { success: true, user: userWithDevToken };
+            } else {
+                // Production mode: Use API to get proper JWT token
+                const response = await api.auth.socialLogin('github', {
+                    email: primaryEmail,
+                    name: displayName,
+                    id: githubId,
+                    avatar_url,
+                    login
+                });
+
+                if (!response.success) {
+                    return { success: false, error: response.error };
+                }
+
+                const userWithToken = {
+                    ...response.user,
+                    token: response.token
+                };
+
+                localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
+                setUser(userWithToken);
+                await updateStreak(userWithToken);
+                return { success: true, user: userWithToken };
             }
-
-            // Store user data with JWT token
-            const userWithToken = {
-                ...response.user,
-                token: response.token
-            };
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-            setUser(userWithToken);
-
-            // Update Streak
-            await updateStreak(userWithToken);
-
-            return { success: true, user: userWithToken };
 
         } catch (error) {
             console.error('GitHub login error:', error);
