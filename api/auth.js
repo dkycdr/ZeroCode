@@ -34,7 +34,7 @@ async function handleLogin(req, res) {
 
     const users = await sql`
     SELECT id, email, name, password_hash, is_email_verified, subscription_tier,
-           points, level, streak, courses_completed, avatar, border
+           points, streak_count, courses_completed, avatar, border
     FROM users WHERE email = ${email.toLowerCase().trim()}
   `;
 
@@ -67,7 +67,7 @@ async function handleLogin(req, res) {
         user: {
             id: user.id, email: user.email, name: user.name,
             subscription_tier: user.subscription_tier, points: user.points,
-            level: user.level, streak: user.streak, courses_completed: user.courses_completed,
+            streak_count: user.streak_count, courses_completed: user.courses_completed,
             avatar: user.avatar, border: user.border,
             is_admin: user.subscription_tier === 'admin'
         }
