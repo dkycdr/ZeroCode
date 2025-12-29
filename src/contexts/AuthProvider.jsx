@@ -297,20 +297,21 @@ export const AuthProvider = ({ children }) => {
                 }
             }
 
-            // Get JWT token from API (in production) or use placeholder (in dev)
+            // Get JWT token from API
             let userWithToken;
             try {
                 const tokenResponse = await api.auth.socialLogin(dbUser.id, email, 'google');
                 if (tokenResponse.success && tokenResponse.token) {
                     userWithToken = { ...dbUser, token: tokenResponse.token };
                 } else {
-                    // Fallback if API fails - use dev token
-                    console.warn('Could not get token from API, using dev fallback');
-                    userWithToken = { ...dbUser, token: 'dev-fallback-token' };
+                    // API returned but no token - log error, login still works but badges won't
+                    console.error('Social login API did not return token:', tokenResponse);
+                    userWithToken = { ...dbUser, token: null };
                 }
             } catch (apiError) {
-                console.warn('Social login API error:', apiError);
-                userWithToken = { ...dbUser, token: 'dev-fallback-token' };
+                // API failed - log error, login still works but badges won't
+                console.error('Social login API error:', apiError.message);
+                userWithToken = { ...dbUser, token: null };
             }
 
             localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
@@ -373,19 +374,19 @@ export const AuthProvider = ({ children }) => {
                 }
             }
 
-            // Get JWT token from API (in production) or use placeholder (in dev)
+            // Get JWT token from API
             let userWithToken;
             try {
                 const tokenResponse = await api.auth.socialLogin(dbUser.id, dbUser.email, 'github');
                 if (tokenResponse.success && tokenResponse.token) {
                     userWithToken = { ...dbUser, token: tokenResponse.token };
                 } else {
-                    console.warn('Could not get token from API, using dev fallback');
-                    userWithToken = { ...dbUser, token: 'dev-fallback-token' };
+                    console.error('Social login API did not return token:', tokenResponse);
+                    userWithToken = { ...dbUser, token: null };
                 }
             } catch (apiError) {
-                console.warn('Social login API error:', apiError);
-                userWithToken = { ...dbUser, token: 'dev-fallback-token' };
+                console.error('Social login API error:', apiError.message);
+                userWithToken = { ...dbUser, token: null };
             }
 
             localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
