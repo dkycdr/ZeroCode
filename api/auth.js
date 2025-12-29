@@ -284,38 +284,53 @@ async function handleSocialLogin(req, res) {
         const { email, name, id: providerId, picture, avatar_url, login } = profile;
         const displayName = name || login || 'User';
         const avatarUrl = picture || avatar_url;
+        const providerIdStr = String(providerId);
 
-        // Find or create user
-        const existing = await sql`
-            SELECT id, email, name, subscription_tier, is_email_verified, avatar, border,
-                   points, level, streak_count, courses_completed
-            FROM users 
-            WHERE email = ${email} 
-            OR (${provider} = 'google' AND google_id = ${String(providerId)})
-            OR (${provider} = 'github' AND github_id = ${String(providerId)})
-        `;
+        // Find existing user by email or provider ID
+        let existing;
+        if (provider === 'google') {
+            existing = await sql`
+                SELECT id, email, name, subscription_tier, is_email_verified, avatar, border,
+                       points, level, streak_count, courses_completed, google_id
+                FROM users 
+                WHERE email = ${email} OR google_id = ${providerIdStr}
+            `;
+        } else {
+            existing = await sql`
+                SELECT id, email, name, subscription_tier, is_email_verified, avatar, border,
+                       points, level, streak_count, courses_completed, github_id
+                FROM users 
+                WHERE email = ${email} OR github_id = ${providerIdStr}
+            `;
+        }
 
         if (existing.length > 0) {
             user = existing[0];
             // Update provider ID if missing
             if (provider === 'google' && !user.google_id) {
-                await sql`UPDATE users SET google_id = ${String(providerId)} WHERE id = ${user.id}`;
+                await sql`UPDATE users SET google_id = ${providerIdStr} WHERE id = ${user.id}`;
             }
             if (provider === 'github' && !user.github_id) {
-                await sql`UPDATE users SET github_id = ${String(providerId)} WHERE id = ${user.id}`;
+                await sql`UPDATE users SET github_id = ${providerIdStr} WHERE id = ${user.id}`;
             }
         } else {
-            // Create new user
-            const result = await sql`
-                INSERT INTO users (
-                    email, name, subscription_tier, is_email_verified, avatar,
-                    ${provider === 'google' ? sql`google_id` : sql`github_id`}
-                ) VALUES (
-                    ${email}, ${displayName}, 'free', true, ${avatarUrl}, ${String(providerId)}
-                )
-                RETURNING id, email, name, subscription_tier, is_email_verified, avatar, border,
-                          points, level, streak_count, courses_completed
-            `;
+            // Create new user based on provider
+            let result;
+            if (provider === 'google') {
+                result = await sql`
+                    INSERT INTO users (email, name, subscription_tier, is_email_verified, avatar, google_id)
+                    VALUES (${email}, ${displayName}, 'free', true, ${avatarUrl}, ${providerIdStr})
+                    RETURNING id, email, name, subscription_tier, is_email_verified, avatar, border,
+                              points, level, streak_count, courses_completed
+                `;
+            } else {
+                result = await sql`
+                    INSERT INTO users (email, name, subscription_tier, is_email_verified, avatar, github_id)
+                    VALUES (${email}, ${displayName}, 'free', true, ${avatarUrl}, ${providerIdStr})
+                    RETURNING id, email, name, subscription_tier, is_email_verified, avatar, border,
+                              points, level, streak_count, courses_completed
+                `;
+            }
             user = result[0];
         }
 
@@ -341,7 +356,7 @@ async function handleSocialLogin(req, res) {
         });
     } catch (error) {
         console.error('Social login error:', error);
-        return res.status(500).json({ success: false, error: 'Social login failed' });
+        return res.status(500).json({ success: false, error: 'Social login failed: ' + error.message });
     }
 }
 
