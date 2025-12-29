@@ -396,26 +396,36 @@ export const ProgressProvider = ({ children }) => {
 
             // Load earned badges and auto-sync any that should be unlocked
             try {
-                const isDev = import.meta.env.DEV;
                 let currentBadges = [];
 
-                // Load existing badges
+                // Load existing badges - always use direct SQL (same as progress/courses)
                 try {
-                    if (isDev) {
-                        const badges = await sql`
-                            SELECT badge_id FROM user_badges WHERE user_id = ${user.id}
+                    // Ensure user_badges table exists
+                    await sql`
+                        CREATE TABLE IF NOT EXISTS user_badges (
+                            id SERIAL PRIMARY KEY,
+                            user_id INTEGER NOT NULL,
+                            badge_id VARCHAR(50) NOT NULL,
+                            unlocked_at TIMESTAMP DEFAULT NOW(),
+                            notified BOOLEAN DEFAULT false,
+                            UNIQUE(user_id, badge_id)
+                        )
+                    `;
+
+                    const badges = await sql`
+                        SELECT badge_id, notified FROM user_badges WHERE user_id = ${user.id}
+                    `;
+                    currentBadges = badges.map(b => b.badge_id);
+
+                    // Check for pending (not notified) badges
+                    const pendingBadges = badges.filter(b => !b.notified);
+                    if (pendingBadges.length > 0) {
+                        setPendingBadge(BADGES[pendingBadges[0].badge_id]);
+                        // Mark as notified
+                        await sql`
+                            UPDATE user_badges SET notified = true 
+                            WHERE user_id = ${user.id} AND notified = false
                         `;
-                        currentBadges = badges.map(b => b.badge_id);
-                    } else {
-                        const badgeResult = await api.badges.load();
-                        if (badgeResult.success) {
-                            currentBadges = badgeResult.badges || [];
-                            if (badgeResult.pendingBadges?.length > 0) {
-                                setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
-                            }
-                        } else {
-                            console.warn('Failed to load badges from API:', badgeResult.error);
-                        }
                     }
                 } catch (loadErr) {
                     console.warn('Badge load error:', loadErr.message);
@@ -439,41 +449,27 @@ export const ProgressProvider = ({ children }) => {
                     console.log(`[Badges] ${qualifyingBadges.length} badges qualify for unlock:`, qualifyingBadges.map(b => b.id));
                 }
 
-                // Auto-unlock any qualifying badges
+                // Auto-unlock any qualifying badges - always use direct SQL
                 for (const badge of qualifyingBadges) {
                     try {
-                        let unlockResult;
+                        const existing = await sql`
+                            SELECT id FROM user_badges 
+                            WHERE user_id = ${user.id} AND badge_id = ${badge.id}
+                        `;
 
-                        if (isDev) {
-                            const existing = await sql`
-                                SELECT id FROM user_badges 
-                                WHERE user_id = ${user.id} AND badge_id = ${badge.id}
+                        if (existing.length === 0) {
+                            await sql`
+                                INSERT INTO user_badges (user_id, badge_id) 
+                                VALUES (${user.id}, ${badge.id})
                             `;
-
-                            if (existing.length === 0) {
-                                await sql`
-                                    INSERT INTO user_badges (user_id, badge_id) 
-                                    VALUES (${user.id}, ${badge.id})
-                                `;
-                                await sql`
-                                    UPDATE users SET points = points + ${badge.xpBonus} WHERE id = ${user.id}
-                                `;
-                                console.log(`[Badges] Unlocked: ${badge.id}, +${badge.xpBonus} XP`);
-                                unlockResult = { success: true, unlocked: true };
-                            } else {
-                                unlockResult = { success: true, alreadyUnlocked: true };
-                            }
-                        } else {
-                            // Production - use API
-                            unlockResult = await api.badges.unlock(badge.id, badge.xpBonus);
-                            console.log(`[Badges] API unlock result for ${badge.id}:`, unlockResult);
-                        }
-
-                        if (unlockResult?.success && !unlockResult?.alreadyUnlocked) {
+                            await sql`
+                                UPDATE users SET points = points + ${badge.xpBonus} WHERE id = ${user.id}
+                            `;
+                            console.log(`[Badges] Unlocked: ${badge.id}, +${badge.xpBonus} XP`);
                             currentBadges.push(badge.id);
                         }
                     } catch (unlockErr) {
-                        console.error('Failed to auto-unlock badge:', badge.id, unlockErr);
+                        console.error('Failed to auto-unlock badge:', badge.id, unlockErr.message);
                     }
                 }
 
