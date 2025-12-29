@@ -23,7 +23,7 @@
 
 ### 🔗 **SYSTEM ACCESS**
 
-[![LAUNCH PLATFORM](https://img.shields.io/badge/🌐_LAUNCH_PLATFORM-00ff9f?style=for-the-badge&labelColor=0a0e27)](https://zerocode.vercel.app)
+[![LAUNCH PLATFORM](https://img.shields.io/badge/🌐_LAUNCH_PLATFORM-00ff9f?style=for-the-badge&labelColor=0a0e27)](https://zerocode.web.id)
 [![CONTACT ADMIN](https://img.shields.io/badge/📱_CONTACT_ADMIN-00d9ff?style=for-the-badge&labelColor=0a0e27)](https://wa.me/6283875727384)
 [![JOIN DISCORD](https://img.shields.io/badge/💬_JOIN_DISCORD-ff00ff?style=for-the-badge&labelColor=0a0e27)](#)
 
@@ -697,8 +697,7 @@ $ git blame        # Show authors
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                                               ┃
-┃   👥 ACTIVE USERS          1,247    │   📈 GROWTH      +32%  ┃
-┃   ✅ COMPLETED COURSES       892    │   🎯 AVG PROGRESS  43%  ┃
+┃   � COURSES               19      │   🎯 AVG PROGRESS  43%  ┃
 ┃   💻 CODE SUBMISSIONS    24,567    │   🤖 AI QUERIES 15,234  ┃
 ┃   🔥 LONGEST STREAK         89d    │   ⚡ TOTAL XP    2.4M   ┃
 ┃                                                               ┃
@@ -830,9 +829,9 @@ background: repeating-linear-gradient(
 
 ### **SUPPORTED LOGIN METHODS**
 
-[![Email](https://img.shields.io/badge/✉️_Email-00d9ff?style=for-the-badge&labelColor=0a0e27)](https://zerocode.vercel.app)
-[![Google](https://img.shields.io/badge/🔵_Google-4285F4?style=for-the-badge&logo=google&logoColor=white&labelColor=0a0e27)](https://zerocode.vercel.app)
-[![GitHub](https://img.shields.io/badge/⚫_GitHub-181717?style=for-the-badge&logo=github&logoColor=white&labelColor=0a0e27)](https://zerocode.vercel.app)
+[![Email](https://img.shields.io/badge/✉️_Email-00d9ff?style=for-the-badge&labelColor=0a0e27)](https://zerocode.web.id)
+[![Google](https://img.shields.io/badge/🔵_Google-4285F4?style=for-the-badge&logo=google&logoColor=white&labelColor=0a0e27)](https://zerocode.web.id)
+[![GitHub](https://img.shields.io/badge/⚫_GitHub-181717?style=for-the-badge&logo=github&logoColor=white&labelColor=0a0e27)](https://zerocode.web.id)
 
 </div>
 
@@ -1136,7 +1135,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 | Resource | Link |
 |:---------|:-----|
-| 🌐 **Live Platform** | [zerocode.vercel.app](https://zerocode.vercel.app) |
+| 🌐 **Live Platform** | [zerocode.web.id](https://zerocode.web.id) |
 | 📖 **Documentation** | [docs.zerocode.dev](#) |
 | 🎥 **Video Tutorials** | [youtube.com/@zerocode](#) |
 | 💬 **Community Forum** | [community.zerocode.dev](#) |
