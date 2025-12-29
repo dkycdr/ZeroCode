@@ -90,6 +90,13 @@ export const authAPI = {
             method: 'POST',
             body: JSON.stringify({ adminCode })
         });
+    },
+
+    async socialLogin(provider, profile) {
+        return apiRequest('/auth?action=social-login', {
+            method: 'POST',
+            body: JSON.stringify({ provider, profile })
+        });
     }
 };
 

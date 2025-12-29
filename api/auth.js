@@ -272,6 +272,79 @@ async function handleVerifyAdmin(req, res) {
     return res.status(200).json({ success: true, message: 'Admin access granted' });
 }
 
+async function handleSocialLogin(req, res) {
+    const { provider, profile } = req.body;
+
+    if (!provider || !profile) {
+        return res.status(400).json({ success: false, error: 'Provider and profile required' });
+    }
+
+    try {
+        let user;
+        const { email, name, id: providerId, picture, avatar_url, login } = profile;
+        const displayName = name || login || 'User';
+        const avatarUrl = picture || avatar_url;
+
+        // Find or create user
+        const existing = await sql`
+            SELECT id, email, name, subscription_tier, is_email_verified, avatar, border,
+                   points, level, streak_count, courses_completed
+            FROM users 
+            WHERE email = ${email} 
+            OR (${provider} = 'google' AND google_id = ${String(providerId)})
+            OR (${provider} = 'github' AND github_id = ${String(providerId)})
+        `;
+
+        if (existing.length > 0) {
+            user = existing[0];
+            // Update provider ID if missing
+            if (provider === 'google' && !user.google_id) {
+                await sql`UPDATE users SET google_id = ${String(providerId)} WHERE id = ${user.id}`;
+            }
+            if (provider === 'github' && !user.github_id) {
+                await sql`UPDATE users SET github_id = ${String(providerId)} WHERE id = ${user.id}`;
+            }
+        } else {
+            // Create new user
+            const result = await sql`
+                INSERT INTO users (
+                    email, name, subscription_tier, is_email_verified, avatar,
+                    ${provider === 'google' ? sql`google_id` : sql`github_id`}
+                ) VALUES (
+                    ${email}, ${displayName}, 'free', true, ${avatarUrl}, ${String(providerId)}
+                )
+                RETURNING id, email, name, subscription_tier, is_email_verified, avatar, border,
+                          points, level, streak_count, courses_completed
+            `;
+            user = result[0];
+        }
+
+        // Generate JWT token
+        const token = generateToken({ id: user.id, email: user.email });
+
+        return res.status(200).json({
+            success: true,
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                subscription_tier: user.subscription_tier,
+                points: user.points || 0,
+                level: user.level || 1,
+                streak_count: user.streak_count || 0,
+                courses_completed: user.courses_completed || 0,
+                avatar: user.avatar,
+                border: user.border,
+                is_admin: user.subscription_tier === 'admin'
+            }
+        });
+    } catch (error) {
+        console.error('Social login error:', error);
+        return res.status(500).json({ success: false, error: 'Social login failed' });
+    }
+}
+
 // ============== MAIN ROUTER ==============
 
 async function authHandler(req, res) {
@@ -299,6 +372,8 @@ async function authHandler(req, res) {
                 return moderateLimiter(() => handleResetPassword(req, res))(req, res);
             case 'verify-admin':
                 return strictLimiter(() => handleVerifyAdmin(req, res))(req, res);
+            case 'social-login':
+                return moderateLimiter(() => handleSocialLogin(req, res))(req, res);
             default:
                 return res.status(400).json({ success: false, error: 'Invalid action' });
         }
