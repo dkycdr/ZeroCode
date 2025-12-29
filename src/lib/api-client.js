@@ -9,11 +9,15 @@ function getAuthToken() {
     const userStr = localStorage.getItem('zerocode_user');
     if (userStr) {
         try {
-            return JSON.parse(userStr).token;
+            const userData = JSON.parse(userStr);
+            if (!userData.token) console.warn('Auth: User found but no token');
+            return userData.token;
         } catch (e) {
+            console.error('Auth: Parse error', e);
             return null;
         }
     }
+    console.warn('Auth: No user found in localStorage');
     return null;
 }
 
