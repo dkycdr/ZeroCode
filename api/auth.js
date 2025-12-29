@@ -272,7 +272,57 @@ async function handleVerifyAdmin(req, res) {
     return res.status(200).json({ success: true, message: 'Admin access granted' });
 }
 
-// ============== MAIN ROUTER ==============
+// Handle social login - generates JWT for existing user (user already created by client SQL)
+async function handleSocialLogin(req, res) {
+    const { userId, email, provider } = req.body;
+
+    if (!userId || !email) {
+        return res.status(400).json({ success: false, error: 'userId and email required' });
+    }
+
+    try {
+        // Verify user exists in database
+        const users = await sql`
+            SELECT id, email, name, subscription_tier, points, level, streak_count, courses_completed, avatar, border
+            FROM users WHERE id = ${userId} AND email = ${email}
+        `;
+
+        if (users.length === 0) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        const user = users[0];
+
+        // Generate JWT token
+        const token = generateToken(user);
+
+        // Update last_login
+        await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId}`;
+
+        return res.status(200).json({
+            success: true,
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                subscription_tier: user.subscription_tier,
+                points: user.points || 0,
+                level: user.level || 1,
+                streak_count: user.streak_count || 0,
+                courses_completed: user.courses_completed || 0,
+                avatar: user.avatar,
+                border: user.border,
+                is_admin: user.subscription_tier === 'admin'
+            }
+        });
+    } catch (error) {
+        console.error('Social login error:', error);
+        return res.status(500).json({ success: false, error: 'Social login failed: ' + error.message });
+    }
+}
+
+// ============== MAIN ROUTER ==========================
 
 async function authHandler(req, res) {
     if (req.method === 'OPTIONS') {
@@ -299,6 +349,8 @@ async function authHandler(req, res) {
                 return moderateLimiter(() => handleResetPassword(req, res))(req, res);
             case 'verify-admin':
                 return strictLimiter(() => handleVerifyAdmin(req, res))(req, res);
+            case 'social-login':
+                return moderateLimiter(() => handleSocialLogin(req, res))(req, res);
             default:
                 return res.status(400).json({ success: false, error: 'Invalid action' });
         }
