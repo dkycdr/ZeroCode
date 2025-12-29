@@ -58,13 +58,11 @@ async function handleLogin(req, res) {
         return res.status(401).json({ success: false, error: 'Invalid email or password' });
     }
 
-    const token = generateToken(user);
-
+    // No JWT token - just return user data (matching how Google/GitHub login works)
     await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;
 
     return res.status(200).json({
         success: true,
-        token,
         user: {
             id: user.id, email: user.email, name: user.name,
             subscription_tier: user.subscription_tier, points: user.points,

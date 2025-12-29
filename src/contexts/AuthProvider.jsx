@@ -99,14 +99,9 @@ export const AuthProvider = ({ children }) => {
                 return { success: false, error: response.error, code: response.code };
             }
 
-            // Store user data with JWT token
-            const userWithToken = {
-                ...response.user,
-                token: response.token
-            };
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-            setUser(userWithToken);
+            // Store user data (no token needed - using direct SQL for all features)
+            localStorage.setItem('zerocode_user', JSON.stringify(response.user));
+            setUser(response.user);
 
             return { success: true };
         } catch (error) {
