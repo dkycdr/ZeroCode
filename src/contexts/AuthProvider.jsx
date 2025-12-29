@@ -288,6 +288,8 @@ export const AuthProvider = ({ children }) => {
                 `;
 
                 dbUser = createResult[0];
+
+                // Auto-verify likely trusted, but logic kept as is in original for Google
             } else {
                 dbUser = result[0];
 
@@ -297,30 +299,13 @@ export const AuthProvider = ({ children }) => {
                 }
             }
 
-            // Get JWT token from API
-            let userWithToken;
-            try {
-                const tokenResponse = await api.auth.socialLogin(dbUser.id, email, 'google');
-                if (tokenResponse.success && tokenResponse.token) {
-                    userWithToken = { ...dbUser, token: tokenResponse.token };
-                } else {
-                    // API returned but no token - log error, login still works but badges won't
-                    console.error('Social login API did not return token:', tokenResponse);
-                    userWithToken = { ...dbUser, token: null };
-                }
-            } catch (apiError) {
-                // API failed - log error, login still works but badges won't
-                console.error('Social login API error:', apiError.message);
-                userWithToken = { ...dbUser, token: null };
-            }
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-            setUser(userWithToken);
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
 
             // Update Streak
-            await updateStreak(userWithToken);
+            await updateStreak(dbUser);
 
-            return { success: true, user: userWithToken };
+            return { success: true, user: dbUser };
         } catch (error) {
             console.error('Google login error:', error);
             return { success: false, error: error.message };
@@ -331,9 +316,9 @@ export const AuthProvider = ({ children }) => {
         try {
             const { email, name, id: githubId, avatar_url, login } = githubProfile;
             const displayName = name || login;
-            const primaryEmail = email || `github_${githubId}@placeholder.com`;
+            const primaryEmail = email; // Note: GitHub API might not return email if private, requires checking emails endpoint
 
-            if (!email && !githubId) {
+            if (!primaryEmail && !githubId) {
                 return { success: false, error: 'Could not retrieve email or ID from GitHub' };
             }
 
@@ -353,7 +338,7 @@ export const AuthProvider = ({ children }) => {
 
                 const createResult = await sql`
                     INSERT INTO users (email, name, github_id, subscription_tier, email_verification_code, email_verification_expires, avatar, is_email_verified)
-                    VALUES (${primaryEmail}, ${displayName}, ${String(githubId)}, 'free', ${verificationCode}, ${expiresAt}, ${avatar_url}, true)
+                    VALUES (${primaryEmail || `github_${githubId}@placeholder.com`}, ${displayName}, ${String(githubId)}, 'free', ${verificationCode}, ${expiresAt}, ${avatar_url}, ${!!primaryEmail})
                     RETURNING id, email, name, is_admin, subscription_tier, is_email_verified, joined_date, avatar, github_id
                 `;
                 dbUser = createResult[0];
@@ -374,28 +359,13 @@ export const AuthProvider = ({ children }) => {
                 }
             }
 
-            // Get JWT token from API
-            let userWithToken;
-            try {
-                const tokenResponse = await api.auth.socialLogin(dbUser.id, dbUser.email, 'github');
-                if (tokenResponse.success && tokenResponse.token) {
-                    userWithToken = { ...dbUser, token: tokenResponse.token };
-                } else {
-                    console.error('Social login API did not return token:', tokenResponse);
-                    userWithToken = { ...dbUser, token: null };
-                }
-            } catch (apiError) {
-                console.error('Social login API error:', apiError.message);
-                userWithToken = { ...dbUser, token: null };
-            }
-
-            localStorage.setItem('zerocode_user', JSON.stringify(userWithToken));
-            setUser(userWithToken);
+            localStorage.setItem('zerocode_user', JSON.stringify(dbUser));
+            setUser(dbUser);
 
             // Update Streak
-            await updateStreak(userWithToken);
+            await updateStreak(dbUser);
 
-            return { success: true, user: userWithToken };
+            return { success: true, user: dbUser };
 
         } catch (error) {
             console.error('GitHub login error:', error);

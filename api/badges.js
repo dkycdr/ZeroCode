@@ -1,124 +1,119 @@
 import { sql } from '../src/lib/neon.js';
-import { requireAuth } from './middleware/auth.js';
-import { cors } from './middleware/cors.js';
+import jwt from 'jsonwebtoken';
 
 /**
  * Badges API - handles badge operations
- * Actions: load, unlock
- * 
- * Uses requireAuth middleware for proper JWT verification
+ * Actions: load, unlock, check
  */
+export default async function handler(req, res) {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-// Load user's earned badges
-async function handleLoadBadges(req, res) {
-    const userId = req.user.id;
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Auth check
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let userId;
 
     try {
-        // Ensure user_badges table exists
-        await sql`
-            CREATE TABLE IF NOT EXISTS user_badges (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                badge_id VARCHAR(50) NOT NULL,
-                unlocked_at TIMESTAMP DEFAULT NOW(),
-                notified BOOLEAN DEFAULT false,
-                UNIQUE(user_id, badge_id)
-            )
-        `;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.userId;
+    } catch {
+        return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
 
-        const badges = await sql`
-            SELECT badge_id, unlocked_at, notified
-            FROM user_badges
-            WHERE user_id = ${userId}
-            ORDER BY unlocked_at DESC
-        `;
+    const action = req.query.action;
 
-        // Get pending (not yet notified) badges for celebration
-        const pendingBadges = badges.filter(b => !b.notified);
-
-        // Mark all as notified
-        if (pendingBadges.length > 0) {
-            await sql`
-                UPDATE user_badges
-                SET notified = true
-                WHERE user_id = ${userId} AND notified = false
-            `;
+    try {
+        switch (action) {
+            case 'load':
+                return handleLoadBadges(req, res, userId);
+            case 'unlock':
+                return handleUnlockBadge(req, res, userId);
+            default:
+                return res.status(400).json({ success: false, error: 'Invalid action' });
         }
-
-        return res.status(200).json({
-            success: true,
-            badges: badges.map(b => b.badge_id),
-            pendingBadges: pendingBadges.map(b => b.badge_id)
-        });
     } catch (error) {
-        console.error('Load badges error:', error);
-        return res.status(500).json({ success: false, error: 'Failed to load badges: ' + error.message });
+        console.error('Badges API error:', error);
+        return res.status(500).json({ success: false, error: error.message });
     }
 }
 
+// Load user's earned badges
+async function handleLoadBadges(req, res, userId) {
+    const badges = await sql`
+        SELECT badge_id, unlocked_at, notified
+        FROM user_badges
+        WHERE user_id = ${userId}
+        ORDER BY unlocked_at DESC
+    `;
+
+    // Mark all as notified
+    await sql`
+        UPDATE user_badges
+        SET notified = true
+        WHERE user_id = ${userId} AND notified = false
+    `;
+
+    // Get pending (not yet notified) badges for celebration
+    const pendingBadges = badges.filter(b => !b.notified);
+
+    return res.status(200).json({
+        success: true,
+        badges: badges.map(b => b.badge_id),
+        pendingBadges: pendingBadges.map(b => b.badge_id)
+    });
+}
+
 // Unlock a new badge and award XP
-async function handleUnlockBadge(req, res) {
+async function handleUnlockBadge(req, res, userId) {
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, error: 'Method not allowed' });
     }
 
-    const userId = req.user.id;
     const { badgeId, xpBonus } = req.body;
 
     if (!badgeId) {
         return res.status(400).json({ success: false, error: 'Badge ID required' });
     }
 
-    try {
-        // Check if already unlocked
-        const existing = await sql`
-            SELECT id FROM user_badges
-            WHERE user_id = ${userId} AND badge_id = ${badgeId}
-        `;
+    // Check if already unlocked
+    const existing = await sql`
+        SELECT id FROM user_badges
+        WHERE user_id = ${userId} AND badge_id = ${badgeId}
+    `;
 
-        if (existing.length > 0) {
-            return res.status(200).json({ success: true, alreadyUnlocked: true });
-        }
+    if (existing.length > 0) {
+        return res.status(200).json({ success: true, alreadyUnlocked: true });
+    }
 
-        // Insert badge
+    // Insert badge
+    await sql`
+        INSERT INTO user_badges (user_id, badge_id, notified)
+        VALUES (${userId}, ${badgeId}, false)
+    `;
+
+    // Award XP bonus if provided
+    if (xpBonus && xpBonus > 0) {
         await sql`
-            INSERT INTO user_badges (user_id, badge_id, notified)
-            VALUES (${userId}, ${badgeId}, false)
+            UPDATE users
+            SET points = points + ${xpBonus}
+            WHERE id = ${userId}
         `;
-
-        // Award XP bonus if provided
-        if (xpBonus && xpBonus > 0) {
-            await sql`
-                UPDATE users
-                SET points = points + ${xpBonus}
-                WHERE id = ${userId}
-            `;
-        }
-
-        return res.status(200).json({
-            success: true,
-            unlocked: true,
-            xpAwarded: xpBonus || 0
-        });
-    } catch (error) {
-        console.error('Unlock badge error:', error);
-        return res.status(500).json({ success: false, error: 'Failed to unlock badge: ' + error.message });
     }
+
+    return res.status(200).json({
+        success: true,
+        unlocked: true,
+        xpAwarded: xpBonus || 0
+    });
 }
-
-// Main handler
-async function badgesHandler(req, res) {
-    const action = req.query.action;
-
-    switch (action) {
-        case 'load':
-            return handleLoadBadges(req, res);
-        case 'unlock':
-            return handleUnlockBadge(req, res);
-        default:
-            return res.status(400).json({ success: false, error: 'Invalid action' });
-    }
-}
-
-// Export with CORS and authentication middleware
-export default cors(requireAuth(badgesHandler));

@@ -407,19 +407,14 @@ export const ProgressProvider = ({ children }) => {
                         `;
                         currentBadges = badges.map(b => b.badge_id);
                     } else {
-                        // Check if user has valid token before calling API
-                        if (!user.token) {
-                            console.warn('[Badges] No auth token available, skipping badges API');
-                        } else {
-                            const badgeResult = await api.badges.load();
-                            if (badgeResult.success) {
-                                currentBadges = badgeResult.badges || [];
-                                if (badgeResult.pendingBadges?.length > 0) {
-                                    setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
-                                }
-                            } else {
-                                console.warn('Failed to load badges from API:', badgeResult.error);
+                        const badgeResult = await api.badges.load();
+                        if (badgeResult.success) {
+                            currentBadges = badgeResult.badges || [];
+                            if (badgeResult.pendingBadges?.length > 0) {
+                                setPendingBadge(BADGES[badgeResult.pendingBadges[0]]);
                             }
+                        } else {
+                            console.warn('Failed to load badges from API:', badgeResult.error);
                         }
                     }
                 } catch (loadErr) {
@@ -469,11 +464,7 @@ export const ProgressProvider = ({ children }) => {
                                 unlockResult = { success: true, alreadyUnlocked: true };
                             }
                         } else {
-                            // Production - use API (only if token available)
-                            if (!user.token) {
-                                console.warn('[Badges] No auth token, skipping unlock API');
-                                continue;
-                            }
+                            // Production - use API
                             unlockResult = await api.badges.unlock(badge.id, badge.xpBonus);
                             console.log(`[Badges] API unlock result for ${badge.id}:`, unlockResult);
                         }
