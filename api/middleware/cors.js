@@ -11,7 +11,9 @@ function getAllowedOrigins() {
 
     const origins = [
         'https://zerocode.vercel.app',
-        'https://www.zerocode.vercel.app'
+        'https://www.zerocode.vercel.app',
+        'https://zerocode.web.id',
+        'https://www.zerocode.web.id'
     ];
 
     // Add development origins
