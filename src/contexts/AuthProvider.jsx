@@ -438,7 +438,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const getLeaderboard = async () => {
-        const isDev = import.meta.env.DEV;
 
         // Helper function for direct SQL query
         const fetchFromDB = async () => {
@@ -474,35 +473,12 @@ export const AuthProvider = ({ children }) => {
             return { success: true, leaderboard: result, userRank };
         };
 
-        // In development, skip API and use direct SQL (no console errors)
-        if (isDev) {
-            try {
-                return await fetchFromDB();
-            } catch (error) {
-                console.error('Leaderboard DB error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // In production, use API endpoint
+        // Always use direct SQL (no API needed - same as other features)
         try {
-            const response = await api.leaderboard.getLeaderboard();
-            if (!response.success) {
-                throw new Error(response.error || 'API failed');
-            }
-            return {
-                success: true,
-                leaderboard: response.leaderboard,
-                userRank: response.userRank
-            };
+            return await fetchFromDB();
         } catch (error) {
-            console.error('Leaderboard API error:', error);
-            // Fallback to DB in production too (just in case)
-            try {
-                return await fetchFromDB();
-            } catch (dbError) {
-                return { success: false, error: dbError.message };
-            }
+            console.error('Leaderboard error:', error);
+            return { success: false, error: error.message };
         }
     };
 
