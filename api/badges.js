@@ -1,34 +1,22 @@
 import { sql } from '../src/lib/neon.js';
-import jwt from 'jsonwebtoken';
+import { requireAuth } from './middleware/auth.js';
+import { cors } from './middleware/cors.js';
 
 /**
  * Badges API - handles badge operations
- * Actions: load, unlock, check
+ * Actions: load, unlock
+ * Uses requireAuth middleware for authentication
  */
-export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+async function badgesHandler(req, res) {
+    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    // Auth check
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Get user from middleware (attached by requireAuth)
+    const userId = req.user?.id;
+    if (!userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    let userId;
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.userId;
-    } catch {
-        return res.status(401).json({ success: false, error: 'Invalid token' });
     }
 
     const action = req.query.action;
@@ -147,3 +135,6 @@ async function handleUnlockBadge(req, res, userId) {
         });
     }
 }
+
+// Export with cors and auth middleware
+export default cors(requireAuth(badgesHandler));
