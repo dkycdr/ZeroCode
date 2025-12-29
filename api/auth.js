@@ -58,7 +58,7 @@ async function handleLogin(req, res) {
     }
 
     // No JWT token - just return user data (matching how Google/GitHub login works)
-    await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;
+    await sql`UPDATE users SET last_activity = NOW() WHERE id = ${user.id}`;
 
     return res.status(200).json({
         success: true,
