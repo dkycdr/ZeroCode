@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
-import { RiUser3Fill, RiLogoutBoxRLine, RiShieldKeyholeFill, RiMenu4Fill } from 'react-icons/ri';
+import { RiUser3Fill, RiLogoutBoxRLine, RiShieldKeyholeFill, RiKeyboardBoxLine } from 'react-icons/ri';
 import { VscCode } from 'react-icons/vsc';
 import clsx from 'clsx';
 import logo from '../assets/logo.png';
@@ -99,6 +99,18 @@ export default function Header({ progress }) {
 
                     {/* User Actions */}
                     <div className="flex items-center gap-3">
+                        {/* Keyboard Shortcuts Button */}
+                        <button
+                            onClick={() => {
+                                // Dispatch custom event to trigger shortcuts modal
+                                window.dispatchEvent(new CustomEvent('toggle-shortcuts-modal'));
+                            }}
+                            className="p-2 rounded-lg text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all border border-transparent hover:border-cyan-500/20"
+                            title="Keyboard Shortcuts (?)"
+                        >
+                            <RiKeyboardBoxLine size={18} />
+                        </button>
+
                         {isAdmin && (
                             <button
                                 onClick={() => navigate('/admin')}

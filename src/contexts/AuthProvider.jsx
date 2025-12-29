@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api-client';
+import { sql } from '../lib/neon'; // For dev mode fallback
 
 const AuthContext = createContext({});
 
@@ -442,7 +443,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     const getLeaderboard = async () => {
-        try {
+        const isDev = import.meta.env.DEV;
+
+        // Helper function for direct SQL query
+        const fetchFromDB = async () => {
             const result = await sql`
                 SELECT id, name, email, points, courses_completed, avatar, border
                 FROM users
@@ -455,49 +459,66 @@ export const AuthProvider = ({ children }) => {
             if (user?.id) {
                 const userResult = await sql`
                     SELECT points, courses_completed
-                    FROM users
-                    WHERE id = ${user.id}
+                    FROM users WHERE id = ${user.id}
                 `;
-
                 if (userResult.length > 0) {
-                    const userStats = userResult[0];
+                    const stats = userResult[0];
                     const rankResult = await sql`
-                        SELECT COUNT(*) as rank
-                        FROM users
-                        WHERE points > ${userStats.points}
-                        OR (points = ${userStats.points} AND courses_completed > ${userStats.courses_completed})
+                        SELECT COUNT(*) as rank FROM users
+                        WHERE points > ${stats.points}
+                        OR (points = ${stats.points} AND courses_completed > ${stats.courses_completed})
                     `;
-
                     userRank = {
-                        rank: rankResult[0].rank + 1,
-                        points: userStats.points || 0,
-                        coursesCompleted: userStats.courses_completed || 0
+                        rank: (rankResult[0]?.rank || 0) + 1,
+                        points: stats.points || 0,
+                        coursesCompleted: stats.courses_completed || 0
                     };
                 }
             }
 
             return { success: true, leaderboard: result, userRank };
+        };
+
+        // In development, skip API and use direct SQL (no console errors)
+        if (isDev) {
+            try {
+                return await fetchFromDB();
+            } catch (error) {
+                console.error('Leaderboard DB error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // In production, use API endpoint
+        try {
+            const response = await api.leaderboard.getLeaderboard();
+            if (!response.success) {
+                throw new Error(response.error || 'API failed');
+            }
+            return {
+                success: true,
+                leaderboard: response.leaderboard,
+                userRank: response.userRank
+            };
         } catch (error) {
-            console.error('Leaderboard error:', error);
-            return { success: false, error: error.message };
+            console.error('Leaderboard API error:', error);
+            // Fallback to DB in production too (just in case)
+            try {
+                return await fetchFromDB();
+            } catch (dbError) {
+                return { success: false, error: dbError.message };
+            }
         }
     };
 
     const updateLeaderboardStats = async (points, coursesCompleted) => {
+        // Stats are now updated through the progress API endpoints
+        // This function is kept for backwards compatibility
         if (!user?.id) return { success: false, error: 'Not logged in' };
 
-        try {
-            await sql`
-                UPDATE users
-                SET points = ${points},
-                    courses_completed = ${coursesCompleted}
-                WHERE id = ${user.id}
-            `;
-            return { success: true };
-        } catch (error) {
-            console.error('Error updating leaderboard stats:', error);
-            return { success: false, error: error.message };
-        }
+        // Stats update happens server-side when marking items complete
+        // No direct update needed anymore
+        return { success: true };
     };
 
     const updateStreak = async (targetUser = user) => {

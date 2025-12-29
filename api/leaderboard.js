@@ -1,8 +1,18 @@
 import { sql } from '../src/lib/neon.js';
 
 export default async function handler(req, res) {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'GET') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ success: false, error: 'Method not allowed' });
     }
 
     try {
@@ -14,9 +24,11 @@ export default async function handler(req, res) {
                 email,
                 points,
                 courses_completed,
+                avatar,
+                border,
                 ROW_NUMBER() OVER (ORDER BY points DESC, courses_completed DESC) as rank
             FROM users
-            WHERE is_email_verified = true
+            WHERE is_email_verified = true AND (points > 0 OR courses_completed > 0)
             ORDER BY points DESC, courses_completed DESC
             LIMIT 100
         `;

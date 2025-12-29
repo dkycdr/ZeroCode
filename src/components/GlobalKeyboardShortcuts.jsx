@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
@@ -18,6 +18,13 @@ const GlobalKeyboardShortcuts = ({ children }) => {
         setShowShortcutsHelp(prev => !prev);
     }, []);
 
+    // Listen for custom event from Header button
+    useEffect(() => {
+        const handleToggle = () => toggleShortcutsHelp();
+        window.addEventListener('toggle-shortcuts-modal', handleToggle);
+        return () => window.removeEventListener('toggle-shortcuts-modal', handleToggle);
+    }, [toggleShortcutsHelp]);
+
     // Initialize keyboard shortcuts
     useKeyboardShortcuts({
         onToggleShortcutsHelp: toggleShortcutsHelp,
@@ -36,3 +43,4 @@ const GlobalKeyboardShortcuts = ({ children }) => {
 };
 
 export default GlobalKeyboardShortcuts;
+

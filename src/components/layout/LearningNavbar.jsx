@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Menu, ChevronLeft, Activity, Bot, Zap } from 'lucide-react';
+import { Menu, ChevronLeft, Activity, Bot, Zap, Keyboard } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../contexts/AuthProvider';
 import AvatarWithBorder from '../common/AvatarWithBorder';
@@ -102,6 +102,18 @@ export default function LearningNavbar({
                 >
                     <Bot size={14} className="text-cyan-400 group-hover:rotate-12 transition-transform" />
                     <span className="text-[10px] font-bold text-cyan-100 uppercase tracking-widest">NEURAL_LINK</span>
+                </button>
+
+                <div className="h-4 w-[1px] bg-cyan-500/10" />
+
+                {/* Keyboard Shortcuts */}
+                <button
+                    onClick={() => window.dispatchEvent(new CustomEvent('toggle-shortcuts-modal'))}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 border border-white/5 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all group rounded-sm"
+                    title="Keyboard Shortcuts (?)"
+                >
+                    <Keyboard size={14} className="text-zinc-500 group-hover:text-cyan-400 transition-colors" />
+                    <span className="text-[10px] font-bold text-zinc-400 group-hover:text-cyan-100 uppercase tracking-widest hidden xl:inline">HOTKEYS</span>
                 </button>
 
                 <div className="h-4 w-[1px] bg-cyan-500/10" />

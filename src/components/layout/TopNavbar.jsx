@@ -12,7 +12,8 @@ import {
     RiShieldKeyholeLine,
     RiArrowDownSLine,
     RiRocketLine,
-    RiNodeTree
+    RiNodeTree,
+    RiKeyboardBoxLine
 } from 'react-icons/ri';
 import clsx from 'clsx';
 import logo from '../../assets/logo_z.png';
@@ -105,6 +106,16 @@ export default function TopNavbar() {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-8">
+                    {/* Keyboard Shortcuts Button */}
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('toggle-shortcuts-modal'))}
+                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-sm bg-cyan-950/20 border border-cyan-500/20 text-cyan-500/70 text-[10px] font-black uppercase tracking-widest hover:bg-cyan-900/40 hover:border-cyan-500/50 hover:text-cyan-400 transition-all group"
+                        title="Keyboard Shortcuts (?)"
+                    >
+                        <RiKeyboardBoxLine size={14} className="group-hover:drop-shadow-[0_0_5px_cyan]" />
+                        <span className="hidden lg:inline">HOTKEYS</span>
+                    </button>
+
                     {isAdmin && (
                         <Link
                             to="/admin"
