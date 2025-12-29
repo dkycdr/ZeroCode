@@ -51,11 +51,11 @@ export default async function handler(req, res) {
 // Load user's earned badges
 async function handleLoadBadges(req, res, userId) {
     try {
-        // Ensure table exists
+        // Ensure table exists (simplified without foreign key for compatibility)
         await sql`
             CREATE TABLE IF NOT EXISTS user_badges (
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+                user_id INTEGER NOT NULL,
                 badge_id TEXT NOT NULL,
                 unlocked_at TIMESTAMP DEFAULT NOW(),
                 notified BOOLEAN DEFAULT FALSE,
