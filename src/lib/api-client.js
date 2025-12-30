@@ -81,10 +81,10 @@ export const authAPI = {
         });
     },
 
-    async verifyAdminCode(adminCode) {
+    async verifyAdminCode(adminCode, userId) {
         return apiRequest('/auth?action=verify-admin', {
             method: 'POST',
-            body: JSON.stringify({ adminCode })
+            body: JSON.stringify({ adminCode, userId })
         });
     }
 };

@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const response = await api.auth.verifyAdminCode(code);
+            const response = await api.auth.verifyAdminCode(code, user.id);
 
             if (!response.success) {
                 return { success: false, error: response.error };

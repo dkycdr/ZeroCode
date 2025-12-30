@@ -243,12 +243,11 @@ async function handleResetPassword(req, res) {
 }
 
 async function handleVerifyAdmin(req, res) {
-    const { adminCode } = req.body;
+    const { adminCode, userId } = req.body;
 
-    // Get user from auth header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    // Validate userId is provided
+    if (!userId) {
+        return res.status(400).json({ success: false, error: 'User ID required' });
     }
 
     const ADMIN_SECRET = process.env.ADMIN_SECRET_CODE;
@@ -261,11 +260,7 @@ async function handleVerifyAdmin(req, res) {
         return res.status(403).json({ success: false, error: 'Invalid admin code' });
     }
 
-    // Decode token to get user ID (simplified - in production use proper JWT verify)
-    const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-
-    await sql`UPDATE users SET subscription_tier = 'admin' WHERE id = ${payload.id}`;
+    await sql`UPDATE users SET subscription_tier = 'admin' WHERE id = ${userId}`;
 
     return res.status(200).json({ success: true, message: 'Admin access granted' });
 }
