@@ -377,7 +377,53 @@ export const ProgressProvider = ({ children }) => {
             const minutes = actualFocusMinutes % 60;
             const focusTime = `${hours}h ${minutes}m`;
 
-            const { level, nextLevelXp, progress } = calculateLevel(calculatedXp);
+            // Load earned badges FIRST to include XP bonus in total calculation
+            let earnedBadgeIds = [];
+            let badgeXpBonus = 0;
+            try {
+                // Ensure user_badges table exists
+                await sql`
+                    CREATE TABLE IF NOT EXISTS user_badges (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        badge_id VARCHAR(50) NOT NULL,
+                        unlocked_at TIMESTAMP DEFAULT NOW(),
+                        notified BOOLEAN DEFAULT false,
+                        UNIQUE(user_id, badge_id)
+                    )
+                `;
+
+                const badges = await sql`
+                    SELECT badge_id, notified FROM user_badges WHERE user_id = ${user.id}
+                `;
+                earnedBadgeIds = badges.map(b => b.badge_id);
+
+                // Calculate total badge XP bonus
+                earnedBadgeIds.forEach(badgeId => {
+                    const badge = BADGES[badgeId];
+                    if (badge && badge.xpBonus) {
+                        badgeXpBonus += badge.xpBonus;
+                    }
+                });
+
+                // Check for pending (not notified) badges
+                const pendingBadges = badges.filter(b => !b.notified);
+                if (pendingBadges.length > 0) {
+                    setPendingBadge(BADGES[pendingBadges[0].badge_id]);
+                    // Mark as notified
+                    await sql`
+                        UPDATE user_badges SET notified = true 
+                        WHERE user_id = ${user.id} AND notified = false
+                    `;
+                }
+            } catch (e) {
+                console.warn('Could not load badges:', e.message);
+            }
+
+            // Total XP = items XP + badge bonus
+            const totalXp = calculatedXp + badgeXpBonus;
+
+            const { level, nextLevelXp, progress } = calculateLevel(totalXp);
 
             setUserStats({
                 streak: user?.streak_count || 0,
@@ -385,54 +431,20 @@ export const ProgressProvider = ({ children }) => {
                 modulesCleared: courses.length,
                 totalFocusMinutes: actualFocusMinutes,
                 focusBreakdown,
-                xp: calculatedXp,
+                xp: totalXp,
                 level,
                 nextLevelXp,
                 levelProgress: progress
             });
 
-            // SYNC TO LEADERBOARD
-            updateLeaderboardStats(calculatedXp, courses.length);
+            // Set earned badges state
+            setEarnedBadges(earnedBadgeIds);
 
-            // Load earned badges and auto-sync any that should be unlocked
+            // SYNC TO LEADERBOARD (includes badge XP)
+            updateLeaderboardStats(totalXp, courses.length);
+
+            // Auto-sync: Check for badges that qualify but aren't unlocked yet
             try {
-                let currentBadges = [];
-
-                // Load existing badges - always use direct SQL (same as progress/courses)
-                try {
-                    // Ensure user_badges table exists
-                    await sql`
-                        CREATE TABLE IF NOT EXISTS user_badges (
-                            id SERIAL PRIMARY KEY,
-                            user_id INTEGER NOT NULL,
-                            badge_id VARCHAR(50) NOT NULL,
-                            unlocked_at TIMESTAMP DEFAULT NOW(),
-                            notified BOOLEAN DEFAULT false,
-                            UNIQUE(user_id, badge_id)
-                        )
-                    `;
-
-                    const badges = await sql`
-                        SELECT badge_id, notified FROM user_badges WHERE user_id = ${user.id}
-                    `;
-                    currentBadges = badges.map(b => b.badge_id);
-
-                    // Check for pending (not notified) badges
-                    const pendingBadges = badges.filter(b => !b.notified);
-                    if (pendingBadges.length > 0) {
-                        setPendingBadge(BADGES[pendingBadges[0].badge_id]);
-                        // Mark as notified
-                        await sql`
-                            UPDATE user_badges SET notified = true 
-                            WHERE user_id = ${user.id} AND notified = false
-                        `;
-                    }
-                } catch (loadErr) {
-                    console.warn('Badge load error:', loadErr.message);
-                    // Continue with empty badges - will sync on next load
-                }
-
-                // Auto-sync: Check for badges that qualify but aren't unlocked yet
                 const totalHours = actualFocusMinutes / 60;
                 const stats = {
                     completedItems: items.length,
@@ -443,13 +455,13 @@ export const ProgressProvider = ({ children }) => {
                     sectionsVisited: 5
                 };
 
-                const qualifyingBadges = checkNewBadges(stats, currentBadges);
+                const qualifyingBadges = checkNewBadges(stats, earnedBadgeIds);
 
                 if (qualifyingBadges.length > 0) {
                     console.log(`[Badges] ${qualifyingBadges.length} badges qualify for unlock:`, qualifyingBadges.map(b => b.id));
                 }
 
-                // Auto-unlock any qualifying badges - always use direct SQL
+                // Auto-unlock any qualifying badges (XP bonus included in next load calculation)
                 for (const badge of qualifyingBadges) {
                     try {
                         const existing = await sql`
@@ -462,20 +474,18 @@ export const ProgressProvider = ({ children }) => {
                                 INSERT INTO user_badges (user_id, badge_id) 
                                 VALUES (${user.id}, ${badge.id})
                             `;
-                            await sql`
-                                UPDATE users SET points = points + ${badge.xpBonus} WHERE id = ${user.id}
-                            `;
-                            console.log(`[Badges] Unlocked: ${badge.id}, +${badge.xpBonus} XP`);
-                            currentBadges.push(badge.id);
+                            // NOTE: No points update here - badge XP is included in total calculation
+                            console.log(`[Badges] Unlocked: ${badge.id} (bonus ${badge.xpBonus} XP will apply on next load)`);
+
+                            // Update local state
+                            setEarnedBadges(prev => [...prev, badge.id]);
                         }
                     } catch (unlockErr) {
                         console.error('Failed to auto-unlock badge:', badge.id, unlockErr.message);
                     }
                 }
-
-                setEarnedBadges(currentBadges);
             } catch (e) {
-                console.error('Could not load badges:', e.message);
+                console.error('Could not process badges:', e.message);
             }
 
         } catch (error) {
@@ -588,21 +598,13 @@ export const ProgressProvider = ({ children }) => {
 
                     if (newBadges.length > 0) {
                         const firstBadge = newBadges[0];
-                        // Unlock badge
-                        const isDev = import.meta.env.DEV;
-                        if (isDev) {
-                            await sql`
-                                INSERT INTO user_badges (user_id, badge_id) 
-                                VALUES (${user.id}, ${firstBadge.id})
-                                ON CONFLICT (user_id, badge_id) DO NOTHING
-                            `;
-                            // Award XP bonus
-                            await sql`
-                                UPDATE users SET points = points + ${firstBadge.xpBonus} WHERE id = ${user.id}
-                            `;
-                        } else {
-                            await api.badges.unlock(firstBadge.id, firstBadge.xpBonus);
-                        }
+                        // Unlock badge - always use direct SQL
+                        await sql`
+                            INSERT INTO user_badges (user_id, badge_id) 
+                            VALUES (${user.id}, ${firstBadge.id})
+                            ON CONFLICT (user_id, badge_id) DO NOTHING
+                        `;
+                        // NOTE: No points update - badge XP is included in total calculation on loadProgress
                         setEarnedBadges(prev => [...prev, firstBadge.id]);
                         setPendingBadge(firstBadge);
                     }

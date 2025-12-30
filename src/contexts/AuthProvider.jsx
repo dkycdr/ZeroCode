@@ -483,13 +483,22 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateLeaderboardStats = async (points, coursesCompleted) => {
-        // Stats are now updated through the progress API endpoints
-        // This function is kept for backwards compatibility
         if (!user?.id) return { success: false, error: 'Not logged in' };
 
-        // Stats update happens server-side when marking items complete
-        // No direct update needed anymore
-        return { success: true };
+        try {
+            // Update points and courses_completed in database
+            await sql`
+                UPDATE users 
+                SET points = ${points}, 
+                    courses_completed = ${coursesCompleted},
+                    last_activity = NOW()
+                WHERE id = ${user.id}
+            `;
+            return { success: true };
+        } catch (error) {
+            console.error('Failed to sync leaderboard stats:', error);
+            return { success: false, error: error.message };
+        }
     };
 
     const updateStreak = async (targetUser = user) => {
