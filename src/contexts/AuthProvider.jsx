@@ -15,7 +15,7 @@ export const SUBSCRIPTION_TIERS = {
     },
     beginner: {
         label: 'Beginner',
-        courses: ['html5', 'css3', 'js-basics', 'git', 'tailwind'],
+        courses: ['html5', 'css3', 'js-basics', 'git', 'tailwind', 'python'],
         color: 'blue'
     },
     intermediate: {
